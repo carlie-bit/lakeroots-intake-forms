@@ -21,6 +21,7 @@
 .sdot.new{background:var(--sage)}.sdot.reviewing{background:var(--gold)}.sdot.contacted{background:#4a6b7c}.sdot.booked{background:var(--forest)}.sdot.performed{background:#2f6f4e}.sdot.not_proceeding{background:#9b8467}
 .dash-table .pill{white-space:nowrap;display:inline-block}
 .dash-table th.srt{cursor:pointer;user-select:none}.dash-table th.srt:hover{color:var(--forest)}
+.dash-table.seg th .arr{font-size:9px;color:var(--gold);margin-left:3px}
 .dash-table td.ty{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dash-table td.st{white-space:nowrap}
 .filterbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 2px}
@@ -108,7 +109,7 @@
     </div>
     <div class="panel"><h3>By Type <span class="hint" id="typeHint"></span></h3><div class="bars" id="typeBars"></div></div>
     <div class="panel"><h3>By Stage <span class="hint">click to view</span></h3><div class="bars" id="statusBars"></div></div>
-    <div class="panel full"><h3>🆕 New — needs review <span class="hint">fresh inquiries · click a row</span></h3><table class="dash-table seg" id="newTbl"></table></div>
+    <div class="panel full"><h3>🆕 New — needs review <span class="hint">fresh inquiries · click a column to sort, search above to filter · click a row</span></h3><table class="dash-table seg" id="newTbl"></table></div>
     <div class="panel full" id="convPanel"><h3>💬 In conversation <span class="hint">reviewing &amp; contacted</span></h3><table class="dash-table seg" id="convTbl"></table></div>
     <div class="panel full" id="bookedPanel"><h3>📅 Booked <span class="hint">confirmed to perform</span></h3><table class="dash-table seg" id="bookedTbl"></table></div>
     <div class="panel full" id="perfPanel" style="display:none"><h3>✅ Performed <span class="hint">played the room · kept for the record</span></h3><table class="dash-table seg" id="perfTbl"></table></div>
@@ -158,6 +159,7 @@ const SLABEL=Object.fromEntries(STATUSES);
 const SCOL={new:'var(--sage)',reviewing:'var(--gold)',contacted:'#4a6b7c',booked:'var(--forest)',performed:'#2f6f4e',not_proceeding:'#9b8467'};
 let ALL=[], ACTIONS={}, periodDays=0, LIVE=false, IMPORTDATE='';
 let sortKey='submitted', sortDir=-1; // -1 desc (newest first), 1 asc
+let segSort={key:'submitted',dir:-1}; // shared sort for the New / In conversation / Booked … segment tables
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function cssId(id){return (id||'').replace(/[^a-zA-Z0-9]/g,'');}
 function getUser(){return (localStorage.getItem('lr_user')||'').trim();}
@@ -226,8 +228,11 @@ function renderAll(){
   bars($('statusBars'),STATUSES.filter(([k])=>sCounts[k]).map(([k,l])=>[l,sCounts[k]]),l=>{const k=STATUSES.find(x=>x[1]===l)[0];return SCOL[k];},l=>{const k=STATUSES.find(x=>x[1]===l)[0];return `drill('${esc(l)}',filtered().filter(e=>st(e.id)==='${k}'))`;});
 
   const row=e=>`<tr class="clk" onclick="drillOne('${esc(e.id)}')"><td class="nm">${statusDot(e.id)}${esc(e.act)}</td><td class="ty" title="${esc(e.describes)}">${esc(e.describes)}</td><td class="st">${statusPill(e.id)}</td><td class="r">${fmtDate(e.submitted)}</td><td class="sp"></td></tr>`;
-  const head=`<tr><th>Act</th><th>Type</th><th>Stage</th><th class="r">Submitted</th><th class="sp"></th></tr>`;
-  const fill=(tid,list,empty)=>{$(tid).innerHTML=list.length?head+list.slice().sort((a,b)=>(parseD(b.submitted)||0)-(parseD(a.submitted)||0)).map(row).join(''):`<tr><td style="color:var(--gray);padding:12px 0">${empty}${SEARCH?' (try clearing the search)':''}.</td></tr>`;};
+  const segArrow=k=>segSort.key===k?`<span class="arr">${segSort.dir<0?'▼':'▲'}</span>`:'';
+  const head=`<tr>${SEG_COLS.map(([k,l])=>`<th class="srt${k==='submitted'?' r':''}" onclick="setSegSort('${k}')">${l}${segArrow(k)}</th>`).join('')}<th class="sp"></th></tr>`;
+  const segSorted=list=>list.slice().sort((a,b)=>{const va=sortVal(a,segSort.key),vb=sortVal(b,segSort.key);
+    if(va<vb)return -segSort.dir;if(va>vb)return segSort.dir;return (parseD(b.submitted)||0)-(parseD(a.submitted)||0);});
+  const fill=(tid,list,empty)=>{$(tid).innerHTML=list.length?head+segSorted(list).map(row).join(''):`<tr><td style="color:var(--gray);padding:12px 0">${empty}${SEARCH?' (try clearing the search)':''}.</td></tr>`;};
   fill('newTbl',news,'No new inquiries');
   $('convPanel').style.display=conv.length?'':'none';fill('convTbl',conv,'Nobody mid-conversation');
   $('bookedPanel').style.display=booked.length?'':'none';fill('bookedTbl',booked,'Nothing booked yet');
@@ -244,6 +249,8 @@ function sortVal(e,key){
   return (e[key]||'').toString().toLowerCase();
 }
 function setSort(key){if(sortKey===key){sortDir=-sortDir;}else{sortKey=key;sortDir=(key==='submitted')?-1:1;}renderAll();}
+const SEG_COLS=[['act','Act'],['describes','Type'],['stage','Stage'],['submitted','Submitted']];
+function setSegSort(key){if(segSort.key===key){segSort.dir=-segSort.dir;}else{segSort.key=key;segSort.dir=(key==='submitted')?-1:1;}renderAll();}
 function renderAllTable(F){
   const rows=F.slice().sort((a,b)=>{const va=sortVal(a,sortKey),vb=sortVal(b,sortKey);
     if(va<vb)return -1*sortDir;if(va>vb)return 1*sortDir;
