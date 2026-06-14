@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Partner with Lake Roots</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>__CSS__</style>
+<style>
+.formwrap{max-width:680px;margin:0 auto;padding:0 18px 60px}
+.fpanel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 22px 26px;margin-top:14px}
+.fpanel label{display:block;font-family:var(--disp);text-transform:uppercase;letter-spacing:.7px;font-size:11.5px;color:var(--forest);margin:14px 0 5px}
+.fpanel label .opt{color:var(--gray);text-transform:none;letter-spacing:0;font-size:11px}
+.fpanel input,.fpanel select,.fpanel textarea{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14.5px;background:var(--cream)}
+.fpanel textarea{min-height:80px;resize:vertical}
+.fpanel input:focus,.fpanel select:focus,.fpanel textarea:focus{outline:none;border-color:var(--forest)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+@media(max-width:520px){.row2{grid-template-columns:1fr}}
+.sect{display:none;border-top:1px dashed var(--line);margin-top:18px;padding-top:4px}
+.sect.on{display:block}
+.submitbar{margin-top:24px;display:flex;align-items:center;gap:14px}
+.submitbar button{border:none;background:var(--forest);color:var(--cream);border-radius:999px;padding:13px 30px;font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;font-size:14px;cursor:pointer}
+.submitbar button:disabled{opacity:.5;cursor:default}
+.errline{color:var(--red);font-size:13px;margin-top:10px;display:none}
+.thanks{display:none;text-align:center;padding:50px 10px}
+.thanks .big{font-family:var(--disp);font-size:30px;color:var(--forest);text-transform:uppercase;letter-spacing:1px}
+.thanks p{color:var(--mid);font-size:15px;max-width:440px;margin:14px auto 0}
+.hp{position:absolute;left:-9999px;opacity:0;height:0;overflow:hidden}
+.privnote{font-size:12px;color:var(--gray);margin-top:14px;line-height:1.5}
+</style>
+</head>
+<body>
+<header><div class="hd">
+  <div class="mono"><img src="data:image/png;base64,__LOGO__" alt="LR"></div>
+  <div class="wordmark"><div class="t1">LAKE ROOTS</div><div class="t2">Café · Market · Bar</div></div>
+  <div class="tag"><div class="tt">Partner With Us</div><div class="td">community inquiries</div></div>
+</div></header>
+<div class="formwrap">
+  <div class="title" style="text-align:center;margin-top:26px">
+    <div class="g1">PARTNER WITH LAKE ROOTS</div>
+    <div class="g2">donations · events · collaborations · market vendors</div>
+  </div>
+
+  <form class="fpanel" id="form" onsubmit="return submitForm(event)">
+    <label>What are you reaching out about?</label>
+    <select id="f_type" onchange="sections()">
+      <option>Donation</option><option>Sponsorship</option><option>Fundraiser</option>
+      <option>Collaboration</option><option>Workshop</option><option>Tasting</option>
+      <option>Event/Hosting</option><option>Catering</option><option>Market Vendor</option><option>Other</option>
+    </select>
+
+    <label>Organization or business</label>
+    <input id="f_org" required maxlength="300" placeholder="Your organization, business, or 'Independent'">
+
+    <div class="row2">
+      <div><label>Your first name</label><input id="f_first" required maxlength="100"></div>
+      <div><label>Your last name</label><input id="f_last" required maxlength="100"></div>
+    </div>
+    <div class="row2">
+      <div><label>Email</label><input id="f_email" type="email" required maxlength="200"></div>
+      <div><label>Phone <span class="opt">— optional</span></label><input id="f_phone" maxlength="50"></div>
+    </div>
+
+    <div class="row2">
+      <div><label>Proposed / needed-by date <span class="opt">— optional</span></label><input id="f_date" type="date"></div>
+      <div><label>Preferred time of day <span class="opt">— optional</span></label><input id="f_time" maxlength="100" placeholder="e.g. weekday mornings"></div>
+    </div>
+    <label>Anything else about timing? <span class="opt">— optional</span></label>
+    <input id="f_datenotes" maxlength="500">
+
+    <div class="sect" id="s_donation">
+      <label>What would you like donated?</label>
+      <textarea id="f_dondetails" placeholder="e.g. a gift basket or gift card for our raffle"></textarea>
+      <label>What's the purpose of your request?</label>
+      <textarea id="f_donpurpose" placeholder="Tell us about your cause, event, or fundraiser"></textarea>
+    </div>
+
+    <div class="sect" id="s_event">
+      <label>Is this at Lake Roots, catering elsewhere, or something else?</label>
+      <select id="f_hosting"><option>Hosting an event at Lake Roots</option><option>Catering at a different location</option><option>Other / not sure yet</option></select>
+      <label>Tell us about your event or idea</label>
+      <textarea id="f_eventdesc"></textarea>
+      <div class="row2">
+        <div><label>Ticketed or free? <span class="opt">— if applicable</span></label>
+          <select id="f_ticketed"><option></option><option>Ticketed</option><option>Free</option><option>Not sure</option></select></div>
+        <div><label>Estimated attendees <span class="opt">— if applicable</span></label><input id="f_attendees" maxlength="50"></div>
+      </div>
+      <label>What would you need from Lake Roots?</label>
+      <textarea id="f_needs"></textarea>
+    </div>
+
+    <div class="sect" id="s_market">
+      <label>Describe the products you'd like to sell in our market</label>
+      <textarea id="f_products"></textarea>
+    </div>
+
+    <label>Brand name <span class="opt">— optional</span></label>
+    <input id="f_brand" maxlength="200">
+    <div class="row2">
+      <div><label>Website <span class="opt">— optional</span></label><input id="f_website" maxlength="300"></div>
+      <div><label>Instagram <span class="opt">— optional</span></label><input id="f_insta" maxlength="200" placeholder="@handle"></div>
+    </div>
+
+    <label>Anything else we should know? <span class="opt">— optional</span></label>
+    <textarea id="f_other"></textarea>
+
+    <div class="hp"><label>Company</label><input id="f_company" tabindex="-1" autocomplete="off"></div>
+
+    <div class="submitbar"><button id="sendBtn" type="submit">Send inquiry</button></div>
+    <div class="errline" id="err"></div>
+    <div class="privnote">We'll only use your contact info to follow up about this inquiry. Thanks for thinking of Lake Roots — we read every one of these.</div>
+  </form>
+
+  <div class="thanks" id="thanks">
+    <div class="big">Thank you!</div>
+    <p>Your inquiry is in our review queue. We look at every request as a team and someone will follow up with you — usually within a week or two.</p>
+    <p style="font-family:var(--script,inherit);color:var(--gold);font-size:18px">rooted in community</p>
+  </div>
+  <div class="foot" style="text-align:center">Lake Roots Café Market Bar · Crystal Lake</div>
+</div>
+
+<script>
+const SUPA_URL="https://gqgjppxzdwzypxontmou.supabase.co";
+const SUPA_KEY="sb_publishable_DieuLBMaMTJwZD3SUfgvGA_9I2tMOhP";
+const sb=window.supabase?window.supabase.createClient(SUPA_URL,SUPA_KEY):null;
+const $=id=>document.getElementById(id);
+const v=id=>($(id).value||'').trim()||null;
+
+function sections(){
+  const t=$('f_type').value;
+  const don=['Donation','Sponsorship','Fundraiser'].includes(t);
+  const evt=['Workshop','Tasting','Event/Hosting','Catering','Collaboration'].includes(t);
+  const mkt=t==='Market Vendor';
+  $('s_donation').classList.toggle('on',don);
+  $('s_event').classList.toggle('on',evt);
+  $('s_market').classList.toggle('on',mkt);
+}
+sections();
+
+function fmtDate(iso){if(!iso)return null;const [y,m,d]=iso.split('-');return Number(m)+'/'+Number(d)+'/'+y;}
+
+async function submitForm(ev){
+  ev.preventDefault();
+  if(v('f_company')){$('form').style.display='none';$('thanks').style.display='block';return false;}
+  const err=$('err');err.style.display='none';
+  if(!sb){err.textContent='Could not connect — please try again in a moment.';err.style.display='block';return false;}
+  $('sendBtn').disabled=true;
+  const sub={
+    org:v('f_org'),inquiry_type:$('f_type').value,
+    proposed_date:fmtDate($('f_date').value),time_of_day:v('f_time'),date_notes:v('f_datenotes'),
+    attendees:v('f_attendees'),donation_details:v('f_dondetails'),donation_purpose:v('f_donpurpose'),
+    event_type:v('f_hosting'),event_desc:v('f_eventdesc'),market_products:v('f_products'),
+    ticketed:v('f_ticketed'),needs_from_lr:v('f_needs'),other_notes:v('f_other'),
+    brand_name:v('f_brand'),website:v('f_website'),instagram:v('f_insta'),source:'web'
+  };
+  const {data,error}=await sb.from('outreach_submissions').insert(sub).select('id').single();
+  if(error){err.textContent='Something went wrong — please try again. ('+error.message+')';err.style.display='block';$('sendBtn').disabled=false;return false;}
+  await sb.from('outreach_contacts').insert({submission_id:data.id,
+    first_name:v('f_first'),last_name:v('f_last'),phone:v('f_phone'),email:v('f_email')});
+  $('form').style.display='none';$('thanks').style.display='block';window.scrollTo(0,0);
+  return false;
+}
+</script>
+</body>
+</html>

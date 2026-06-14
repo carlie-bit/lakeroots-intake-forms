@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lake Roots — Guest Feedback</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>__CSS__</style>
+<style>
+.formwrap{max-width:680px;margin:0 auto;padding:0 18px 60px}
+.fpanel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 22px 26px;margin-top:14px}
+.fpanel label{display:block;font-family:var(--disp);text-transform:uppercase;letter-spacing:.7px;font-size:11.5px;color:var(--forest);margin:14px 0 5px}
+.fpanel label .opt{color:var(--gray);text-transform:none;letter-spacing:0;font-size:11px}
+.fpanel input,.fpanel select,.fpanel textarea{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14.5px;background:var(--cream)}
+.fpanel textarea{min-height:80px;resize:vertical}
+.fpanel input:focus,.fpanel select:focus,.fpanel textarea:focus{outline:none;border-color:var(--forest)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+@media(max-width:520px){.row2{grid-template-columns:1fr}}
+.callsect{display:none;border-top:1px dashed var(--line);margin-top:18px;padding-top:4px}
+.callsect.on{display:block}
+.chkline{display:flex;align-items:center;gap:9px;margin-top:18px}
+.chkline input{width:auto}
+.chkline span{font-size:14px;color:var(--ink)}
+.submitbar{margin-top:24px}
+.submitbar button{border:none;background:var(--forest);color:var(--cream);border-radius:999px;padding:13px 30px;font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;font-size:14px;cursor:pointer}
+.submitbar button:disabled{opacity:.5}
+.errline{color:var(--red);font-size:13px;margin-top:10px;display:none}
+.thanks{display:none;text-align:center;padding:50px 10px}
+.thanks .big{font-family:var(--disp);font-size:30px;color:var(--forest);text-transform:uppercase;letter-spacing:1px}
+.thanks p{color:var(--mid);font-size:15px;max-width:440px;margin:14px auto 0}
+.thanks a{color:var(--forest)}
+.hp{position:absolute;left:-9999px;opacity:0;height:0;overflow:hidden}
+</style>
+</head>
+<body>
+<header><div class="hd">
+  <div class="mono"><img src="data:image/png;base64,__LOGO__" alt="LR"></div>
+  <div class="wordmark"><div class="t1">LAKE ROOTS</div><div class="t2">Café · Market · Bar</div></div>
+  <div class="tag"><div class="tt">Guest Feedback</div><div class="td">we're listening</div></div>
+</div></header>
+<div class="formwrap">
+  <div class="title" style="text-align:center;margin-top:26px">
+    <div class="g1">GUEST EXPERIENCE FEEDBACK</div>
+    <div class="g2">feedback, ideas &amp; call log</div>
+  </div>
+
+  <form class="fpanel" id="form" onsubmit="return submitForm(event)">
+    <div class="row2">
+      <div><label>Logged by</label><input id="f_by" required maxlength="200" placeholder="your name or email"></div>
+      <div><label>Date of feedback</label><input id="f_date" type="date" required></div>
+    </div>
+
+    <div class="row2">
+      <div><label>This is…</label>
+        <select id="f_sent" required><option value="" selected disabled>Select…</option><option value="Negative">Negative feedback</option><option value="Idea">Idea / suggestion</option><option value="Positive">Positive feedback</option><option value="Other">Question / other log</option></select></div>
+      <div><label>Category</label>
+        <select id="f_typ"><option>Service</option><option>Menu</option><option>Quality</option><option>Market</option><option>Ambiance</option><option>Hours</option><option>Packaging</option><option>Delivery</option><option>Lost &amp; Found</option><option>Other</option></select></div>
+    </div>
+
+    <label>Brief title <span class="opt">— a few words, shows on the dashboard</span></label>
+    <input id="f_label" maxlength="120" placeholder="e.g. Quiche too dry">
+
+    <label>What happened / what was said?</label>
+    <textarea id="f_fb" required></textarea>
+
+    <label>Additional thoughts or ideas <span class="opt">— optional</span></label>
+    <textarea id="f_extra"></textarea>
+
+    <label># of guests impacted (or potentially)</label>
+    <input id="f_guests" type="number" min="1" value="1">
+
+    <div class="chkline"><input type="checkbox" id="f_iscall" onchange="document.getElementById('callsect').classList.toggle('on',this.checked)"><span>This logs a phone call or voicemail</span></div>
+    <div class="callsect" id="callsect">
+      <div class="row2">
+        <div><label>Caller's name</label><input id="f_caller" maxlength="200"></div>
+        <div><label>Phone number</label><input id="f_cphone" maxlength="50"></div>
+      </div>
+      <div class="row2">
+        <div><label>Called back?</label><select id="f_back"><option></option><option>Yes</option><option>No</option></select></div>
+        <div><label>Resolved?</label><select id="f_res"><option></option><option>Yes</option><option>No</option></select></div>
+      </div>
+    </div>
+
+    <div class="hp"><label>Company</label><input id="f_company" tabindex="-1" autocomplete="off"></div>
+
+    <div class="submitbar"><button id="sendBtn" type="submit">Log feedback</button></div>
+    <div class="errline" id="err"></div>
+  </form>
+
+  <div class="thanks" id="thanks">
+    <div class="big">Logged!</div>
+    <p>It's on the Guest Experience dashboard now.</p>
+    <p><a href="#" onclick="location.reload();return false">Log another</a></p>
+  </div>
+  <div class="foot" style="text-align:center">rooted in community</div>
+</div>
+
+<script>
+const SUPA_URL="https://gqgjppxzdwzypxontmou.supabase.co";
+const SUPA_KEY="sb_publishable_DieuLBMaMTJwZD3SUfgvGA_9I2tMOhP";
+const sb=window.supabase?window.supabase.createClient(SUPA_URL,SUPA_KEY):null;
+const $=id=>document.getElementById(id);
+const v=id=>($(id).value||'').trim()||null;
+$('f_date').value=new Date().toISOString().slice(0,10);
+
+function fmtDate(iso){if(!iso)return null;const [y,m,d]=iso.split('-');return Number(m)+'/'+Number(d)+'/'+y;}
+
+async function submitForm(ev){
+  ev.preventDefault();
+  if(v('f_company')){$('form').style.display='none';$('thanks').style.display='block';return false;}
+  const err=$('err');err.style.display='none';
+  if(!sb){err.textContent='Could not connect — please try again.';err.style.display='block';return false;}
+  if(!$('f_sent').value){err.textContent='Please choose what this is (positive, negative, idea, etc.).';err.style.display='block';$('f_sent').focus();return false;}
+  $('sendBtn').disabled=true;
+  const isCall=$('f_iscall').checked;
+  const sub={
+    fb_date:fmtDate($('f_date').value),sentiment:$('f_sent').value,type:$('f_typ').value,
+    guests:parseInt($('f_guests').value)||1,
+    label:v('f_label')||(v('f_fb')||'').slice(0,90),feedback:v('f_fb'),extra:v('f_extra'),
+    is_call:isCall,called_back:isCall?v('f_back'):null,resolved:isCall?v('f_res'):null,
+    logged_by:v('f_by'),followup:isCall&&v('f_res')!=='Yes',source:'web'
+  };
+  const {data,error}=await sb.from('feedback_submissions').insert(sub).select('id').single();
+  if(error){err.textContent='Something went wrong — please try again. ('+error.message+')';err.style.display='block';$('sendBtn').disabled=false;return false;}
+  if(isCall&&(v('f_caller')||v('f_cphone'))){
+    await sb.from('feedback_contacts').insert({submission_id:data.id,caller_name:v('f_caller'),phone:v('f_cphone')});
+  }
+  $('form').style.display='none';$('thanks').style.display='block';window.scrollTo(0,0);
+  return false;
+}
+</script>
+</body>
+</html>

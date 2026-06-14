@@ -1,0 +1,13 @@
+# Netlify build config for the Lake Roots Forms site.
+# Connect this repo to its own Netlify site (Continuous Deployment); every push
+# runs this build and auto-deploys. The build only uses the Python standard
+# library and the files in this repo, so no secrets are needed here.
+# Form submissions go straight to Supabase from the browser (keys are the public
+# publishable/anon keys baked into each page), so data is live with no rebuild.
+
+[build]
+  publish = "web"
+  command = "python3 build_forms.py"
+
+[build.environment]
+  PYTHON_VERSION = "3.11"

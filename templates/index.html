@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lake Roots — Forms</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>__CSS__</style>
+<style>
+.flist{max-width:680px;margin:22px auto 0;display:flex;flex-direction:column;gap:14px}
+.fcard{display:flex;align-items:center;gap:16px;background:#fff;border:1.5px solid var(--line,#dcd8be);border-radius:14px;padding:18px 20px;text-decoration:none;color:inherit}
+.fcard:hover{border-color:var(--forest,#363A2E)}
+.fcard .ic{font-size:30px;flex:0 0 auto}
+.fcard .ft{font-family:var(--disp,'Oswald',sans-serif);font-weight:600;letter-spacing:.5px;font-size:18px;color:var(--forest,#363A2E)}
+.fcard .fs{font-size:13.5px;color:var(--mid,#4F5854);margin-top:2px}
+.fcard .arw{margin-left:auto;color:var(--gold,#B68036);font-size:20px}
+.lead{max-width:680px;margin:6px auto 0;color:var(--mid,#4F5854);font-size:14px;text-align:center}
+.dsec{max-width:680px;margin:34px auto 0}
+.dsec .dh{font-family:var(--disp,'Oswald',sans-serif);font-weight:600;letter-spacing:.6px;text-transform:uppercase;font-size:14px;color:var(--forest,#363A2E)}
+.dsec .dd{color:var(--gray,#717F7F);font-size:12.5px;margin:1px 0 10px}
+.fcard.ext .arw{font-size:16px}
+.fcard.coming{opacity:.6;cursor:default}
+.fcard.coming:hover{border-color:var(--line,#dcd8be)}
+.badge{margin-left:auto;font-family:var(--disp,'Oswald',sans-serif);text-transform:uppercase;letter-spacing:.5px;font-size:10px;color:var(--gray,#717F7F);border:1.5px solid var(--line,#dcd8be);border-radius:6px;padding:2px 8px}
+</style>
+</head>
+<body>
+<header><div class="hd">
+  <div class="mono"><img src="data:image/png;base64,__LOGO__" alt="LR"></div>
+  <div class="wordmark"><div class="t1">LAKE ROOTS</div><div class="t2">Café · Market · Bar</div></div>
+  <div class="tag"><div class="tt">Forms</div></div>
+</div></header>
+<div class="wrap">
+  <div class="title" style="text-align:center">
+    <div class="g1" style="font-family:var(--disp);font-weight:700;letter-spacing:1px;font-size:30px;color:var(--forest)">LAKE ROOTS FORMS</div>
+    <div class="g2" style="color:var(--mid);font-size:14px">choose a form to get started</div>
+  </div>
+  <!-- ============================================================
+       GROUPED BY AUDIENCE.
+       Guest & Community = guest-facing / external (anyone can submit).
+       Staff = internal (the team; these live with the systems they serve).
+       To add a form: copy a <a class="fcard ..."> card. Hosted-in-hub pages
+       use href="page.html" with arw "→"; external/Google-Form or other-site
+       links use class "fcard ext", target/rel, and arw "↗".
+       ============================================================ -->
+  <div class="dsec" style="margin-top:22px">
+    <div class="dh">Guest, Community &amp; Vendors</div>
+    <div class="dd">Open to everyone — guests, community partners, performers, and vendors.</div>
+    <div class="flist">
+      <a class="fcard" href="feedback.html">
+        <span class="ic">💬</span>
+        <span><span class="ft">Guest Experience Feedback</span><span class="fs">Share a compliment, concern, or idea about a recent visit.</span></span>
+        <span class="arw">→</span>
+      </a>
+      <a class="fcard" href="partner.html">
+        <span class="ic">🤝</span>
+        <span><span class="ft">Community Partnership Inquiry</span><span class="fs">Donation requests, collaborations, and outreach opportunities.</span></span>
+        <span class="arw">→</span>
+      </a>
+      <a class="fcard ext" href="https://docs.google.com/forms/d/e/1FAIpQLScsRg6gWgcoCpw2WKhAsJN3BbLAR9IgmDFckUi_3QKsGbP8HQ/viewform" target="_blank" rel="noopener">
+        <span class="ic">🎶</span>
+        <span><span class="ft">Live Music Inquiry</span><span class="fs">Performer & event booking requests.</span></span>
+        <span class="arw">↗</span>
+      </a>
+      <a class="fcard ext" href="https://docs.google.com/forms/d/e/1FAIpQLSf5TTN7CZg7KDEgxIm5tb8NXoS60dnbCbmCrbpBE1BvESQO9w/viewform" target="_blank" rel="noopener">
+        <span class="ic">📦</span>
+        <span><span class="ft">Vendor Inquiry</span><span class="fs">Market vendors & suppliers interested in working with Lake Roots.</span></span>
+        <span class="arw">↗</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="dsec">
+    <div class="dh">Staff &amp; Operations</div>
+    <div class="dd">For the team — these live with the systems they serve.</div>
+    <div class="flist">
+      <a class="fcard ext" href="https://lakerootsplaybook.netlify.app/incident-report.html" target="_blank" rel="noopener">
+        <span class="ic">⚠️</span>
+        <span><span class="ft">Incident / Equipment Report</span><span class="fs">Report damage, injuries, equipment issues, or safety concerns. Lives in the SOP Playbook.</span></span>
+        <span class="arw">↗</span>
+      </a>
+      <a class="fcard ext" href="https://docs.google.com/forms/d/e/1FAIpQLSeicrOr72A_sFmU4qMZcmipVWIiqL4F1Re9E5Gp7z2lK-tBzw/viewform" target="_blank" rel="noopener">
+        <span class="ic">🧰</span>
+        <span><span class="ft">Service-Provider Check-In</span><span class="fs">Vendor & repair visits — sign in on arrival.</span></span>
+        <span class="arw">↗</span>
+      </a>
+    </div>
+  </div>
+
+  <p class="lead">Looking for a dashboard instead? Visit the <a href="https://lrcommandcenter.netlify.app/" style="color:var(--gold)">Lake Roots hub ↗</a>.</p>
+</div>
+</body>
+</html>
