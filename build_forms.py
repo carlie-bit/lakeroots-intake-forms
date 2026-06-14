@@ -107,6 +107,15 @@ def main():
     # keep the forms out of search engines (same as the dashboards)
     open(os.path.join(WEB, "_headers"), "w").write("/*\n  X-Robots-Tag: noindex, nofollow\n")
     open(os.path.join(WEB, "robots.txt"), "w").write("User-agent: *\nDisallow: /\n")
+
+    # Friendly aliases for legacy / short URLs so old bookmarks don't 404.
+    # The Community Outreach dashboard moved off the hub (where it was
+    # outreach.html) and lives here as community-outreach.html — alias the old
+    # short name to it on this domain too.
+    open(os.path.join(WEB, "_redirects"), "w").write(
+        "# <old/short path>  <destination>  <status>\n"
+        "/outreach.html   /community-outreach.html   301\n"
+    )
     print(f"  site ready -> {WEB}")
 
 if __name__ == "__main__":
