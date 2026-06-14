@@ -1159,11 +1159,22 @@ async function restoreEntry(id){const e=ALL.find(x=>x.id===id);if(!e||!e.sid)ret
   const {error}=await sb.from('outreach_submissions').update({deleted_at:null}).eq('id',e.sid);
   if(error){console.warn(error.message);return;}
   e.deleted=false;renderAll();}
+// Canonical request types (mirrors the #typelist datalist). Used to build the
+// edit-details Type as a real <select> — a datalist <input> won't reliably open
+// as a dropdown, especially when pre-filled with the current value.
+const TYPES=['Donation','Sponsorship','Fundraiser','Dine & Share Fundraiser','Collaboration','Business Collaboration','Educational Collaboration','Workshop','Tasting','Event/Hosting','Catering','Market Vendor','Artist/Author','Musician','General Inquiry','Other'];
+function typeOptions(cur){const known=TYPES.slice();
+  if(cur&&!known.includes(cur))known.unshift(cur); // keep an existing custom value selectable
+  return known.map(t=>`<option value="${esc(t)}"${t===cur?' selected':''}>${esc(t)}</option>`).join('')
+    +`<option value="__custom__">＋ Other — type a new one…</option>`;}
+function onTypePick(c){const inp=$('etc-'+c);if(!inp)return;
+  if($('et-'+c).value==='__custom__'){inp.style.display='';inp.focus();}else{inp.style.display='none';}}
 function editEntry(id){const e=ALL.find(x=>x.id===id);if(!e)return;const c=cssId(id);
   $('ed-'+c).innerHTML=`<div class="sdetail">
     <label>Organization</label><input id="eo-${c}" value="${esc(e.org)}">
-    <label style="margin-top:8px">Type <span style="text-transform:none;letter-spacing:0;color:var(--gray)">— pick or type your own</span></label>
-    <input id="et-${c}" value="${esc(e.type)}" list="typelist">
+    <label style="margin-top:8px">Type <span style="text-transform:none;letter-spacing:0;color:var(--gray)">— pick a category</span></label>
+    <select id="et-${c}" onchange="onTypePick('${c}')">${typeOptions(e.type)}</select>
+    <input id="etc-${c}" placeholder="New type…" style="display:none;margin-top:6px">
     <label style="margin-top:8px">Proposed date (M/D/YYYY)</label><input id="ep-${c}" value="${esc(parseD(e.date)?e.date:'')}" placeholder="e.g. 7/4/2026">
     <label style="margin-top:8px">$ value</label><input id="ev-${c}" value="${e.value||''}" placeholder="e.g. 50">
     <div class="row"><button onclick="saveEntry('${esc(id)}')">Save changes</button>
@@ -1171,7 +1182,8 @@ function editEntry(id){const e=ALL.find(x=>x.id===id);if(!e)return;const c=cssId
   </div>`;}
 async function saveEntry(id){const e=ALL.find(x=>x.id===id);if(!e||!e.sid||!sb)return;const c=cssId(id);
   const org=$('eo-'+c).value.trim();if(!org){alert('Organization is required.');return;}
-  const upd={org,inquiry_type:$('et-'+c).value.trim()||'Other',
+  let nt=$('et-'+c).value;if(nt==='__custom__')nt=($('etc-'+c).value||'').trim();
+  const upd={org,inquiry_type:nt||'Other',
     proposed_date:$('ep-'+c).value.trim()||null,
     value:parseFloat(($('ev-'+c).value||'').replace(/[$,]/g,''))||null};
   const {error}=await sb.from('outreach_submissions').update(upd).eq('id',e.sid);
