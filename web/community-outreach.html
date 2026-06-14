@@ -157,6 +157,8 @@ header{background:var(--forest);color:var(--cream);padding:16px 20px}
 .dchips button.on[data-s=new]{background:var(--sage)}.dchips button.on[data-s=in_review]{background:var(--gold)}
 .dchips button.on[data-s=commitment]{background:var(--forest)}.dchips button.on[data-s=completed]{background:#2f6f4e}.dchips button.on[data-s=proceeding]{background:#5f7d49}.dchips button.on[data-s=passed]{background:#9b8467}.dchips button.on[data-s=decision_needed]{background:var(--red)}.dchips button.on[data-s=paused]{background:#4a6b7c}
 .addbtn{border:1.5px solid var(--forest);background:var(--forest);color:var(--cream);border-radius:999px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:inherit}
+a.addbtn{text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+.addbtn.ghost{background:#fff;color:var(--forest)}.addbtn.ghost:hover{background:var(--sand)}
 .sdetail select{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;background:#fff}
 .sdetail{margin:2px 0 8px;padding:8px 10px;background:var(--sand);border:1px solid var(--line);border-radius:9px}
 .sdetail label{display:block;font-size:11px;font-family:var(--disp);text-transform:uppercase;letter-spacing:.5px;color:var(--forest);margin-bottom:4px}
@@ -187,6 +189,7 @@ header{background:var(--forest);color:var(--cream);padding:16px 20px}
   <div class="topbar">
     <div class="periodbar" id="periodbar"><span class="pl">Period</span></div>
     <button class="addbtn" onclick="openAdd()">+ Add opportunity</button>
+    <a class="addbtn ghost" href="donations.html" title="Open the Donation Fulfillment Board">🎁 Donations →</a>
     <div class="whoami">You: <input id="who" placeholder="your name" oninput="setUser(this.value)"></div>
   </div>
   <div class="filterbar">
