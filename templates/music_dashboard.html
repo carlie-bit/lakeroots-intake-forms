@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lake Roots — Artists & Live Music</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Barlow+Condensed:wght@300;400;500;600&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>__CSS__</style>
+<style>
+.topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:16px 0 2px}
+.periodbar{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.periodbar .pl{font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;font-size:10.5px;color:var(--gray);margin-right:2px}
+.periodbar button{font-family:var(--disp);text-transform:uppercase;letter-spacing:.6px;font-size:11px;padding:6px 11px;border-radius:8px;border:1.5px solid var(--line);background:#fff;color:var(--mid);cursor:pointer}
+.periodbar button.on{background:var(--forest);color:var(--cream);border-color:var(--forest)}
+.whoami{margin-left:auto;font-family:var(--disp);text-transform:uppercase;letter-spacing:.6px;font-size:10.5px;color:var(--gray);display:flex;align-items:center;gap:6px}
+.whoami input{text-transform:none;letter-spacing:0;font-size:12px;border:1.5px solid var(--line);border-radius:8px;padding:5px 9px;width:130px}
+.kpi.clk,.bar.clk{cursor:pointer}.kpi.clk:hover{border-color:var(--gold)}.bar.clk:hover .bl{color:var(--forest);font-weight:600}
+.dash-table tr.clk{cursor:pointer}.dash-table tr.clk:hover td{background:var(--sand)}
+.sdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.sdot.new{background:var(--sage)}.sdot.reviewing{background:var(--gold)}.sdot.contacted{background:#4a6b7c}.sdot.booked{background:var(--forest)}.sdot.performed{background:#2f6f4e}.sdot.not_proceeding{background:#9b8467}
+.dash-table .pill{white-space:nowrap;display:inline-block}
+.dash-table th.srt{cursor:pointer;user-select:none}.dash-table th.srt:hover{color:var(--forest)}
+.dash-table td.ty{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dash-table td.st{white-space:nowrap}
+.filterbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 2px}
+.filterbar input{border:1.5px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;background:#fff;color:var(--ink);flex:1;min-width:170px}
+.filterbar .clearf{font-size:11px;color:var(--gray);cursor:pointer;text-decoration:underline}
+.seg{table-layout:fixed;width:100%}
+.seg th:nth-child(1){width:30%}.seg th:nth-child(2){width:150px}.seg th:nth-child(3){width:140px}.seg th:nth-child(4){width:95px}.seg th.sp{width:auto}
+@media(max-width:680px){.seg{table-layout:auto}.seg th{width:auto!important}th.sp,td.sp{display:none}.seg th:nth-child(4),.seg td:nth-child(4){display:none}.dchips button{font-size:10px;padding:4px 7px}.wfstep{font-size:9.5px;padding:5px 7px}}
+.allt th.srt{cursor:pointer;user-select:none;white-space:nowrap}
+.allt th.srt:hover{color:var(--forest)}
+.allt th .arr{font-size:9px;color:var(--gold);margin-left:3px}
+.allt td.ty{max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.allt td.st,.allt td.r{white-space:nowrap}
+.allcount{font-size:11px;color:var(--gray);margin-top:8px}
+@media(max-width:680px){.allt td.ty,.allt th:nth-child(2){display:none}}
+.wfsteps{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:2px 0 10px}
+.wfstep{background:var(--sand);border:1.5px solid var(--line);border-radius:9px;padding:7px 11px;font-size:11px;font-family:var(--disp);text-transform:uppercase;letter-spacing:.5px;color:var(--forest)}
+.wfarrow{color:var(--gray);font-weight:600}
+.wffork{font-size:12px;color:var(--mid);margin:0 0 6px}
+.modal-bg{position:fixed;inset:0;background:rgba(43,48,38,.5);display:none;align-items:center;justify-content:center;padding:18px;z-index:100}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:14px;max-width:580px;width:100%;max-height:88vh;overflow:auto;padding:18px 20px}
+.modal .mh{display:flex;justify-content:space-between;align-items:center}
+.modal .mt{font-family:var(--disp);font-weight:600;font-size:19px;color:var(--forest);text-transform:uppercase;letter-spacing:.5px}
+.modal .mx{border:none;background:none;font-size:22px;cursor:pointer;color:var(--gray)}
+.modal .mc{font-size:12px;color:var(--gray);margin-bottom:12px}
+.dentry{border:1px solid var(--line);border-radius:11px;padding:11px 12px;margin-bottom:10px}
+.dentry .dhead{font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px}
+.dentry .dlabel{font-size:15px;margin:3px 0 8px;color:var(--ink);font-weight:600}
+.dchips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.dchips button{font-size:11px;padding:4px 9px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--mid);cursor:pointer}
+.dchips button.on{color:#fff;border-color:transparent}
+.dchips button.on[data-s=new]{background:var(--sage)}.dchips button.on[data-s=reviewing]{background:var(--gold)}.dchips button.on[data-s=contacted]{background:#4a6b7c}.dchips button.on[data-s=booked]{background:var(--forest)}.dchips button.on[data-s=performed]{background:#2f6f4e}.dchips button.on[data-s=not_proceeding]{background:#9b8467}
+.addbtn{border:1.5px solid var(--forest);background:var(--forest);color:var(--cream);border-radius:999px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:inherit}
+.sdetail{margin:2px 0 8px;padding:8px 10px;background:var(--sand);border:1px solid var(--line);border-radius:9px}
+.sdetail label{display:block;font-size:11px;font-family:var(--disp);text-transform:uppercase;letter-spacing:.5px;color:var(--forest);margin-bottom:4px}
+.sdetail select,.sdetail textarea,.sdetail input{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;background:#fff}
+.sdetail textarea{min-height:54px;resize:vertical}
+.sdetail .row{display:flex;gap:6px;margin-top:6px;align-items:center}
+.sdetail .row button{border:1.5px solid var(--forest);background:var(--forest);color:var(--cream);border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer}
+.sdetail .saved{font-size:11px;color:var(--forest);opacity:0;transition:opacity .3s}
+.sdetail .hintline{font-size:11px;color:var(--gray);margin-top:4px}
+.detrows{margin:2px 0 8px;font-size:12.5px;color:var(--mid);line-height:1.55}
+.detrows b{color:var(--forest)}
+.comments{margin:4px 0 8px}.cmt{font-size:12.5px;padding:6px 0;border-top:1px dashed var(--line)}
+.cmt .by{font-weight:600;color:var(--forest)}.cmt .at{color:var(--gray);font-size:11px;margin-left:5px}.cmt .tx{display:block;margin-top:1px;color:var(--ink)}
+.addcmt{display:flex;gap:6px;margin-top:6px}.addcmt input{flex:1;border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px}
+.addcmt button{border:1.5px solid var(--forest);background:var(--forest);color:var(--cream);border-radius:8px;padding:0 12px;font-size:12px;cursor:pointer}
+.nouser{font-size:11px;color:var(--red);margin-top:4px;display:none}
+.staleflag{font-size:11px;color:#9b6b00;background:#fff7e6;border:1px solid #f0d9a0;border-radius:8px;padding:8px 11px;margin:6px 0 0}
+</style>
+</head>
+<body>
+<header><div class="hd">
+  <div class="mono"><img src="data:image/png;base64,__LOGO__" alt="LR"></div>
+  <div class="wordmark"><div class="t1">LAKE ROOTS</div><div class="t2">Café · Market · Bar</div></div>
+  <div class="tag"><div class="tt">Artists &amp; Live Music</div><div class="td" id="updated"></div></div>
+</div></header>
+<div class="wrap">
+  <div class="title">
+    <div class="g1">ARTISTS &amp; LIVE MUSIC <span class="live snap" id="liveBadge">SNAPSHOT</span></div>
+    <div class="g2">musicians, DJs, artists &amp; authors who want to play Lake Roots</div>
+  </div>
+  <div class="topbar">
+    <div class="periodbar" id="periodbar"><span class="pl">Period</span></div>
+    <button class="addbtn" onclick="openAdd()">+ Log an inquiry</button>
+    <div class="whoami">You: <input id="who" placeholder="your name" oninput="setUser(this.value)"></div>
+  </div>
+  <div class="filterbar">
+    <input id="q" placeholder="🔍 Search acts, type, bios, notes…" oninput="renderAll()">
+    <span class="clearf" onclick="clearF()">clear search</span>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <div class="panels">
+    <div class="panel full">
+      <h3>Booking Workflow <span class="hint">inquiry to recap</span></h3>
+      <div class="wfsteps">
+        <span class="wfstep">Inquiry</span><span class="wfarrow">→</span>
+        <span class="wfstep">Reviewing</span><span class="wfarrow">→</span>
+        <span class="wfstep">Contacted</span><span class="wfarrow">→</span>
+        <span class="wfstep">Booked</span><span class="wfarrow">→</span>
+        <span class="wfstep">Performed</span>
+      </div>
+      <div class="wffork">Not the right fit (or not right now)? Mark <b>Not proceeding</b> with a reason — kept for the record. Comp food/drink, gift cards or a fee are tracked per booking here (not on the Donation Board).</div>
+    </div>
+    <div class="panel"><h3>By Type <span class="hint" id="typeHint"></span></h3><div class="bars" id="typeBars"></div></div>
+    <div class="panel"><h3>By Stage <span class="hint">click to view</span></h3><div class="bars" id="statusBars"></div></div>
+    <div class="panel full"><h3>🆕 New — needs review <span class="hint">fresh inquiries · click a row</span></h3><table class="dash-table seg" id="newTbl"></table></div>
+    <div class="panel full" id="convPanel"><h3>💬 In conversation <span class="hint">reviewing &amp; contacted</span></h3><table class="dash-table seg" id="convTbl"></table></div>
+    <div class="panel full" id="bookedPanel"><h3>📅 Booked <span class="hint">confirmed to perform</span></h3><table class="dash-table seg" id="bookedTbl"></table></div>
+    <div class="panel full" id="perfPanel" style="display:none"><h3>✅ Performed <span class="hint">played the room · kept for the record</span></h3><table class="dash-table seg" id="perfTbl"></table></div>
+    <div class="panel full" id="npPanel"><h3>🚫 Not proceeding <span class="hint">declined or paused — kept for the record</span></h3><table class="dash-table seg" id="npTbl"></table></div>
+    <div class="panel full" id="allPanel"><h3>📋 All submissions <span class="hint">every inquiry · click a column to sort, search above to filter</span></h3><table class="dash-table allt" id="allTbl"></table><div class="allcount" id="allCount"></div></div>
+  </div>
+  <div class="note" id="note"></div>
+  <div class="foot">rooted in community</div>
+</div>
+
+<datalist id="typelist">
+  <option>Musician / Band</option><option>DJ</option><option>Solo acoustic</option><option>Drag performer</option><option>Artist</option><option>Author</option><option>Other</option>
+</datalist>
+
+<div class="modal-bg" id="addBg" onclick="if(event.target===this)closeAdd()">
+  <div class="modal">
+    <div class="mh"><div class="mt">Log an inquiry</div><button class="mx" onclick="closeAdd()">×</button></div>
+    <div class="mc">For acts who reach out by call, text, email or in person (not through the form).</div>
+    <div class="sdetail" style="margin-top:10px">
+      <label>Act / band / artist name</label><input id="a_act" placeholder="Who reached out?">
+      <label style="margin-top:8px">Type</label><input id="a_type" list="typelist" placeholder="Musician / Band, DJ, Author…">
+      <label style="margin-top:8px">Contact name (optional)</label><input id="a_name" placeholder="First Last">
+      <label style="margin-top:8px">Email / phone (optional)</label><input id="a_contact" placeholder="email or phone">
+      <label style="margin-top:8px">Notes</label><textarea id="a_notes" placeholder="e.g. emailed about a Friday slot in July; sends folk/americana"></textarea>
+      <div class="row"><button onclick="saveAdd()">Add to pipeline</button></div>
+      <div class="nouser" id="a_err"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeDrill()">
+  <div class="modal">
+    <div class="mh"><div class="mt" id="mTitle">Inquiries</div><button class="mx" onclick="closeDrill()">×</button></div>
+    <div class="mc" id="mCount"></div>
+    <div id="mBody"></div>
+  </div>
+</div>
+
+<script>
+const BAKED=__DATA__; const PROXY="__PROXY__";
+const SUPA_URL="https://gqgjppxzdwzypxontmou.supabase.co";
+const SUPA_KEY="sb_publishable_DieuLBMaMTJwZD3SUfgvGA_9I2tMOhP";
+const sb=window.supabase?window.supabase.createClient(SUPA_URL,SUPA_KEY):null;
+const $=id=>document.getElementById(id);
+const STATUSES=[['new','New'],['reviewing','Reviewing'],['contacted','Contacted'],['booked','Booked'],['performed','Performed'],['not_proceeding','Not proceeding']];
+const SLABEL=Object.fromEntries(STATUSES);
+const SCOL={new:'var(--sage)',reviewing:'var(--gold)',contacted:'#4a6b7c',booked:'var(--forest)',performed:'#2f6f4e',not_proceeding:'#9b8467'};
+let ALL=[], ACTIONS={}, periodDays=0, LIVE=false, IMPORTDATE='';
+let sortKey='submitted', sortDir=-1; // -1 desc (newest first), 1 asc
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function cssId(id){return (id||'').replace(/[^a-zA-Z0-9]/g,'');}
+function getUser(){return (localStorage.getItem('lr_user')||'').trim();}
+function setUser(v){localStorage.setItem('lr_user',(v||'').trim());}
+function st(id){return (ACTIONS[id]||{}).status||'new';}
+function stLabel(s){return SLABEL[s]||'New';}
+function parseD(s){const m=(s||'').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);return m?new Date(m[3],m[1]-1,m[2]):null;}
+function fmtDate(s){const d=parseD(s);return d?d.toLocaleDateString('en-US',{month:'short',day:'numeric'}):(s||'—');}
+function today(){return new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function inPeriod(e){if(!periodDays)return true;const d=parseD(e.submitted);if(!d)return true;return (Date.now()-d.getTime())/86400000<=periodDays;}
+const PERIODS=[['All time',0],['12 mo',365],['6 mo',183],['3 mo',92],['30 days',30]];
+
+// ---- link helpers ----
+function isUrl(v){return /^https?:\/\//i.test(v||'')||/^[\w.-]+\.(com|org|net|io|co|us|tv|me|wixsite\.com)\b/i.test(v||'');}
+function href(v){return /^https?:\/\//i.test(v)?v:('https://'+v);}
+function linkOut(v){if(!v)return '';if(isUrl(v))return `<a href="${esc(href(v))}" target="_blank" rel="noopener" style="color:var(--forest)">${esc(v)}</a>`;return esc(v);}
+function igLink(v){if(!v)return '';if(isUrl(v))return linkOut(v);const m=(v||'').match(/^@([\w.]+)/);if(m)return `<a href="https://instagram.com/${esc(m[1])}" target="_blank" rel="noopener" style="color:var(--forest)">${esc(v)}</a>`;return esc(v);}
+function materialsLinks(v){if(!v)return '';return v.split(',').map(s=>s.trim()).filter(Boolean).map((u,i)=>`<a href="${esc(href(u))}" target="_blank" rel="noopener" style="color:var(--forest)">Material ${i+1}</a>`).join(' · ');}
+
+function mapLive(r){return {id:r.id,sid:r.id,act:r.act_name||'',describes:r.describes||'',collab:r.collab_type||'',
+  submitted:r.created_at?new Date(r.created_at).toLocaleDateString('en-US'):'',date:r.proposed_date||'',date_notes:r.date_notes||'',
+  bio:r.bio||'',website:r.website||'',instagram:r.instagram||'',tech:r.tech_needs||'',venues:r.prior_venues||'',
+  notes:r.other_notes||'',materials:r.materials||'',heard:r.heard_about||'',sheet_status:r.sheet_status||'',
+  source:r.source||'',import_date:r.import_date||'',deleted:!!r.deleted_at};}
+function mapBaked(e){return Object.assign({},e,{deleted:false});}
+
+function loadBakedActions(){ACTIONS={};(BAKED.entries||[]).forEach(e=>{ACTIONS[e.id]={status:e.status||'new',comments:e.comments||[],
+  booked_date:e.booked_date||'',fee:e.fee,comps:e.comps||[],not_proceeding_reason:e.np_reason||'',note:e.team_note||''};});}
+async function loadActions(){if(!sb)return;const {data,error}=await sb.from('music_actions').select('*');
+  if(error){console.warn(error.message);return;}ACTIONS={};(data||[]).forEach(r=>ACTIONS[r.submission_id]={status:r.status||'new',
+    comments:r.comments||[],booked_date:r.booked_date||'',fee:r.fee_amount,comps:r.comp_details||[],
+    not_proceeding_reason:r.not_proceeding_reason||'',note:r.note||''});}
+
+let SEARCH='';
+function clearF(){$('q').value='';SEARCH='';renderAll();}
+function filtered(){const q=($('q').value||'').toLowerCase().trim();SEARCH=q;
+  return ALL.filter(e=>!e.deleted&&inPeriod(e)&&(!q||(e.act+' '+e.describes+' '+e.bio+' '+e.notes+' '+e.venues).toLowerCase().includes(q)));}
+
+function renderPeriodBar(){$('periodbar').innerHTML='<span class="pl">Period</span>'+PERIODS.map(([l,d])=>`<button class="${d===periodDays?'on':''}" onclick="setPeriod(${d})">${l}</button>`).join('');}
+function setPeriod(d){periodDays=d;renderPeriodBar();renderAll();}
+function bars(el,entries,colf,clickf){const mx=Math.max(1,...entries.map(e=>e[1]));
+  el.innerHTML=entries.map(([l,n])=>`<div class="bar clk" onclick="${clickf(l)}"><div class="bl">${esc(l)}</div><div class="bt"><div class="bf" style="width:${100*n/mx}%;background:${colf(l)}"></div></div><div class="bv">${n}</div></div>`).join('');}
+function statusPill(id){const s=st(id);return `<span class="pill" style="background:${SCOL[s]};color:#fff">${stLabel(s)}</span>`;}
+function statusDot(id){const s=st(id);return `<span class="sdot ${s}"></span>`;}
+
+function renderAll(){
+  const F=filtered();
+  const bucket=s=>F.filter(e=>st(e.id)===s);
+  const isNew=e=>st(e.id)==='new', isConv=e=>['reviewing','contacted'].includes(st(e.id));
+  const news=F.filter(isNew), conv=F.filter(isConv), booked=bucket('booked'), perf=bucket('performed'), np=bucket('not_proceeding');
+  const acts=new Set(F.map(e=>(e.act||'').toLowerCase())).size;
+  const kpis=[
+    ['New to review',news.length,'fresh inquiries','hl',()=>drill('New — needs review',news)],
+    ['In conversation',conv.length,'reviewing + contacted','',()=>drill('In conversation',conv)],
+    ['Booked',booked.length,'confirmed','gold',()=>drill('Booked',booked)],
+    ['Performed',perf.length,'played the room','',()=>drill('Performed',perf)],
+    ['Acts tracked',acts,'unique','',()=>drill('All inquiries',F)],
+  ];
+  $('kpis').innerHTML=kpis.map(([l,v,s,c],i)=>`<div class="kpi clk ${c}" onclick="KPI[${i}]()"><div class="kl">${l}</div><div class="kv">${v}</div><div class="ks">${s}</div></div>`).join('');
+  window.KPI=kpis.map(x=>x[5-1]);
+
+  const tCounts={};F.forEach(e=>{const t=e.describes||'—';tCounts[t]=(tCounts[t]||0)+1;});
+  const types=Object.entries(tCounts).sort((a,b)=>b[1]-a[1]);$('typeHint').textContent=types.length+' types';
+  bars($('typeBars'),types,()=>'var(--brown)',l=>`drill('${esc(l)} inquiries',filtered().filter(e=>(e.describes||'—')==='${esc(l)}'))`);
+  const sCounts={};F.forEach(e=>{const s=st(e.id);sCounts[s]=(sCounts[s]||0)+1;});
+  bars($('statusBars'),STATUSES.filter(([k])=>sCounts[k]).map(([k,l])=>[l,sCounts[k]]),l=>{const k=STATUSES.find(x=>x[1]===l)[0];return SCOL[k];},l=>{const k=STATUSES.find(x=>x[1]===l)[0];return `drill('${esc(l)}',filtered().filter(e=>st(e.id)==='${k}'))`;});
+
+  const row=e=>`<tr class="clk" onclick="drillOne('${esc(e.id)}')"><td class="nm">${statusDot(e.id)}${esc(e.act)}</td><td class="ty" title="${esc(e.describes)}">${esc(e.describes)}</td><td class="st">${statusPill(e.id)}</td><td class="r">${fmtDate(e.submitted)}</td><td class="sp"></td></tr>`;
+  const head=`<tr><th>Act</th><th>Type</th><th>Stage</th><th class="r">Submitted</th><th class="sp"></th></tr>`;
+  const fill=(tid,list,empty)=>{$(tid).innerHTML=list.length?head+list.slice().sort((a,b)=>(parseD(b.submitted)||0)-(parseD(a.submitted)||0)).map(row).join(''):`<tr><td style="color:var(--gray);padding:12px 0">${empty}${SEARCH?' (try clearing the search)':''}.</td></tr>`;};
+  fill('newTbl',news,'No new inquiries');
+  $('convPanel').style.display=conv.length?'':'none';fill('convTbl',conv,'Nobody mid-conversation');
+  $('bookedPanel').style.display=booked.length?'':'none';fill('bookedTbl',booked,'Nothing booked yet');
+  $('perfPanel').style.display=perf.length?'':'none';fill('perfTbl',perf,'No performances logged');
+  $('npPanel').style.display=np.length?'':'none';fill('npTbl',np,'Nothing here');
+  renderAllTable(F);
+}
+
+const STAGE_ORDER=Object.fromEntries(STATUSES.map(([k],i)=>[k,i]));
+const SORTS=[['act','Act'],['describes','Type'],['stage','Stage'],['submitted','Submitted']];
+function sortVal(e,key){
+  if(key==='stage')return STAGE_ORDER[st(e.id)]??99;
+  if(key==='submitted'){const d=parseD(e.submitted);return d?d.getTime():0;}
+  return (e[key]||'').toString().toLowerCase();
+}
+function setSort(key){if(sortKey===key){sortDir=-sortDir;}else{sortKey=key;sortDir=(key==='submitted')?-1:1;}renderAll();}
+function renderAllTable(F){
+  const rows=F.slice().sort((a,b)=>{const va=sortVal(a,sortKey),vb=sortVal(b,sortKey);
+    if(va<vb)return -1*sortDir;if(va>vb)return 1*sortDir;
+    // stable tiebreak: newest first
+    return ((parseD(b.submitted)||0)-(parseD(a.submitted)||0));});
+  const arrow=k=>sortKey===k?`<span class="arr">${sortDir<0?'▼':'▲'}</span>`:'';
+  const head=`<tr>${SORTS.map(([k,l])=>`<th class="srt${k==='submitted'?' r':''}" onclick="setSort('${k}')">${l}${arrow(k)}</th>`).join('')}</tr>`;
+  const body=rows.length?rows.map(e=>`<tr class="clk" onclick="drillOne('${esc(e.id)}')">`+
+    `<td class="nm">${statusDot(e.id)}${esc(e.act)}</td>`+
+    `<td class="ty" title="${esc(e.describes)}">${esc(e.describes||'—')}</td>`+
+    `<td class="st">${statusPill(e.id)}</td>`+
+    `<td class="r">${fmtDate(e.submitted)}</td></tr>`).join('')
+    :`<tr><td style="color:var(--gray);padding:12px 0">No submissions${SEARCH?' match your search — try clearing it':''}.</td></tr>`;
+  $('allTbl').innerHTML=head+body;
+  $('allCount').textContent=`${rows.length} ${rows.length===1?'submission':'submissions'}${SEARCH?' (filtered)':''} · sorted by ${SORTS.find(s=>s[0]===sortKey)[1]} ${sortDir<0?'↓':'↑'}`;
+}
+
+function drillOne(id){drill('Inquiry',[ALL.find(e=>e.id===id)]);}
+function drill(title,list){list=(list||[]).filter(Boolean);
+  $('mTitle').textContent=title;$('mCount').textContent=list.length+' '+(list.length===1?'inquiry':'inquiries');
+  $('mBody').innerHTML=list.map(e=>{const a=ACTIONS[e.id]||{};const c=cssId(e.id);
+    return `<div class="dentry">
+      <div class="dhead">Submitted ${fmtDate(e.submitted)} · ${esc(e.describes||'—')}${e.collab?' · '+esc(e.collab):''}</div>
+      <div class="dlabel">${esc(e.act)}</div>
+      ${detailBlock(e)}
+      <div class="dchips">${STATUSES.map(([k,l])=>`<button data-s="${k}" class="${st(e.id)===k?'on':''}" onclick="setStatus('${esc(e.id)}','${k}',this)">${l}</button>`).join('')}</div>
+      <div id="sd-${c}">${renderDetail(e.id)}</div>
+      <div style="margin-top:6px;font-size:12px"><b style="color:var(--forest)">Contact:</b> <span id="ct-${c}" style="color:var(--mid)">${e.sid?'<a href="#" style="color:var(--forest)" onclick="showContact(\''+esc(e.id)+'\');return false">🔒 View contact info</a>':'—'}</span></div>
+      <div class="comments" id="cmts-${c}">${renderComments(a.comments)}</div>
+      <div class="addcmt"><input id="cin-${c}" placeholder="Add a note…" onkeydown="if(event.key==='Enter')addComment('${esc(e.id)}')"><button onclick="addComment('${esc(e.id)}')">Post</button></div>
+      <div class="nouser" id="nu-${c}">Enter your name (top right) to post.</div>
+      ${e.source==='manual'?`<div style="margin-top:6px"><a href="#" style="font-size:11px;color:var(--red)" onclick="deleteManual('${esc(e.id)}');return false">Delete this entry</a></div>`:''}
+    </div>`;}).join('')||'<div style="color:var(--gray)">No inquiries.</div>';
+  $('modalBg').classList.add('open');
+}
+function detailBlock(e){
+  const rows=[['Proposed date',e.date],['Date notes',e.date_notes],['Bio / about',e.bio],
+    ['Website',e.website?linkOut(e.website):''],['Instagram',e.instagram?igLink(e.instagram):''],
+    ['Tech / space needs',e.tech],['Played elsewhere',e.venues],['Anything else',e.notes],
+    ['Materials',e.materials?materialsLinks(e.materials):''],['Heard about us',e.heard]].filter(x=>x[1]);
+  let html=rows.length?`<div class="detrows">${rows.map(([l,v])=>`<div><b>${l}:</b> ${(l==='Website'||l==='Instagram'||l==='Materials')?v:esc(String(v))}</div>`).join('')}</div>`:'';
+  if(e.source==='sheet'&&e.import_date)html+=`<div class="staleflag">📄 From the Google Form responses sheet · imported ${esc(e.import_date)} (snapshot — re-import to refresh).${e.sheet_status?' Original sheet status: '+esc(e.sheet_status)+'.':''}</div>`;
+  return html;
+}
+function renderDetail(id){const a=ACTIONS[id]||{};const c=cssId(id);const s=st(id);
+  if(s==='booked'){const comps=(a.comps||[]).map(x=>x.desc||x).join('\n');
+    return `<div class="sdetail"><label>Performance date</label><input id="bd-${c}" value="${esc(a.booked_date||'')}" placeholder="e.g. 7/18/2026">
+      <label style="margin-top:8px">Fee ($) — leave blank if comp only</label><input id="fee-${c}" value="${a.fee!=null?a.fee:''}" placeholder="e.g. 150">
+      <label style="margin-top:8px">Comp / perks — one per line (food, drink, gift card)</label><textarea id="cp-${c}" placeholder="e.g.&#10;$25 food & drink&#10;2 drink tickets">${esc(comps)}</textarea>
+      <div class="row"><button onclick="saveDetail('${esc(id)}')">Save booking</button><span class="saved" id="sv-${c}">Saved ✓</span></div>
+      <div class="hintline">Fees &amp; comps are tracked here only — not on the Donation Board.</div></div>`;}
+  if(s==='not_proceeding'){return `<div class="sdetail"><label>Reason</label><input id="np-${c}" value="${esc(a.not_proceeding_reason||'')}" placeholder="Why we're passing (or pausing)">
+      <div class="row"><button onclick="saveDetail('${esc(id)}')">Save</button><span class="saved" id="sv-${c}">Saved ✓</span></div></div>`;}
+  if(s==='performed'&&(a.fee!=null||(a.comps||[]).length||a.booked_date)){
+    return `<div class="detrows"><div><b>Played:</b> ${esc(a.booked_date||'—')}${a.fee!=null?' · Fee $'+esc(String(a.fee)):''}${(a.comps||[]).length?' · Comp: '+esc((a.comps||[]).map(x=>x.desc||x).join(', ')):''}</div></div>`;}
+  return '';}
+async function saveDetail(id){const a=ACTIONS[id]||{};const c=cssId(id);const s=st(id);
+  if(s==='booked'){a.booked_date=($('bd-'+c).value||'').trim();const f=($('fee-'+c).value||'').replace(/[$,]/g,'').trim();a.fee=f?parseFloat(f):null;
+    a.comps=($('cp-'+c).value||'').split('\n').map(x=>x.trim()).filter(Boolean).map(d=>({desc:d}));}
+  else if(s==='not_proceeding'){a.not_proceeding_reason=($('np-'+c).value||'').trim();}
+  ACTIONS[id]=a;await persist(id);const sv=$('sv-'+c);if(sv){sv.style.opacity=1;setTimeout(()=>sv.style.opacity=0,2200);}renderAll();}
+async function setStatus(id,status,btn){const a=ACTIONS[id]||{};a.status=status;ACTIONS[id]=a;
+  btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.s===status));
+  $('sd-'+cssId(id)).innerHTML=renderDetail(id);await persist(id);renderAll();}
+function renderComments(list){list=list||[];if(!list.length)return '<div style="font-size:12px;color:var(--gray)">No notes yet.</div>';
+  return list.map(x=>`<div class="cmt"><span class="by">${esc(x.by||'team')}</span><span class="at">${esc(x.at||'')}</span><span class="tx">${esc(x.text||'')}</span></div>`).join('');}
+async function addComment(id){const inp=$('cin-'+cssId(id));const text=(inp.value||'').trim();if(!text)return;
+  const user=getUser();if(!user){$('nu-'+cssId(id)).style.display='block';$('who').focus();return;}
+  const a=ACTIONS[id]||{};a.comments=(a.comments||[]).concat([{by:user,at:today(),text}]);ACTIONS[id]=a;
+  inp.value='';$('cmts-'+cssId(id)).innerHTML=renderComments(a.comments);await persist(id);}
+async function persist(id){if(!sb){return;}const a=ACTIONS[id]||{};
+  const {error}=await sb.from('music_actions').upsert({submission_id:id,status:a.status||'new',comments:a.comments||[],
+    booked_date:a.booked_date||null,fee_amount:a.fee!=null?a.fee:null,comp_details:a.comps||[],
+    not_proceeding_reason:a.not_proceeding_reason||null,updated_by:getUser()||'team',updated_at:new Date().toISOString()},{onConflict:'submission_id'});
+  if(error)console.warn('save failed',error.message);}
+async function showContact(id){const e=ALL.find(x=>x.id===id);if(!e||!sb){$('ct-'+cssId(id)).innerHTML='<span style="color:var(--gray)">Open the live site to view contact info.</span>';return;}
+  const el=$('ct-'+cssId(id));el.textContent='loading…';
+  const {data,error}=await sb.rpc('get_contact',{kind:'music',sid:e.sid,pass:''});
+  if(error){el.textContent='Lookup failed.';return;}
+  if(!data||data._none){el.textContent='No contact on file.';return;}
+  el.textContent=[[data.first_name,data.last_name].filter(Boolean).join(' '),data.email,data.phone].filter(Boolean).join(' · ')||'(empty)';}
+
+function openAdd(){$('addBg').classList.add('open');}
+function closeAdd(){$('addBg').classList.remove('open');}
+async function saveAdd(){const act=$('a_act').value.trim();const err=$('a_err');
+  if(!act){err.textContent='Act name is required.';err.style.display='block';return;}
+  if(!sb){err.textContent='Open the live site to add entries.';err.style.display='block';return;}
+  err.style.display='none';
+  const {data,error}=await sb.from('music_inquiries').insert({act_name:act,describes:$('a_type').value.trim()||null,
+    other_notes:$('a_notes').value.trim()||null,source:'manual'}).select().single();
+  if(error){err.textContent='Could not save: '+error.message;err.style.display='block';return;}
+  const cName=$('a_name').value.trim();const cInfo=$('a_contact').value.trim();
+  if(cName||cInfo){const isEmail=/@/.test(cInfo);const parts=cName.split(/\s+/);
+    await sb.from('music_contacts').insert({submission_id:data.id,first_name:parts[0]||null,last_name:parts.slice(1).join(' ')||null,
+      email:isEmail?cInfo:null,phone:isEmail?null:(cInfo||null)});}
+  const e=mapLive(data);ALL.unshift(e);ACTIONS[e.id]={status:'new',comments:[]};await persist(e.id);
+  ['a_act','a_type','a_name','a_contact','a_notes'].forEach(i=>$(i).value='');
+  renderAll();closeAdd();drillOne(e.id);}
+async function deleteManual(id){if(!confirm('Remove this entry?'))return;const e=ALL.find(x=>x.id===id);if(!e||!sb)return;
+  const {error}=await sb.from('music_inquiries').update({deleted_at:new Date().toISOString()}).eq('id',e.sid);
+  if(error){console.warn(error.message);return;}e.deleted=true;closeDrill();renderAll();}
+function closeDrill(){$('modalBg').classList.remove('open');}
+
+function setMeta(generated){$('updated').textContent='Updated '+generated;
+  if(LIVE){const b=$('liveBadge');b.textContent='LIVE';b.classList.remove('snap');}
+  $('note').innerHTML=`<b>Contact info on click.</b> Names, emails &amp; phone numbers are stored separately and load only when you click 🔒 View contact info. Stage &amp; notes you set are saved live for the whole team. ${LIVE?'Live — new form submissions appear on refresh once the responses sheet is synced to the database.':'Snapshot — refreshed when the sheet is re-imported.'}`;}
+
+async function boot(){
+  $('who').value=getUser();
+  if(sb){try{
+    const {data,error}=await sb.from('music_inquiries').select('*').order('created_at',{ascending:false});
+    if(!error&&data&&data.length){ALL=data.map(mapLive);LIVE=true;await loadActions();
+      setMeta(new Date().toLocaleDateString('en-US'));renderPeriodBar();renderAll();return;}
+  }catch(e){console.warn(e);}}
+  ALL=(BAKED.entries||[]).map(mapBaked);loadBakedActions();
+  setMeta(fmtDate((BAKED.meta||{}).generated)||'snapshot');renderPeriodBar();renderAll();
+}
+boot();
+</script>
+</body>
+</html>
