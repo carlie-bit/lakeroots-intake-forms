@@ -1,0 +1,606 @@
+{
+ "meta": {
+  "total": 53,
+  "generated": "2026-06-10",
+  "source": "snapshot"
+ },
+ "kpi": {
+  "open_pipeline": 15,
+  "approved_active": 0,
+  "orgs_ytd": 18,
+  "donated_value_ytd": 644.0,
+  "completed": 23
+ },
+ "status": {
+  "Other": 15,
+  "In Review": 15,
+  "Completed": 23
+ },
+ "types": {
+  "Donation": 28,
+  "Retail Items to sell in our Market": 4,
+  "Workshop": 3,
+  "Tasting": 3,
+  "Artist/Author": 2,
+  "Dine & Share Fundraiser": 2,
+  ":-:": 1,
+  "DJ": 1,
+  "Would love to get to know you and your story, we love to support other small businesses.": 1,
+  "Crystal Lake Central Discount Card": 1,
+  "Event for the Public": 1,
+  "Business Collaboration": 1,
+  "Educational Collaboration - Sponsorship Guinea Pig": 1,
+  "marriot and hilton promo": 1,
+  "1 hour of table space per month": 1,
+  "Other": 1,
+  "Donation - Business": 1
+ },
+ "pipeline": [
+  {
+   "org": "Well Rooted Pediatrics",
+   "type": "Workshop",
+   "status": "Brittany Following Up",
+   "bucket": "In Review",
+   "date": "3/1/2026",
+   "value": 0.0
+  },
+  {
+   "org": "Lighthouse Clinical Services, PLLC",
+   "type": "Workshop",
+   "status": "Waiting on Response",
+   "bucket": "In Review",
+   "date": "2/18/2026",
+   "value": 0.0
+  },
+  {
+   "org": "Independent",
+   "type": "DJ",
+   "status": "Needs to be Reviewed",
+   "bucket": "In Review",
+   "date": "",
+   "value": 0.0
+  },
+  {
+   "org": "Root Dental",
+   "type": "Would love to get to know you and your story, we love to support other small businesses.",
+   "status": "Brittany Following Up",
+   "bucket": "In Review",
+   "date": "",
+   "value": 0.0
+  },
+  {
+   "org": "First Church Preschool PTO",
+   "type": "Dine & Share Fundraiser",
+   "status": "Carlie Following Up",
+   "bucket": "In Review",
+   "date": "",
+   "value": 0.0
+  },
+  {
+   "org": "Holly Creates",
+   "type": "Artist/Author",
+   "status": "Needs to be Reviewed",
+   "bucket": "In Review",
+   "date": "4/1/2026",
+   "value": 0.0
+  },
+  {
+   "org": "https://www.facebook.com/share/14c6j4UnRaY/",
+   "type": "Event for the Public",
+   "status": "Carlie Following Up",
+   "bucket": "In Review",
+   "date": "3/21/2026",
+   "value": 0.0
+  },
+  {
+   "org": "Nurturing Village",
+   "type": "Donation",
+   "status": "Carlie Following Up",
+   "bucket": "In Review",
+   "date": "4/19/2026",
+   "value": 0.0
+  },
+  {
+   "org": "Swift Wash",
+   "type": "Business Collaboration",
+   "status": "Needs to be Reviewed",
+   "bucket": "In Review",
+   "date": "4/30/2026",
+   "value": 0.0
+  },
+  {
+   "org": "We are a student led business part of Prairie Ridge's incubator class.",
+   "type": "Educational Collaboration - Sponsorship Guinea Pig",
+   "status": "Needs to be Reviewed",
+   "bucket": "In Review",
+   "date": "",
+   "value": 0.0
+  },
+  {
+   "org": "The Petal Reserve",
+   "type": "1 hour of table space per month",
+   "status": "Needs to be Reviewed",
+   "bucket": "In Review",
+   "date": "",
+   "value": 0.0
+  },
+  {
+   "org": "DarlingDucky.Adventures",
+   "type": "Tasting",
+   "status": "Needs to be Reviewed",
+   "bucket": "In Review",
+   "date": "",
+   "value": 0.0
+  },
+  {
+   "org": "Independent",
+   "type": "Workshop",
+   "status": "Carlie Following Up",
+   "bucket": "In Review",
+   "date": "4/25/2026",
+   "value": 0.0
+  },
+  {
+   "org": "Girls Got Balls",
+   "type": "Other",
+   "status": "Carlie Following Up",
+   "bucket": "In Review",
+   "date": "",
+   "value": 0.0
+  },
+  {
+   "org": "Independent",
+   "type": "Tasting",
+   "status": "Needs to be Reviewed",
+   "bucket": "In Review",
+   "date": "4/24/2026",
+   "value": 0.0
+  }
+ ],
+ "giving": [
+  {
+   "org": "CLGFS Fast Pitch",
+   "type": "Donation",
+   "value": 350.0,
+   "date": "2/18/2026"
+  },
+  {
+   "org": "MCYSA",
+   "type": "Donation",
+   "value": 250.0,
+   "date": "7/10/2026"
+  },
+  {
+   "org": "South HS",
+   "type": "Donation",
+   "value": 44.0,
+   "date": "2/21/2026"
+  },
+  {
+   "org": "CASA of McHenry County",
+   "type": "Donation",
+   "value": 0.0,
+   "date": "3/1/2026"
+  },
+  {
+   "org": "Marian Central Catholic high school",
+   "type": "Donation",
+   "value": 0.0,
+   "date": "4/11/2026"
+  },
+  {
+   "org": "Raue Center For The Arts",
+   "type": "Donation",
+   "value": 0.0,
+   "date": "6/27/2026"
+  },
+  {
+   "org": "The Herrick-Thomas Memorial Foundation",
+   "type": "Donation",
+   "value": 0.0,
+   "date": "6/24/2026"
+  },
+  {
+   "org": "Crystal Lake Central HS",
+   "type": "Donation",
+   "value": 0.0,
+   "date": "3/7/2026"
+  },
+  {
+   "org": "NAMI McHenry County",
+   "type": "Donation",
+   "value": 0.0,
+   "date": "5/8/2026"
+  },
+  {
+   "org": "non-profit PTO",
+   "type": "Donation",
+   "value": 0.0,
+   "date": "4/28/2026"
+  },
+  {
+   "org": "Alexander Leigh Center for Autism",
+   "type": "Donation",
+   "value": 0.0,
+   "date": "3/23/2026"
+  },
+  {
+   "org": "living waters Lutheran church in crystal lake",
+   "type": "Donation",
+   "value": 0.0,
+   "date": "3/29/2026"
+  },
+  {
+   "org": "Woods Creek Parent Teacher Organization",
+   "type": "Donation",
+   "value": 0.0,
+   "date": "5/4/2026"
+  },
+  {
+   "org": "St. Elizabeth Ann Seton Catholic Church",
+   "type": "Donation",
+   "value": 0.0,
+   "date": ""
+  },
+  {
+   "org": "The Hailey Gertz Charity Golf Outing",
+   "type": "Donation",
+   "value": 0.0,
+   "date": "7/22/2026"
+  },
+  {
+   "org": "First Church Preschool",
+   "type": "Donation",
+   "value": 0.0,
+   "date": ""
+  },
+  {
+   "org": "Oak Knoll Early Childhood Center/ Cary District 26",
+   "type": "Donation",
+   "value": 0.0,
+   "date": ""
+  },
+  {
+   "org": "Friends of McHenry County College Foundation",
+   "type": "Donation",
+   "value": 0.0,
+   "date": "6/8/2026"
+  },
+  {
+   "org": "Prairie Grove Elementary",
+   "type": "Donation",
+   "value": 0.0,
+   "date": ""
+  },
+  {
+   "org": "Animal House Shelter",
+   "type": "Donation - Business",
+   "value": 0.0,
+   "date": "4/19/2026"
+  },
+  {
+   "org": "School Organization - Three Oaks Elementary School PTO",
+   "type": "Donation",
+   "value": 0.0,
+   "date": "5/5/2026"
+  },
+  {
+   "org": "On angels wings pet rescue and thrift store",
+   "type": "Donation",
+   "value": 0.0,
+   "date": ""
+  },
+  {
+   "org": "Young at Heart Senior Pet Rescue",
+   "type": "Donation",
+   "value": 0.0,
+   "date": "6/20/2026"
+  }
+ ],
+ "entries": [
+  {
+   "id": "Well Rooted Pediatrics|3/1/2026|Workshop",
+   "org": "Well Rooted Pediatrics",
+   "date": "3/1/2026",
+   "type": "Workshop",
+   "value": 0,
+   "bucket": "In Review"
+  },
+  {
+   "id": "Lighthouse Clinical Services, PLLC|2/18/2026|Workshop",
+   "org": "Lighthouse Clinical Services, PLLC",
+   "date": "2/18/2026",
+   "type": "Workshop",
+   "value": 0,
+   "bucket": "In Review"
+  },
+  {
+   "id": "Independent||DJ",
+   "org": "Independent",
+   "date": "",
+   "type": "DJ",
+   "value": 0,
+   "bucket": "In Review"
+  },
+  {
+   "id": "Root Dental||Would love to get to know you and your story, we love to support other small businesses.",
+   "org": "Root Dental",
+   "date": "",
+   "type": "Would love to get to know you and your story, we love to support other small businesses.",
+   "value": 0,
+   "bucket": "In Review"
+  },
+  {
+   "id": "First Church Preschool PTO||Dine & Share Fundraiser",
+   "org": "First Church Preschool PTO",
+   "date": "",
+   "type": "Dine & Share Fundraiser",
+   "value": 0,
+   "bucket": "In Review"
+  },
+  {
+   "id": "Holly Creates|4/1/2026|Artist/Author",
+   "org": "Holly Creates",
+   "date": "4/1/2026",
+   "type": "Artist/Author",
+   "value": 0,
+   "bucket": "In Review"
+  },
+  {
+   "id": "https://www.facebook.com/share/14c6j4UnRaY/|3/21/2026|Event for the Public",
+   "org": "https://www.facebook.com/share/14c6j4UnRaY/",
+   "date": "3/21/2026",
+   "type": "Event for the Public",
+   "value": 0,
+   "bucket": "In Review"
+  },
+  {
+   "id": "Nurturing Village|4/19/2026|Donation",
+   "org": "Nurturing Village",
+   "date": "4/19/2026",
+   "type": "Donation",
+   "value": 0,
+   "bucket": "In Review"
+  },
+  {
+   "id": "Swift Wash|4/30/2026|Business Collaboration",
+   "org": "Swift Wash",
+   "date": "4/30/2026",
+   "type": "Business Collaboration",
+   "value": 0,
+   "bucket": "In Review"
+  },
+  {
+   "id": "We are a student led business part of Prairie Ridge's incubator class.||Educational Collaboration - Sponsorship Guinea Pig",
+   "org": "We are a student led business part of Prairie Ridge's incubator class.",
+   "date": "",
+   "type": "Educational Collaboration - Sponsorship Guinea Pig",
+   "value": 0,
+   "bucket": "In Review"
+  },
+  {
+   "id": "The Petal Reserve||1 hour of table space per month",
+   "org": "The Petal Reserve",
+   "date": "",
+   "type": "1 hour of table space per month",
+   "value": 0,
+   "bucket": "In Review"
+  },
+  {
+   "id": "DarlingDucky.Adventures||Tasting",
+   "org": "DarlingDucky.Adventures",
+   "date": "",
+   "type": "Tasting",
+   "value": 0,
+   "bucket": "In Review"
+  },
+  {
+   "id": "Independent|4/25/2026|Workshop",
+   "org": "Independent",
+   "date": "4/25/2026",
+   "type": "Workshop",
+   "value": 0,
+   "bucket": "In Review"
+  },
+  {
+   "id": "Girls Got Balls||Other",
+   "org": "Girls Got Balls",
+   "date": "",
+   "type": "Other",
+   "value": 0,
+   "bucket": "In Review"
+  },
+  {
+   "id": "Independent|4/24/2026|Tasting",
+   "org": "Independent",
+   "date": "4/24/2026",
+   "type": "Tasting",
+   "value": 0,
+   "bucket": "In Review"
+  },
+  {
+   "id": "CLGFS Fast Pitch|2/18/2026|Donation",
+   "org": "CLGFS Fast Pitch",
+   "date": "2/18/2026",
+   "type": "Donation",
+   "value": 350.0,
+   "bucket": "Completed"
+  },
+  {
+   "id": "MCYSA|7/10/2026|Donation",
+   "org": "MCYSA",
+   "date": "7/10/2026",
+   "type": "Donation",
+   "value": 250.0,
+   "bucket": "Completed"
+  },
+  {
+   "id": "South HS|2/21/2026|Donation",
+   "org": "South HS",
+   "date": "2/21/2026",
+   "type": "Donation",
+   "value": 44.0,
+   "bucket": "Completed"
+  },
+  {
+   "id": "CASA of McHenry County|3/1/2026|Donation",
+   "org": "CASA of McHenry County",
+   "date": "3/1/2026",
+   "type": "Donation",
+   "value": 0,
+   "bucket": "Completed"
+  },
+  {
+   "id": "Marian Central Catholic high school|4/11/2026|Donation",
+   "org": "Marian Central Catholic high school",
+   "date": "4/11/2026",
+   "type": "Donation",
+   "value": 0,
+   "bucket": "Completed"
+  },
+  {
+   "id": "Raue Center For The Arts|6/27/2026|Donation",
+   "org": "Raue Center For The Arts",
+   "date": "6/27/2026",
+   "type": "Donation",
+   "value": 0,
+   "bucket": "Completed"
+  },
+  {
+   "id": "The Herrick-Thomas Memorial Foundation|6/24/2026|Donation",
+   "org": "The Herrick-Thomas Memorial Foundation",
+   "date": "6/24/2026",
+   "type": "Donation",
+   "value": 0,
+   "bucket": "Completed"
+  },
+  {
+   "id": "Crystal Lake Central HS|3/7/2026|Donation",
+   "org": "Crystal Lake Central HS",
+   "date": "3/7/2026",
+   "type": "Donation",
+   "value": 0,
+   "bucket": "Completed"
+  },
+  {
+   "id": "NAMI McHenry County|5/8/2026|Donation",
+   "org": "NAMI McHenry County",
+   "date": "5/8/2026",
+   "type": "Donation",
+   "value": 0,
+   "bucket": "Completed"
+  },
+  {
+   "id": "non-profit PTO|4/28/2026|Donation",
+   "org": "non-profit PTO",
+   "date": "4/28/2026",
+   "type": "Donation",
+   "value": 0,
+   "bucket": "Completed"
+  },
+  {
+   "id": "Alexander Leigh Center for Autism|3/23/2026|Donation",
+   "org": "Alexander Leigh Center for Autism",
+   "date": "3/23/2026",
+   "type": "Donation",
+   "value": 0,
+   "bucket": "Completed"
+  },
+  {
+   "id": "living waters Lutheran church in crystal lake|3/29/2026|Donation",
+   "org": "living waters Lutheran church in crystal lake",
+   "date": "3/29/2026",
+   "type": "Donation",
+   "value": 0,
+   "bucket": "Completed"
+  },
+  {
+   "id": "Woods Creek Parent Teacher Organization|5/4/2026|Donation",
+   "org": "Woods Creek Parent Teacher Organization",
+   "date": "5/4/2026",
+   "type": "Donation",
+   "value": 0,
+   "bucket": "Completed"
+  },
+  {
+   "id": "St. Elizabeth Ann Seton Catholic Church||Donation",
+   "org": "St. Elizabeth Ann Seton Catholic Church",
+   "date": "",
+   "type": "Donation",
+   "value": 0,
+   "bucket": "Completed"
+  },
+  {
+   "id": "The Hailey Gertz Charity Golf Outing|7/22/2026|Donation",
+   "org": "The Hailey Gertz Charity Golf Outing",
+   "date": "7/22/2026",
+   "type": "Donation",
+   "value": 0,
+   "bucket": "Completed"
+  },
+  {
+   "id": "First Church Preschool||Donation",
+   "org": "First Church Preschool",
+   "date": "",
+   "type": "Donation",
+   "value": 0,
+   "bucket": "Completed"
+  },
+  {
+   "id": "Oak Knoll Early Childhood Center/ Cary District 26||Donation",
+   "org": "Oak Knoll Early Childhood Center/ Cary District 26",
+   "date": "",
+   "type": "Donation",
+   "value": 0,
+   "bucket": "Completed"
+  },
+  {
+   "id": "Friends of McHenry County College Foundation|6/8/2026|Donation",
+   "org": "Friends of McHenry County College Foundation",
+   "date": "6/8/2026",
+   "type": "Donation",
+   "value": 0,
+   "bucket": "Completed"
+  },
+  {
+   "id": "Prairie Grove Elementary||Donation",
+   "org": "Prairie Grove Elementary",
+   "date": "",
+   "type": "Donation",
+   "value": 0,
+   "bucket": "Completed"
+  },
+  {
+   "id": "Animal House Shelter|4/19/2026|Donation - Business",
+   "org": "Animal House Shelter",
+   "date": "4/19/2026",
+   "type": "Donation - Business",
+   "value": 0,
+   "bucket": "Completed"
+  },
+  {
+   "id": "School Organization - Three Oaks Elementary School PTO|5/5/2026|Donation",
+   "org": "School Organization - Three Oaks Elementary School PTO",
+   "date": "5/5/2026",
+   "type": "Donation",
+   "value": 0,
+   "bucket": "Completed"
+  },
+  {
+   "id": "On angels wings pet rescue and thrift store||Donation",
+   "org": "On angels wings pet rescue and thrift store",
+   "date": "",
+   "type": "Donation",
+   "value": 0,
+   "bucket": "Completed"
+  },
+  {
+   "id": "Young at Heart Senior Pet Rescue|6/20/2026|Donation",
+   "org": "Young at Heart Senior Pet Rescue",
+   "date": "6/20/2026",
+   "type": "Donation",
+   "value": 0,
+   "bucket": "Completed"
+  }
+ ]
+}

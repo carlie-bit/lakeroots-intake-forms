@@ -44,7 +44,8 @@ PAGES = [
     ("feedback_form.html", "feedback.html",         None),  # guest feedback intake
     ("partner_form.html",  "partner.html",          None),  # community partnership intake
     # Review dashboards — live from Supabase, de-identified snapshot fallback.
-    ("music_dashboard.html", "artists-live-music.html", "music_deid.json"),
+    ("music_dashboard.html",   "artists-live-music.html",  "music_deid.json"),
+    ("outreach_dashboard.html","community-outreach.html",  "outreach_deid.json"),
 ]
 
 def b64(path):

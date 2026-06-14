@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lake Roots — Community Outreach</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Barlow+Condensed:wght@300;400;500;600&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>__CSS__</style>
+<style>
+.topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:16px 0 2px}
+.periodbar{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.periodbar .pl{font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;font-size:10.5px;color:var(--gray);margin-right:2px}
+.periodbar button{font-family:var(--disp);text-transform:uppercase;letter-spacing:.6px;font-size:11px;padding:6px 11px;border-radius:8px;border:1.5px solid var(--line);background:#fff;color:var(--mid);cursor:pointer}
+.periodbar button.on{background:var(--forest);color:var(--cream);border-color:var(--forest)}
+.whoami{margin-left:auto;font-family:var(--disp);text-transform:uppercase;letter-spacing:.6px;font-size:10.5px;color:var(--gray);display:flex;align-items:center;gap:6px}
+.whoami input{text-transform:none;letter-spacing:0;font-size:12px;border:1.5px solid var(--line);border-radius:8px;padding:5px 9px;width:130px}
+.kpi.clk,.bar.clk{cursor:pointer}.kpi.clk:hover{border-color:var(--gold)}.bar.clk:hover .bl{color:var(--forest);font-weight:600}
+.dash-table tr.clk{cursor:pointer}.dash-table tr.clk:hover td{background:var(--sand)}
+.sdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.sdot.new{background:var(--sage)}.sdot.in_review{background:var(--gold)}.sdot.commitment{background:var(--forest)}.sdot.completed{background:#2f6f4e}.sdot.proceeding{background:#5f7d49}.sdot.passed{background:#9b8467}.sdot.decision_needed{background:var(--red)}.sdot.paused{background:#4a6b7c}
+.dash-table .pill{white-space:nowrap;display:inline-block}
+.dash-table th.srt{cursor:pointer;user-select:none}.dash-table th.srt:hover{color:var(--forest)}
+.dash-table td.ty{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dash-table td.st{white-space:nowrap}
+.filterbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 2px}
+.filterbar input,.filterbar select{border:1.5px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;background:#fff;color:var(--ink)}
+.filterbar input{flex:1;min-width:170px}
+.filterbar select{max-width:220px}
+.filterbar .clearf{font-size:11px;color:var(--gray);cursor:pointer;text-decoration:underline}
+.seg td.r,.seg th.r,#giveTbl td.r,#giveTbl th.r{white-space:nowrap}
+.seg,#giveTbl{table-layout:fixed;width:100%}
+.seg th:nth-child(1){width:27%}.seg th:nth-child(2){width:170px}.seg th:nth-child(3){width:145px}.seg th:nth-child(4){width:95px}.seg th:nth-child(5){width:95px}.seg th:nth-child(6){width:60px}.seg th.sp{width:auto}
+#giveTbl th:nth-child(1){width:30%}#giveTbl th:nth-child(2){width:200px}#giveTbl th:nth-child(3){width:110px}#giveTbl th:nth-child(4){width:90px}#giveTbl th.sp{width:auto}
+.fbtn{margin-left:5px;cursor:pointer;color:var(--gray);font-size:10px;padding:2px 4px;border-radius:5px;border:1px solid transparent}
+.fbtn:hover{border-color:var(--line)}.fbtn.on{color:#fff;background:var(--forest)}
+#colf{position:absolute;z-index:1200;background:#fff;border:1.5px solid var(--line);border-radius:11px;box-shadow:0 10px 28px rgba(43,48,38,.18);padding:11px;width:250px;display:none}
+#colf .cfh{font-family:var(--disp);text-transform:uppercase;letter-spacing:.7px;font-size:11px;color:var(--forest);margin-bottom:7px}
+#colf input:not([type=checkbox]){width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-family:inherit;font-size:13px}
+#colf .cfl{max-height:190px;overflow:auto;margin-top:8px;display:flex;flex-direction:column;gap:5px}
+#colf .cfl label{font-size:12.5px;color:var(--ink);display:flex;gap:7px;align-items:flex-start;justify-content:flex-start;text-align:left;cursor:pointer;text-transform:none;letter-spacing:0;margin:0}
+#colf .cfl input[type=checkbox]{width:auto;flex:0 0 auto;margin:1px 0 0}
+#colf .cfa{margin-top:8px;font-size:11px}#colf .cfa a{color:var(--gray)}
+@media(max-width:680px){
+  .seg,#giveTbl{table-layout:auto}
+  .seg th,#giveTbl th{width:auto!important}
+  th.sp,td.sp{display:none}
+  .seg th:nth-child(4),.seg td:nth-child(4),.seg th:nth-child(5),.seg td:nth-child(5){display:none}
+  #giveTbl th:nth-child(4),#giveTbl td:nth-child(4){display:none}
+  .dash-table td.ty{max-width:104px}
+  .dash-table th,.dash-table td{font-size:12px}
+  .dchips button{font-size:10px;padding:4px 7px}
+  .filterbar input{min-width:130px}
+  .filterbar .hint{display:none}
+  .wfstep{font-size:9.5px;padding:5px 7px}
+  .topbar{gap:8px}
+}
+.wfsteps{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:2px 0 10px}
+.wfstep{background:var(--sand);border:1.5px solid var(--line);border-radius:9px;padding:7px 11px;font-size:11px;font-family:var(--disp);text-transform:uppercase;letter-spacing:.5px;color:var(--forest)}
+.wfarrow{color:var(--gray);font-weight:600}
+.wffork{font-size:12px;color:var(--mid);margin:0 0 12px}
+.wfbtn{display:inline-block;background:var(--forest);color:var(--cream);text-decoration:none;padding:10px 15px;border-radius:9px;font-family:var(--disp);text-transform:uppercase;letter-spacing:.6px;font-size:12px}
+.modal-bg{position:fixed;inset:0;background:rgba(43,48,38,.5);display:none;align-items:center;justify-content:center;padding:18px;z-index:100}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:14px;max-width:560px;width:100%;max-height:88vh;overflow:auto;padding:18px 20px}
+.modal .mh{display:flex;justify-content:space-between;align-items:center}
+.modal .mt{font-family:var(--disp);font-weight:600;font-size:19px;color:var(--forest);text-transform:uppercase;letter-spacing:.5px}
+.modal .mx{border:none;background:none;font-size:22px;cursor:pointer;color:var(--gray)}
+.modal .mc{font-size:12px;color:var(--gray);margin-bottom:12px}
+.dentry{border:1px solid var(--line);border-radius:11px;padding:11px 12px;margin-bottom:10px}
+.dentry .dhead{font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px}
+.dentry .dlabel{font-size:14px;margin:3px 0 8px;color:var(--ink);font-weight:600}
+.dchips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.dchips button{font-size:11px;padding:4px 9px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--mid);cursor:pointer}
+.dchips button.on{color:#fff;border-color:transparent}
+.dchips button.on[data-s=new]{background:var(--sage)}.dchips button.on[data-s=in_review]{background:var(--gold)}
+.dchips button.on[data-s=commitment]{background:var(--forest)}.dchips button.on[data-s=completed]{background:#2f6f4e}.dchips button.on[data-s=proceeding]{background:#5f7d49}.dchips button.on[data-s=passed]{background:#9b8467}.dchips button.on[data-s=decision_needed]{background:var(--red)}.dchips button.on[data-s=paused]{background:#4a6b7c}
+.addbtn{border:1.5px solid var(--forest);background:var(--forest);color:var(--cream);border-radius:999px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:inherit}
+.sdetail select{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;background:#fff}
+.sdetail{margin:2px 0 8px;padding:8px 10px;background:var(--sand);border:1px solid var(--line);border-radius:9px}
+.sdetail label{display:block;font-size:11px;font-family:var(--disp);text-transform:uppercase;letter-spacing:.5px;color:var(--forest);margin-bottom:4px}
+.sdetail textarea,.sdetail input{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;background:#fff}
+.sdetail textarea{min-height:64px;resize:vertical}
+.sdetail .row{display:flex;gap:6px;margin-top:6px;align-items:center}
+.sdetail .row button{border:1.5px solid var(--forest);background:var(--forest);color:var(--cream);border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer}
+.sdetail .saved{font-size:11px;color:var(--forest);opacity:0;transition:opacity .3s}
+.sdetail .hintline{font-size:11px;color:var(--gray);margin-top:4px}
+.comments{margin:4px 0 8px}.cmt{font-size:12.5px;padding:6px 0;border-top:1px dashed var(--line)}
+.cmt .by{font-weight:600;color:var(--forest)}.cmt .at{color:var(--gray);font-size:11px;margin-left:5px}.cmt .tx{display:block;margin-top:1px;color:var(--ink)}
+.addcmt{display:flex;gap:6px;margin-top:6px}.addcmt input{flex:1;border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px}
+.addcmt button{border:1.5px solid var(--forest);background:var(--forest);color:var(--cream);border-radius:8px;padding:0 12px;font-size:12px;cursor:pointer}
+.nouser{font-size:11px;color:var(--red);margin-top:4px;display:none}
+</style>
+</head>
+<body>
+<header><div class="hd">
+  <div class="mono"><img src="data:image/png;base64,__LOGO__" alt="LR"></div>
+  <div class="wordmark"><div class="t1">LAKE ROOTS</div><div class="t2">Café · Market · Bar</div></div>
+  <div class="tag"><div class="tt">Community Outreach</div><div class="td" id="updated"></div></div>
+</div></header>
+<div class="wrap">
+  <div class="title">
+    <div class="g1">COMMUNITY OUTREACH <span class="live snap" id="liveBadge">SNAPSHOT</span></div>
+    <div class="g2">how we show up for our community</div>
+  </div>
+  <div class="topbar">
+    <div class="periodbar" id="periodbar"><span class="pl">Period</span></div>
+    <button class="addbtn" onclick="openAdd()">+ Add opportunity</button>
+    <div class="whoami">You: <input id="who" placeholder="your name" oninput="setUser(this.value)"></div>
+  </div>
+  <div class="filterbar">
+    <input id="q" placeholder="🔍 Search organizations, types, details…" oninput="renderAll()">
+    <span class="hint">filter any column with the ⏷ in its header</span>
+    <span class="clearf" onclick="clearFilters()">clear all filters</span>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <div class="panels">
+    <div class="panel full">
+      <h3>Outreach Workflow <span class="hint">from inquiry to recap</span></h3>
+      <div class="wfsteps">
+        <span class="wfstep">Inquiry</span><span class="wfarrow">→</span>
+        <span class="wfstep">Opportunity Intake</span><span class="wfarrow">→</span>
+        <span class="wfstep">Review &amp; Score</span><span class="wfarrow">→</span>
+        <span class="wfstep">Decision</span><span class="wfarrow">→</span>
+        <span class="wfstep">Approved</span><span class="wfarrow">→</span>
+        <span class="wfstep">Fulfill</span><span class="wfarrow">→</span>
+        <span class="wfstep">Recap</span>
+      </div>
+      <div class="wffork">Approved <b>donations</b> → prepare basket → deliver &nbsp;·&nbsp; Approved <b>events</b> → calendar → held. Declined items are logged &amp; notified; On-Hold returns for re-review.</div>
+      <a class="wfbtn" href="https://lrcommandcenter.netlify.app/donations.html" target="_blank" rel="noopener">🎁 Open Donation Fulfillment Board ↗</a>
+    </div>
+    <div class="panel"><h3>Pipeline by Status <span class="hint">click to view</span></h3><div class="bars" id="statusBars"></div></div>
+    <div class="panel"><h3>Requests by Type <span class="hint" id="typeHint"></span></h3><div class="bars" id="typeBars"></div></div>
+    <div class="panel full"><h3>Open Pipeline <span class="hint">new, in review, or needs a decision · click a row</span></h3><table class="dash-table seg" id="pipeTbl"></table></div>
+    <div class="panel full" id="fwdPanel"><h3>Moving Forward <span class="hint">commitments made &amp; proceeding</span></h3><table class="dash-table seg" id="fwdTbl"></table></div>
+    <div class="panel full" id="holdPanel"><h3>Paused <span class="hint">revisit later</span></h3><table class="dash-table seg" id="holdTbl"></table></div>
+    <div class="panel full" id="passPanel"><h3>Passed <span class="hint">declined or not pursued — kept for the record</span></h3><table class="dash-table seg" id="passTbl"></table></div>
+    <div class="panel full"><h3>Giving This Year <span class="hint">completed donations, sponsorships &amp; fundraisers · recorded $ where available · click a row</span></h3><table class="dash-table" id="giveTbl"></table></div>
+    <div class="panel full" id="otherPanel" style="display:none"><h3>Completed Collaborations &amp; Projects <span class="hint">wrapped-up collaborations, events &amp; partnerships · click a row</span></h3><table class="dash-table" id="otherTbl"></table></div>
+    <div class="panel full" id="deletedPanel" style="display:none"><h3>Removed Entries <span class="hint">kept for the record · restore anytime</span></h3><table class="dash-table" id="delTbl"></table></div>
+  </div>
+  <div class="note" id="note"></div>
+  <div class="foot">rooted in community</div>
+</div>
+
+<div id="colf"></div>
+<datalist id="typelist">
+  <option>Donation</option><option>Sponsorship</option><option>Fundraiser</option><option>Dine &amp; Share Fundraiser</option>
+  <option>Collaboration</option><option>Business Collaboration</option><option>Educational Collaboration</option>
+  <option>Workshop</option><option>Tasting</option><option>Event/Hosting</option><option>Catering</option>
+  <option>Market Vendor</option><option>Artist/Author</option><option>Musician</option><option>General Inquiry</option><option>Other</option>
+</datalist>
+
+<div class="modal-bg" id="addBg" onclick="if(event.target===this)closeAdd()">
+  <div class="modal">
+    <div class="mh"><div class="mt">Add Opportunity</div><button class="mx" onclick="closeAdd()">×</button></div>
+    <div class="mc">For requests that come in by text, call, or in person. It starts here, then funnels to the 🎁 Donation Board once you mark Commitment made.</div>
+    <div class="sdetail" style="margin-top:10px">
+      <label>Organization</label><input id="a_org" placeholder="Who's asking?">
+      <label style="margin-top:8px">Request type</label>
+      <select id="a_type"><option>Donation</option><option>Sponsorship</option><option>Fundraiser</option><option>Collaboration</option><option>Catering</option><option>Event/Hosting</option><option>Market Vendor</option><option>Other</option></select>
+      <label style="margin-top:8px">Estimated $ value (optional)</label><input id="a_value" placeholder="e.g. 50">
+      <label style="margin-top:8px">What they asked for</label><textarea id="a_notes" placeholder="e.g. texted Carlie — gift basket for the school raffle on 7/12"></textarea>
+      <div class="row"><button onclick="saveAdd()">Add to pipeline</button></div>
+      <div class="nouser" id="a_err"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeDrill()">
+  <div class="modal">
+    <div class="mh"><div class="mt" id="mTitle">Entries</div><button class="mx" onclick="closeDrill()">×</button></div>
+    <div class="mc" id="mCount"></div>
+    <div id="mBody"></div>
+  </div>
+</div>
+
+<script>
+const BAKED=__DATA__; const PROXY="__PROXY__";
+const SUPA_URL="https://gqgjppxzdwzypxontmou.supabase.co";
+const SUPA_KEY="sb_publishable_DieuLBMaMTJwZD3SUfgvGA_9I2tMOhP";
+const ACTIONS_TABLE="outreach_actions";
+const sb=window.supabase?window.supabase.createClient(SUPA_URL,SUPA_KEY):null;
+const $=id=>document.getElementById(id);
+const SCOL={'New':'var(--sage)','In Review':'var(--gold)','Approved':'var(--mid)','On Hold':'var(--sand)','Completed':'var(--forest)','Declined':'var(--red)','Other':'var(--gray)'};
+const STATUSES_DON=[['new','New'],['in_review','In review'],['commitment','Commitment made'],['completed','Completed'],['paused','Paused'],['passed','Passed'],['decision_needed','Decision needed']];
+const STATUSES_GEN=[['new','New'],['in_review','In review'],['proceeding','Moving forward'],['completed','Completed'],['paused','Paused'],['passed','Passed'],['decision_needed','Decision needed']];
+const ALL_STATUSES=[...STATUSES_DON,['proceeding','Moving forward']];
+const TCOL={new:'var(--sage)',in_review:'var(--gold)',commitment:'var(--forest)',completed:'#2f6f4e',proceeding:'#5f7d49',paused:'#4a6b7c',passed:'#9b8467',decision_needed:'var(--red)'};
+function isDonationType(t){return /donat|sponsor|fundrais/i.test(t||'');}
+function statusesFor(e){return isDonationType(e.type)?STATUSES_DON:STATUSES_GEN;}
+function stLabel(s){const m=ALL_STATUSES.find(x=>x[0]===s);return m?m[1]:'';}
+function statusPill(e){const s=(ACTIONS[e.id]||{}).status;
+  if(s)return `<span class="pill" style="background:${TCOL[s]};color:#fff">${stLabel(s)}</span>`;
+  return `<span class="pill" style="background:${SCOL[e.bucket]||'var(--gray)'};color:#fff">${esc(e.bucket)}</span>`;}
+const PERIODS=[['All time',0],['12 mo',365],['6 mo',183],['3 mo',92],['30 days',30]];
+let ALL=[], ACTIONS={}, periodDays=0, LIVE=false;
+let DON={}, DON_DONE=new Set();   // from donations table: submission_id -> {stage,items,commitment}; DON_DONE = picked-up (stage 3)
+const money=n=>n==null?'—':(n>0?'$'+Number(n).toLocaleString('en-US'):'—');
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+// Donation amount — SAME source of truth as the Donation Board chip: sum the $ literally
+// typed in the commitment items (× qty). Falls back to the outreach commitment_details.
+function parseDollars(t){return (String(t).match(/\$\s?\d[\d,]*(?:\.\d+)?/g)||[]).reduce((s,m)=>s+parseFloat(m.replace(/[$,\s]/g,'')),0);}
+function commitAmount(e){
+  const d=DON[e.id];
+  if(d&&Array.isArray(d.items)&&d.items.length){
+    let tot=0,found=false;
+    d.items.forEach(i=>{if(String(i.desc||'').match(/\$\s?\d[\d,]*(?:\.\d+)?/g)){let line=parseDollars(i.desc);const q=parseFloat(String(i.qty||'').replace(/[^\d.]/g,''));if(q>0)line*=q;tot+=line;found=true;}});
+    if(found)return tot;
+  }
+  const det=(ACTIONS[e.id]||{}).commitment_details||[];
+  let tot=0,found=false;
+  det.forEach(t=>{if(String(t).match(/\$\s?\d[\d,]*(?:\.\d+)?/g)){tot+=parseDollars(t);found=true;}});
+  if(found)return tot;
+  if(d&&d.commitment&&String(d.commitment).match(/\$/))return parseDollars(d.commitment);
+  return 0;
+}
+// $ cell: recorded value is authoritative (plain); commitment-derived is approximate (~, flagged).
+function amtCell(e){if(!(e._amt>0))return '—';return e._amtApprox?`<span title="Approx — summed from commitment items (gift cards, shirts, etc.), the same source as the Donation Board chip">~${money(e._amt)}</span>`:money(e._amt);}
+async function loadDonations(){if(!sb)return;const {data,error}=await sb.from('donations').select('submission_id,stage,items,commitment');
+  if(error){console.warn('donations load',error.message);return;}
+  DON={};DON_DONE=new Set();
+  (data||[]).forEach(r=>{if(!r.submission_id)return;DON[r.submission_id]={stage:r.stage,items:r.items,commitment:r.commitment};if(Number(r.stage)===3)DON_DONE.add(r.submission_id);});}
+function parseD(s){const m=(s||'').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);return m?new Date(m[3],m[1]-1,m[2]):null;}
+function fmtDate(s){const d=parseD(s);return d?d.toLocaleDateString('en-US',{month:'short',day:'numeric'}):(s||'—');}
+function today(){return new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function inPeriod(e){if(!periodDays)return true;const d=parseD(e.date);if(!d)return true;return (Date.now()-d.getTime())/86400000<=periodDays;}
+let COLF={org:'',type:new Set(),status:new Set()};
+function filtered(){
+  const q=(($('q')||{}).value||'').toLowerCase().trim();
+  return ALL.filter(e=>!e.deleted&&inPeriod(e)
+    &&(!q||(e.org+' '+e.type+' '+(e.notes||'')).toLowerCase().includes(q))
+    &&(!COLF.org||e.org.toLowerCase().includes(COLF.org))
+    &&(!COLF.type.size||COLF.type.has(e.type))
+    &&(!COLF.status.size||COLF.status.has((((ACTIONS[e.id]||{}).status)||'none'))));}
+function clearFilters(){$('q').value='';COLF={org:'',type:new Set(),status:new Set()};$('colf').style.display='none';renderAll();}
+function colActive(k){return k==='org'?!!COLF.org:COLF[k].size>0;}
+function colValues(k){
+  if(k==='type')return [...new Set(ALL.filter(e=>!e.deleted).map(e=>e.type))].sort();
+  if(k==='status'){const seen=new Set(ALL.filter(e=>!e.deleted).map(e=>(((ACTIONS[e.id]||{}).status)||'none')));
+    return ALL_STATUSES.filter(([kk])=>seen.has(kk)).map(([kk])=>kk).concat(seen.has('none')?['none']:[]);}
+  return [];}
+function colLabel(k,v){return k==='status'?(v==='none'?'No status yet':stLabel(v)):shortType(v);}
+function openColF(k,el){
+  const pop=$('colf');
+  if(pop.dataset.k===k&&pop.style.display==='block'){pop.style.display='none';return;}
+  pop.dataset.k=k;
+  const r=el.getBoundingClientRect();
+  pop.style.display='block';
+  pop.style.top=(r.bottom+window.scrollY+6)+'px';
+  pop.style.left=Math.max(10,Math.min(r.left+window.scrollX-110,window.scrollX+document.documentElement.clientWidth-270))+'px';
+  renderColF('');}
+function renderColF(q){
+  const k=$('colf').dataset.k;
+  if(k==='org'){
+    $('colf').innerHTML=`<div class="cfh">Filter Organization</div><input id="cfq" placeholder="name contains…" value="${esc(COLF.org)}" oninput="COLF.org=this.value.toLowerCase();renderAll()"><div class="cfa"><a href="#" onclick="COLF.org='';renderAll();renderColF('');return false">clear</a></div>`;
+    const i=$('cfq');i.focus();i.setSelectionRange(i.value.length,i.value.length);return;}
+  const vals=colValues(k).filter(v=>!q||colLabel(k,v).toLowerCase().includes(q.toLowerCase()));
+  $('colf').innerHTML=`<div class="cfh">Filter ${k==='type'?'Type':'Status'}</div>
+    <input id="cfs" placeholder="search options…" value="${esc(q||'')}" oninput="renderColF(this.value)">
+    <div class="cfl">${vals.map(v=>`<label><input type="checkbox" ${COLF[k].has(v)?'checked':''} data-v="${esc(v)}" onchange="toggleColF('${k}',this.checked,this.dataset.v)"> ${esc(colLabel(k,v))}</label>`).join('')||'<span style="font-size:12px;color:var(--gray)">No options match.</span>'}</div>
+    <div class="cfa"><a href="#" onclick="COLF['${k}'].clear();renderAll();renderColF('');return false">clear</a></div>`;
+  if(q!==''){const i=$('cfs');i.focus();i.setSelectionRange(i.value.length,i.value.length);}}
+function toggleColF(k,on,v){if(on)COLF[k].add(v);else COLF[k].delete(v);renderAll();}
+document.addEventListener('click',ev=>{const p=$('colf');
+  if(p&&p.style.display==='block'&&!p.contains(ev.target)&&!ev.target.closest('.fbtn'))p.style.display='none';});
+let SORTS={pipe:['submitted',-1],fwd:['submitted',-1],hold:['submitted',-1],pass:['submitted',-1],give:['value',-1],other:['date',-1]};
+function setSort(t,k){const s=SORTS[t];if(s[0]===k)s[1]*=-1;else SORTS[t]=[k,1];renderAll();}
+function sortArrow(t,k){const s=SORTS[t];return s[0]===k?(s[1]>0?' ▲':' ▼'):'';}
+function hd(t,k,lbl,cls){const f=['org','type','status'].includes(k);
+  return `<th class="srt ${cls||''}"><span onclick="setSort('${t}','${k}')">${lbl}${sortArrow(t,k)}</span>${f?`<span class="fbtn ${colActive(k)?'on':''}" title="Filter" onclick="openColF('${k}',this)">⏷</span>`:''}</th>`;}
+function sortBy(list,t){const [k,d]=SORTS[t];return list.slice().sort((a,b)=>{
+  let va,vb;
+  if(k==='status'){va=stLabel((ACTIONS[a.id]||{}).status)||a.bucket||'';vb=stLabel((ACTIONS[b.id]||{}).status)||b.bucket||'';va=va.toLowerCase();vb=vb.toLowerCase();}
+  else if(k==='value'){va=a._amt||0;vb=b._amt||0;}
+  else if(k==='date'||k==='submitted'){va=(parseD(a[k])||0)&&parseD(a[k]).getTime()||0;vb=(parseD(b[k])||0)&&parseD(b[k]).getTime()||0;}
+  else{va=String(a[k]||'').toLowerCase();vb=String(b[k]||'').toLowerCase();}
+  return (va>vb?1:va<vb?-1:0)*d;});}
+function shortType(t){return (t||'').length>30?t.slice(0,28)+'…':(t||'');}
+function renderDeleted(){
+  const del=ALL.filter(e=>e.deleted);
+  $('deletedPanel').style.display=del.length?'':'none';
+  $('delTbl').innerHTML=del.length?`<tr><th>Organization</th><th>Type</th><th class="r">Date</th><th class="r"></th></tr>`+del.map(e=>`<tr><td class="nm" style="color:var(--gray)">${esc(e.org)}</td><td class="ty" style="color:var(--gray)">${esc(shortType(e.type))}</td><td class="r" style="color:var(--gray)">${fmtDate(e.date)}</td><td class="r"><a href="#" style="color:var(--forest);font-size:12px" onclick="restoreEntry('${esc(e.id)}');return false">Restore</a></td></tr>`).join(''):'';}
+function getUser(){return (localStorage.getItem('lr_user')||'').trim();}
+function setUser(v){localStorage.setItem('lr_user',(v||'').trim());}
+function cssId(id){return (id||'').replace(/[^a-zA-Z0-9]/g,'');}
+
+function bars(el,entries,colf,clickf){const mx=Math.max(1,...entries.map(e=>e[1]));
+  el.innerHTML=entries.map(([l,n])=>`<div class="bar clk" onclick="${clickf(l)}"><div class="bl">${esc(l)}</div><div class="bt"><div class="bf" style="width:${100*n/mx}%;background:${colf(l)}"></div></div><div class="bv">${n}</div></div>`).join('');}
+
+function renderPeriodBar(){$('periodbar').innerHTML='<span class="pl">Period</span>'+PERIODS.map(([l,d])=>`<button class="${d===periodDays?'on':''}" onclick="setPeriod(${d})">${l}</button>`).join('');}
+function setPeriod(d){periodDays=d;renderPeriodBar();renderAll();}
+
+function renderAll(){
+  syncBuckets();
+  const F=filtered();
+  const inrev=F.filter(e=>['In Review','Approved','On Hold'].includes(e.bucket));
+  const done=F.filter(e=>e.bucket==='Completed');
+  const givingYr=done.filter(e=>isDonationType(e.type));   // donations + sponsorships + fundraisers
+  const otherDone=done.filter(e=>!isDonationType(e.type));  // collaborations, events, artists, etc.
+  const orgs=new Set(givingYr.map(e=>e.org.toLowerCase())).size;
+  const val=givingYr.reduce((s,e)=>s+(e._amt||0),0);
+  const kpis=[
+    ['Open Pipeline',inrev.length,'in motion','hl',()=>drill('Open pipeline',inrev)],
+    ['Orgs Supported',orgs,'in period','',()=>drill('Giving — organizations',givingYr)],
+    ['Completed',done.length,'fulfilled','',()=>drill('Completed outreach',done)],
+    ['Tracked',F.length,'opportunities','',()=>drill('All tracked opportunities',F)],
+    ['Recorded Giving',money(val),'$ logged','gold',()=>drill('Recorded giving ($)',F.filter(e=>e._amt>0))],
+  ];
+  $('kpis').innerHTML=kpis.map(([l,v,s,c],i)=>`<div class="kpi clk ${c}" onclick="KPI[${i}]()"><div class="kl">${l}</div><div class="kv">${v}</div><div class="ks">${s}</div></div>`).join('');
+  window.KPI=kpis.map(x=>x[4]);
+
+  const sCounts={};F.forEach(e=>sCounts[e.bucket]=(sCounts[e.bucket]||0)+1);
+  bars($('statusBars'),Object.entries(sCounts).sort((a,b)=>b[1]-a[1]),l=>SCOL[l]||'var(--gray)',l=>`drill('${esc(l)} opportunities',filtered().filter(e=>e.bucket==='${esc(l)}'))`);
+  const tCounts={};F.forEach(e=>{const t=e.type.length>34?e.type.slice(0,32)+'…':e.type;tCounts[t]=(tCounts[t]||0)+1;});
+  const types=Object.entries(tCounts).sort((a,b)=>b[1]-a[1]);$('typeHint').textContent=types.length+' types';
+  bars($('typeBars'),types.slice(0,8),()=>'var(--brown)',l=>`drillType('${esc(l)}')`);
+
+  const segRow=p=>`<tr class="clk" onclick="drillOne('${esc(p.id)}')"><td class="nm">${statusDot(p.id)}${esc(p.org)}</td><td class="ty" title="${esc(p.type)}">${esc(shortType(p.type))}</td><td class="st">${statusPill(p)}</td><td class="r">${fmtDate(p.submitted)}</td><td class="r">${fmtDate(p.date)}</td><td class="r">${amtCell(p)}</td><td class="sp"></td></tr>`;
+  const SEGS=[
+    ['pipe','pipeTbl',null,e=>e.bucket==='In Review','Pipeline clear in this period'],
+    ['fwd','fwdTbl','fwdPanel',e=>e.bucket==='Approved',''],
+    ['hold','holdTbl','holdPanel',e=>e.bucket==='On Hold',''],
+    ['pass','passTbl','passPanel',e=>e.bucket==='Declined','']];
+  SEGS.forEach(([t,tid,pid,pred,emptyMsg])=>{
+    const list=F.filter(pred);
+    if(pid)$(pid).style.display=list.length?'':'none';
+    $(tid).innerHTML=list.length?`<tr>${hd(t,'org','Organization')}${hd(t,'type','Type')}${hd(t,'status','Status')}${hd(t,'submitted','Submitted','r')}${hd(t,'date','Proposed','r')}${hd(t,'value','$','r')}<th class="sp"></th></tr>`+sortBy(list,t).map(segRow).join(''):`<tr><td style="color:var(--gray);padding:12px 0">${emptyMsg||'Nothing here'}${($('q')&&$('q').value)?' (try clearing the search/filters)':''}.</td></tr>`;});
+  const give=givingYr;
+  $('giveTbl').innerHTML=give.length?`<tr>${hd('give','org','Organization')}${hd('give','type','Type')}${hd('give','value','$ Recorded','r')}${hd('give','date','Date','r')}<th class="sp"></th></tr>`+sortBy(give,'give').map(g=>`<tr class="clk" onclick="drillOne('${esc(g.id)}')"><td class="nm">${statusDot(g.id)}${esc(g.org)}</td><td class="ty" title="${esc(g.type)}">${esc(shortType(g.type))}</td><td class="r">${amtCell(g)}</td><td class="r">${fmtDate(g.date)}</td><td class="sp"></td></tr>`).join(''):`<tr><td style="color:var(--gray);padding:12px 0">No completed giving in this period.</td></tr>`;
+  $('otherPanel').style.display=otherDone.length?'':'none';
+  $('otherTbl').innerHTML=otherDone.length?`<tr>${hd('other','org','Organization')}${hd('other','type','Type')}${hd('other','date','Completed','r')}<th class="sp"></th></tr>`+sortBy(otherDone,'other').map(g=>`<tr class="clk" onclick="drillOne('${esc(g.id)}')"><td class="nm">${statusDot(g.id)}${esc(g.org)}</td><td class="ty" title="${esc(g.type)}">${esc(shortType(g.type))}</td><td class="r">${fmtDate(g.date)}</td><td class="sp"></td></tr>`).join(''):'';
+  renderDeleted();
+}
+function statusDot(id){const a=ACTIONS[id];return a&&a.status?`<span class="sdot ${a.status}"></span>`:'';}
+function drillType(t){drill(t+' requests',filtered().filter(e=>(e.type.length>34?e.type.slice(0,32)+'…':e.type)===t));}
+function drillOne(id){drill('Opportunity',[ALL.find(e=>e.id===id)]);}
+
+function drill(title,list){
+  list=(list||[]).filter(Boolean);
+  $('mTitle').textContent=title;
+  $('mCount').textContent=list.length+' '+(list.length===1?'item':'items')+(periodDays?' · in period':'');
+  $('mBody').innerHTML=list.map(e=>{const a=ACTIONS[e.id]||{};
+    return `<div class="dentry">
+      <div class="dhead">${fmtDate(e.date)} · ${esc(e.type)} · <span id="ts-${cssId(e.id)}">${esc(stLabel(a.status)||e.bucket)}</span>${e._amt>0?' · '+(e._amtApprox?'~':'')+money(e._amt):''}</div>
+      <div class="dlabel">${esc(e.org)} <a href="#" style="font-size:11px;color:var(--gray);font-weight:400;text-decoration:underline" onclick="editEntry('${esc(e.id)}');return false">✎ edit details</a></div>
+      <div id="ed-${cssId(e.id)}"></div>
+      ${detailBlock(e)}
+      <div class="dchips">${statusesFor(e).map(([k,lbl])=>`<button data-s="${k}" class="${a.status===k?'on':''}" onclick="setStatus('${esc(e.id)}','${k}',this)">${lbl}</button>`).join('')}</div>
+      <div id="sd-${cssId(e.id)}">${renderDetail(e.id)}</div>
+      <div class="comments" id="cmts-${cssId(e.id)}">${renderComments(a.comments)}</div>
+      <div class="addcmt"><input id="cin-${cssId(e.id)}" placeholder="Add a comment…" onkeydown="if(event.key==='Enter')addComment('${esc(e.id)}')"><button onclick="addComment('${esc(e.id)}')">Post</button></div>
+      <div class="nouser" id="nu-${cssId(e.id)}">Enter your name (top right) to comment.</div>
+      ${e.sid?`<div style="margin-top:6px;font-size:12px"><b style="color:var(--forest)">Contact:</b> <span id="ct-${cssId(e.id)}" style="color:var(--mid)">loading…</span> · <a href="${esc(e.email_link||('https://mail.google.com/mail/u/0/#search/'+encodeURIComponent('"'+e.org+'"')))}" target="_blank" rel="noopener" style="color:var(--forest)">${e.email_link?'📧 Open inquiry email':'📧 Search inbox'}</a></div>`:''}
+      ${e.manual?`<div style="margin-top:6px"><a href="#" style="font-size:11px;color:var(--red)" onclick="deleteManual('${esc(e.id)}');return false">Delete this entry</a></div>`:''}
+    </div>`;}).join('')||'<div style="color:var(--gray)">No items.</div>';
+  $('modalBg').classList.add('open');
+  if(list.length<=8)list.forEach(e=>{if(e.sid)showContact(e.id);});
+}
+function detailBlock(e){const r=e.raw||{};
+  const rows=[['They asked for',r.donation_details],['Purpose',r.donation_purpose],
+    ['Event',r.event_desc],['Event type',r.event_type],['Products',r.market_products],
+    ['Description',r.brief_desc],['Ticketed',r.ticketed],['Needs from Lake Roots',r.needs_from_lr],
+    ['Timing',[r.time_of_day,r.date_notes].filter(Boolean).join(' · ')||null],
+    ['Attendees',r.attendees],['Brand',r.brand_name],['Website',r.website],['Instagram',r.instagram],
+    ['Notes',r.other_notes]].filter(x=>x[1]);
+  if(!rows.length)return e.notes?`<div style="font-size:12.5px;color:var(--mid);margin:-2px 0 6px">${esc(e.notes)}</div>`:'';
+  return `<div style="margin:2px 0 8px;font-size:12.5px;color:var(--mid);line-height:1.55">${rows.map(([l,v])=>`<div><b style="color:var(--forest)">${l}:</b> ${esc(String(v))}</div>`).join('')}</div>`;}
+function closeDrill(){$('modalBg').classList.remove('open');}
+function renderComments(list){list=list||[];if(!list.length)return '<div style="font-size:12px;color:var(--gray)">No comments yet.</div>';
+  return list.map(c=>`<div class="cmt"><span class="by">${esc(c.by||'team')}</span><span class="at">${esc(c.at||'')}</span><span class="tx">${esc(c.text||'')}</span></div>`).join('');}
+function renderDetail(id){const a=ACTIONS[id]||{};const c=cssId(id);
+  if(a.status==='commitment'){const items=(a.commitment_details||[]).join('\n');
+    return `<div class="sdetail"><label>Commitment details — one item per line</label>
+      <textarea id="dt-${c}" placeholder="e.g.&#10;$50 gift card&#10;Pastry box (12)">${esc(items)}</textarea>
+      <div class="row"><button onclick="saveDetail('${esc(id)}')">Save commitment</button><span class="saved" id="sv-${c}">Saved ✓ — added to Donation Board</span></div>
+      <div class="hintline">Saving sends this to the 🎁 Donation Fulfillment Board (lane: Commitment made).</div></div>`;}
+  if(a.status==='passed'){
+    return `<div class="sdetail"><label>Reason passed</label>
+      <input id="dt-${c}" placeholder="Why we passed on this one" value="${esc(a.passed_reason||'')}">
+      <div class="row"><button onclick="saveDetail('${esc(id)}')">Save</button><span class="saved" id="sv-${c}">Saved ✓</span></div></div>`;}
+  if(a.status==='paused'){
+    return `<div class="sdetail"><label>Reason paused</label>
+      <input id="dt-${c}" placeholder="Why this is on pause (e.g. revisit in fall)" value="${esc(a.paused_reason||'')}">
+      <div class="row"><button onclick="saveDetail('${esc(id)}')">Save</button><span class="saved" id="sv-${c}">Saved ✓</span></div></div>`;}
+  if(a.status==='decision_needed'){
+    return `<div class="sdetail"><label>What are we waiting on?</label>
+      <input id="dt-${c}" placeholder="e.g. confirm budget with Sam, date from the org…" value="${esc(a.waiting_on||'')}">
+      <div class="row"><button onclick="saveDetail('${esc(id)}')">Save</button><span class="saved" id="sv-${c}">Saved ✓</span></div></div>`;}
+  return '';}
+async function saveDetail(id){const a=ACTIONS[id]||{};const c=cssId(id);const el=$('dt-'+c);if(!el)return;
+  if(a.status==='commitment'){a.commitment_details=el.value.split('\n').map(s=>s.trim()).filter(Boolean);}
+  else if(a.status==='passed'){a.passed_reason=el.value.trim();}
+  else if(a.status==='paused'){a.paused_reason=el.value.trim();}
+  else if(a.status==='decision_needed'){a.waiting_on=el.value.trim();}
+  ACTIONS[id]=a;await persist(id);
+  if(a.status==='commitment')await syncDonation(id);
+  const sv=$('sv-'+c);if(sv){sv.style.opacity=1;setTimeout(()=>sv.style.opacity=0,2500);}}
+async function syncDonation(id){if(!sb)return;const a=ACTIONS[id]||{};const e=ALL.find(x=>x.id===id)||{};
+  const {error}=await sb.from('donations').upsert({
+    submission_id:id,org:e.org||'',commitment:(a.commitment_details||[]).join(' + '),
+    items:(a.commitment_details||[]).map(s=>({desc:s})),source:'outreach',updated_at:new Date().toISOString()
+  },{onConflict:'submission_id'});
+  if(error)console.warn('donation sync failed',error.message);}
+async function setStatus(id,status,btn){const a=ACTIONS[id]||{};a.status=(a.status===status?null:status);ACTIONS[id]=a;
+  btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.s===a.status));
+  const sd=$('sd-'+cssId(id));if(sd)sd.innerHTML=renderDetail(id);
+  const ts=$('ts-'+cssId(id));if(ts){const e=ALL.find(x=>x.id===id)||{};ts.textContent=stLabel(a.status)||e.bucket||'';}
+  await persist(id);renderAll();}
+async function addComment(id){const inp=$('cin-'+cssId(id));const text=(inp.value||'').trim();if(!text)return;
+  const user=getUser();if(!user){$('nu-'+cssId(id)).style.display='block';$('who').focus();return;}
+  const a=ACTIONS[id]||{};a.comments=(a.comments||[]).concat([{by:user,at:today(),text}]);ACTIONS[id]=a;
+  inp.value='';$('cmts-'+cssId(id)).innerHTML=renderComments(a.comments);await persist(id);}
+async function persist(id){if(!sb)return;const a=ACTIONS[id]||{};
+  const {error}=await sb.from(ACTIONS_TABLE).upsert({submission_id:id,status:a.status||null,comments:a.comments||[],
+    commitment_details:a.commitment_details||[],passed_reason:a.passed_reason||null,paused_reason:a.paused_reason||null,waiting_on:a.waiting_on||null,
+    updated_by:getUser()||'team'},{onConflict:'submission_id'});
+  if(error)console.warn('save failed',error.message);}
+async function loadActions(){if(!sb)return;const {data,error}=await sb.from(ACTIONS_TABLE).select('*');
+  if(error){console.warn(error.message);return;}ACTIONS={};(data||[]).forEach(r=>ACTIONS[r.submission_id]={status:r.status,comments:r.comments||[],
+    commitment_details:r.commitment_details||[],passed_reason:r.passed_reason,paused_reason:r.paused_reason,waiting_on:r.waiting_on});}
+
+function setMeta(d){$('updated').textContent='Updated '+fmtDate(d.meta.generated);
+  if(LIVE){const b=$('liveBadge');b.textContent='LIVE';b.classList.remove('snap');}
+  $('note').innerHTML=`<b>Contact info on click.</b> Submitter names, emails and phone numbers are stored separately — click 🔒 View contact info in any drill-in. Status &amp; comments you set are saved live for the whole team. ${LIVE?'Live — new inquiries from the <a style="color:var(--gold)" href="partner.html" target="_blank">partner form</a> appear on refresh.':'Snapshot — refreshed when the dashboard is rebuilt.'}`;}
+
+function openAdd(){$('addBg').classList.add('open');}
+function closeAdd(){$('addBg').classList.remove('open');}
+function mapSub(r){
+  const det=[r.donation_details&&('Wants: '+r.donation_details),
+    r.donation_purpose&&('Purpose: '+r.donation_purpose),
+    r.event_desc&&('Event: '+r.event_desc),
+    r.market_products&&('Products: '+r.market_products),
+    r.needs_from_lr&&('Needs from LR: '+r.needs_from_lr),
+    r.attendees&&('~'+r.attendees+' attendees'),
+    r.other_notes].filter(Boolean).join(' · ');
+  return {id:r.legacy_key||r.id, sid:r.id, org:r.org||'', type:r.inquiry_type||'Other',
+    date:r.proposed_date||'',
+    submitted:new Date(r.created_at).toLocaleDateString('en-US'),
+    value:r.value?Number(r.value):0, bucket:r.sheet_status||'In Review',
+    notes:det, raw:r, email_link:r.email_link||null,
+    manual:r.source!=='legacy', web:r.source==='web', deleted:!!r.deleted_at};}
+function syncBuckets(){ALL.forEach(e=>{
+  // amount: recorded sheet value is authoritative; otherwise derive from the commitment items (same source as the board chip)
+  const ca=commitAmount(e);
+  if(e.value>0){e._amt=e.value;e._amtApprox=false;}
+  else if(ca>0){e._amt=ca;e._amtApprox=true;}
+  else{e._amt=0;e._amtApprox=false;}
+  const s=(ACTIONS[e.id]||{}).status;
+  // auto-complete: a linked Donation Board card at "Picked up" (stage 3) marks the opportunity Completed
+  if(DON_DONE.has(e.id)&&s!=='passed'&&s!=='paused'){e.bucket='Completed';e.autoDone=true;return;}
+  e.autoDone=false;
+  if(!s){if(e.manual)e.bucket='In Review';return;} // no team status: legacy keeps its sheet bucket
+  e.bucket=s==='completed'?'Completed':(s==='commitment'||s==='proceeding')?'Approved':s==='passed'?'Declined':s==='paused'?'On Hold':'In Review';});}
+async function saveAdd(){const org=$('a_org').value.trim();const err=$('a_err');
+  if(!org){err.textContent='Organization is required.';err.style.display='block';return;}
+  if(!sb){err.textContent='Not connected — open the deployed site to add entries.';err.style.display='block';return;}
+  err.style.display='none';
+  const val=parseFloat(($('a_value').value||'').replace(/[$,]/g,''))||null;
+  const {data,error}=await sb.from('outreach_submissions').insert({org,inquiry_type:$('a_type').value,value:val,
+    other_notes:$('a_notes').value.trim()||null,source:'manual'}).select().single();
+  if(error){err.textContent='Could not save: '+error.message;err.style.display='block';return;}
+  const e=mapSub(data);ALL.push(e);
+  ACTIONS[e.id]={status:'new',comments:[]};await persist(e.id);
+  ['a_org','a_value','a_notes'].forEach(i=>$(i).value='');
+  renderAll();closeAdd();drillOne(e.id);}
+async function deleteManual(id){if(!confirm('Remove this entry? It moves to "Removed Entries" at the bottom of the page — you can restore it anytime.'))return;
+  const e=ALL.find(x=>x.id===id);if(!e||!e.sid)return;
+  const {error}=await sb.from('outreach_submissions').update({deleted_at:new Date().toISOString()}).eq('id',e.sid);
+  if(error){console.warn(error.message);return;}
+  e.deleted=true;closeDrill();renderAll();}
+async function restoreEntry(id){const e=ALL.find(x=>x.id===id);if(!e||!e.sid)return;
+  const {error}=await sb.from('outreach_submissions').update({deleted_at:null}).eq('id',e.sid);
+  if(error){console.warn(error.message);return;}
+  e.deleted=false;renderAll();}
+function editEntry(id){const e=ALL.find(x=>x.id===id);if(!e)return;const c=cssId(id);
+  $('ed-'+c).innerHTML=`<div class="sdetail">
+    <label>Organization</label><input id="eo-${c}" value="${esc(e.org)}">
+    <label style="margin-top:8px">Type <span style="text-transform:none;letter-spacing:0;color:var(--gray)">— pick or type your own</span></label>
+    <input id="et-${c}" value="${esc(e.type)}" list="typelist">
+    <label style="margin-top:8px">Proposed date (M/D/YYYY)</label><input id="ep-${c}" value="${esc(parseD(e.date)?e.date:'')}" placeholder="e.g. 7/4/2026">
+    <label style="margin-top:8px">$ value</label><input id="ev-${c}" value="${e.value||''}" placeholder="e.g. 50">
+    <div class="row"><button onclick="saveEntry('${esc(id)}')">Save changes</button>
+    <a href="#" style="font-size:11px;color:var(--gray)" onclick="document.getElementById('ed-${c}').innerHTML='';return false">cancel</a></div>
+  </div>`;}
+async function saveEntry(id){const e=ALL.find(x=>x.id===id);if(!e||!e.sid||!sb)return;const c=cssId(id);
+  const org=$('eo-'+c).value.trim();if(!org){alert('Organization is required.');return;}
+  const upd={org,inquiry_type:$('et-'+c).value.trim()||'Other',
+    proposed_date:$('ep-'+c).value.trim()||null,
+    value:parseFloat(($('ev-'+c).value||'').replace(/[$,]/g,''))||null};
+  const {error}=await sb.from('outreach_submissions').update(upd).eq('id',e.sid);
+  if(error){alert('Save failed: '+error.message);return;}
+  e.org=org;e.type=upd.inquiry_type;if(upd.proposed_date)e.date=upd.proposed_date;e.value=upd.value||0;
+  // Category changed? The only category-specific statuses are "Commitment made" (donation) and
+  // "Moving forward" (general) — carry the active one across so it stays a valid, highlighted chip.
+  const a=ACTIONS[id];if(a&&a.status){const don=isDonationType(e.type);
+    if(don&&a.status==='proceeding'){a.status='commitment';await persist(id);}
+    else if(!don&&a.status==='commitment'){a.status='proceeding';await persist(id);}}
+  renderAll();drillOne(id);}
+async function showContact(id){const e=ALL.find(x=>x.id===id);if(!e||!e.sid||!sb)return;
+  const el=$('ct-'+cssId(id));
+  const {data,error}=await sb.rpc('get_contact',{kind:'outreach',sid:e.sid,pass:''});
+  if(error){el.textContent='Lookup failed.';return;}
+  if(!data||data._none){el.textContent='No contact on file for this one.';return;}
+  el.textContent=[[data.first_name,data.last_name].filter(Boolean).join(' '),data.email,data.phone].filter(Boolean).join(' · ')||'(empty)';}
+async function boot(){
+  if(sb){try{
+    const {data,error}=await sb.from('outreach_submissions').select('*').order('created_at');
+    if(!error&&data&&data.length){
+      ALL=data.map(mapSub);LIVE=true;
+      setMeta({meta:{generated:new Date().toLocaleDateString('en-US')}});
+      renderPeriodBar();$('who').value=getUser();await loadActions();await loadDonations();renderAll();return;}
+  }catch(e){console.warn(e);}}
+  let d=BAKED;if(PROXY){try{const r=await fetch(PROXY);if(r.ok){d=await r.json();LIVE=true;}}catch(e){}}
+  ALL=(d.entries||[]).slice();setMeta(d);renderPeriodBar();$('who').value=getUser();await loadActions();await loadDonations();renderAll();}
+boot();
+</script>
+</body>
+</html>
