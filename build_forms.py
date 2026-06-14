@@ -46,7 +46,29 @@ PAGES = [
     # Review dashboards — live from Supabase, de-identified snapshot fallback.
     ("music_dashboard.html",   "artists-live-music.html",  "music_deid.json"),
     ("outreach_dashboard.html","community-outreach.html",  "outreach_deid.json"),
+    # Donation Fulfillment Board — self-contained (own inline CSS/logo), live-only
+    # from the `donations` table, no PII. Fed by the outreach page's "Commitment made".
+    ("donation_board.html",    "donations.html",           None),
 ]
+
+# Persistent "back to the hub" link stamped into every page (forms + dashboards),
+# so the team can always return to the Command Center. Self-contained inline styles
+# (no dependency on each page's CSS), brand colors hardcoded so it looks right
+# whether the page uses the shared brand vars or its own.
+HUB_URL = "https://lrcommandcenter.netlify.app/"
+CC_LINK = (
+    '<a href="' + HUB_URL + '" aria-label="Back to the Lake Roots Command Center" '
+    'style="position:fixed;right:14px;bottom:14px;z-index:99999;display:inline-flex;'
+    'align-items:center;gap:7px;background:#363A2E;color:#F4F1E4;text-decoration:none;'
+    "font-family:'Oswald','Barlow Condensed',system-ui,sans-serif;text-transform:uppercase;"
+    'letter-spacing:.6px;font-size:12px;line-height:1;padding:10px 15px;border-radius:999px;'
+    'box-shadow:0 4px 14px rgba(43,48,38,.30)">⌂ Command Center</a>'
+)
+
+def inject_hub_link(html):
+    """Insert the floating Command Center link just before the closing </body>."""
+    i = html.rfind("</body>")
+    return html if i == -1 else html[:i] + "  " + CC_LINK + "\n" + html[i:]
 
 def b64(path):
     with open(path, "rb") as f:
@@ -78,6 +100,7 @@ def main():
         html = html.replace("__CSS__", css).replace("__LOGO__", logo)
         # PROXY stays empty (no Apps Script proxy); DATA is the baked snapshot or null.
         html = html.replace("__PROXY__", "").replace("__DATA__", data)
+        html = inject_hub_link(html)
         open(os.path.join(WEB, out_name), "w").write(html)
         print(f"  {out_name:24s} <- templates/{tpl_name}  ({len(html)//1024} KB)")
 

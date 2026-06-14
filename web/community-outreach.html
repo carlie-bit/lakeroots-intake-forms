@@ -208,7 +208,7 @@ header{background:var(--forest);color:var(--cream);padding:16px 20px}
         <span class="wfstep">Recap</span>
       </div>
       <div class="wffork">Approved <b>donations</b> → prepare basket → deliver &nbsp;·&nbsp; Approved <b>events</b> → calendar → held. Declined items are logged &amp; notified; On-Hold returns for re-review.</div>
-      <a class="wfbtn" href="https://lrcommandcenter.netlify.app/donations.html" target="_blank" rel="noopener">🎁 Open Donation Fulfillment Board ↗</a>
+      <a class="wfbtn" href="donations.html">🎁 Open Donation Fulfillment Board →</a>
     </div>
     <div class="panel"><h3>Pipeline by Status <span class="hint">click to view</span></h3><div class="bars" id="statusBars"></div></div>
     <div class="panel"><h3>Requests by Type <span class="hint" id="typeHint"></span></h3><div class="bars" id="typeBars"></div></div>
@@ -1201,5 +1201,6 @@ async function boot(){
   ALL=(d.entries||[]).slice();setMeta(d);renderPeriodBar();$('who').value=getUser();await loadActions();await loadDonations();renderAll();}
 boot();
 </script>
+  <a href="https://lrcommandcenter.netlify.app/" aria-label="Back to the Lake Roots Command Center" style="position:fixed;right:14px;bottom:14px;z-index:99999;display:inline-flex;align-items:center;gap:7px;background:#363A2E;color:#F4F1E4;text-decoration:none;font-family:'Oswald','Barlow Condensed',system-ui,sans-serif;text-transform:uppercase;letter-spacing:.6px;font-size:12px;line-height:1;padding:10px 15px;border-radius:999px;box-shadow:0 4px 14px rgba(43,48,38,.30)">⌂ Command Center</a>
 </body>
 </html>
