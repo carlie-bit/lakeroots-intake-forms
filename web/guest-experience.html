@@ -127,6 +127,15 @@ header{background:var(--forest);color:var(--cream);padding:16px 20px}
 .addcmt input{flex:1;border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px}
 .addcmt button{border:1.5px solid var(--forest);background:var(--forest);color:var(--cream);border-radius:8px;padding:0 12px;font-size:12px;cursor:pointer}
 .nouser{font-size:11px;color:var(--red);margin-top:4px;display:none}
+.filterbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 2px}
+.filterbar input{border:1.5px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;background:#fff;color:var(--ink);flex:1;min-width:200px}
+.filterbar .clearf{font-size:11px;color:var(--gray);cursor:pointer;text-decoration:underline}
+.dash-table th.srt{cursor:pointer;user-select:none;white-space:nowrap}
+.dash-table th.srt:hover{color:var(--forest)}
+.dash-table th .arr{font-size:9px;color:var(--gold);margin-left:3px}
+.allt td.it{max-width:520px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.allcount{font-size:11px;color:var(--gray);margin-top:8px}
+@media(max-width:680px){.allt td.it{max-width:150px}.allt th:nth-child(4),.allt td:nth-child(4){display:none}}
 </style>
 </head>
 <body>
@@ -144,12 +153,17 @@ header{background:var(--forest);color:var(--cream);padding:16px 20px}
     <div class="periodbar" id="periodbar"><span class="pl">Period</span></div>
     <div class="whoami">You: <input id="who" placeholder="your name" oninput="setUser(this.value)"></div>
   </div>
+  <div class="filterbar">
+    <input id="q" placeholder="🔍 Search feedback, type, notes…" oninput="SEARCH=this.value.toLowerCase().trim();renderAll()">
+    <span class="clearf" onclick="clearSearch()">clear search</span>
+  </div>
   <div class="kpis" id="kpis"></div>
   <div class="panels">
     <div class="panel"><h3>Sentiment Mix <span class="hint">click to view entries</span></h3><div class="donut"><div id="donut"></div><div class="legend" id="donutLegend"></div></div></div>
     <div class="panel"><h3>Feedback by Type <span class="hint" id="typeHint"></span></h3><div class="bars" id="typeBars"></div></div>
     <div class="panel full"><h3>Open Follow-ups <span class="hint">calls/voicemails not yet resolved · de-identified</span></h3><table class="dash-table" id="openTbl"></table></div>
     <div class="panel full"><h3>Negative Watch List <span class="hint">most guests impacted first · click a row</span></h3><table class="dash-table" id="negTbl"></table></div>
+    <div class="panel full"><h3>All Feedback <span class="hint">every entry · click a column to sort, search above to filter · click a row</span></h3><table class="dash-table allt" id="allTbl"></table><div class="allcount" id="allCount"></div></div>
     <div class="panel full" id="removedPanel" style="display:none"><h3>Removed Entries <span class="hint">kept out of the counts · restore anytime</span></h3><table class="dash-table" id="removedTbl"></table></div>
   </div>
   <div class="note" id="note"></div>
@@ -545,6 +559,8 @@ const COL={'Negative':'var(--red)','Idea':'var(--gold)','Positive':'var(--sage)'
 const STATUSES=[['watching','Watching'],['planned','Action planned'],['in_progress','In progress'],['resolved','Resolved'],['declined','Decided not to pursue']];
 const PERIODS=[['All time',0],['12 mo',365],['6 mo',183],['3 mo',92],['30 days',30]];
 let ALL=[], ACTIONS={}, periodDays=0, LIVE=false;
+let SEARCH='', sortKey='date', sortDir=-1; // All Feedback table: date desc by default
+const SORTS=[['date','Date'],['type','Type'],['sentiment','Sentiment'],['guests','Guests']];
 
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 // Safe inside a single-quoted inline handler within a double-quoted attribute:
@@ -556,7 +572,22 @@ function jsId(s){return String(s==null?'':s)
 function parseD(s){const m=(s||'').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);return m?new Date(m[3],m[1]-1,m[2]):null;}
 function fmtDate(s){const d=parseD(s);return d?d.toLocaleDateString('en-US',{month:'short',day:'numeric'}):(s||'—');}
 function inPeriod(e){if(!periodDays)return true;const d=parseD(e.date);if(!d)return true;return (Date.now()-d.getTime())/86400000<=periodDays;}
-function filtered(){return ALL.filter(e=>!e.deleted&&inPeriod(e));}
+function matchSearch(e){if(!SEARCH)return true;return ((e.label||'')+' '+(e.feedback||'')+' '+(e.extra||'')+' '+(e.type||'')+' '+(e.sentiment||'')).toLowerCase().includes(SEARCH);}
+function filtered(){return ALL.filter(e=>!e.deleted&&inPeriod(e)&&matchSearch(e));}
+function clearSearch(){SEARCH='';var q=$('q');if(q)q.value='';renderAll();}
+function sortVal(e,key){if(key==='date'){const d=parseD(e.date);return d?d.getTime():0;}if(key==='guests')return e.guests||0;return (e[key]||'').toString().toLowerCase();}
+function setSort(key){if(sortKey===key){sortDir=-sortDir;}else{sortKey=key;sortDir=(key==='date'||key==='guests')?-1:1;}renderAll();}
+function renderAllTable(F){
+  const rows=F.slice().sort((a,b)=>{const va=sortVal(a,sortKey),vb=sortVal(b,sortKey);
+    if(va<vb)return -1*sortDir;if(va>vb)return 1*sortDir;
+    return (parseD(b.date)||0)-(parseD(a.date)||0);});
+  const arrow=k=>sortKey===k?`<span class="arr">${sortDir<0?'▼':'▲'}</span>`:'';
+  const head=`<tr><th class="srt" onclick="setSort('date')">Date${arrow('date')}</th><th class="srt" onclick="setSort('type')">Type${arrow('type')}</th><th class="srt" onclick="setSort('sentiment')">Sentiment${arrow('sentiment')}</th><th class="srt r" onclick="setSort('guests')">Guests${arrow('guests')}</th><th>Item</th></tr>`;
+  const body=rows.length?rows.map(e=>`<tr class="clk" onclick="drill('Feedback',[ALL.find(x=>x.id==='${jsId(e.id)}')])"><td class="r">${fmtDate(e.date)}</td><td>${esc(e.type)}</td><td>${statusDot(e.id)}${esc(e.sentiment)}</td><td class="r">${e.guests||'—'}</td><td class="it" title="${esc(e.label)}">${esc(e.label)}</td></tr>`).join('')
+    :`<tr><td style="color:var(--gray);padding:12px 0" colspan="5">No feedback${SEARCH?' matches your search — try clearing it':''}.</td></tr>`;
+  $('allTbl').innerHTML=head+body;
+  $('allCount').textContent=`${rows.length} ${rows.length===1?'entry':'entries'}${SEARCH?' (filtered)':''} · sorted by ${SORTS.find(s=>s[0]===sortKey)[1]} ${sortDir<0?'↓':'↑'}`;
+}
 
 function donut(data){
   const tot=data.reduce((s,d)=>s+d.value,0)||1; let a=-Math.PI/2; const R=58,r=34,cx=70,cy=70; let p='';
@@ -603,6 +634,7 @@ function renderAll(){
 
   const neg=F.filter(e=>e.sentiment==='Negative').slice().sort((a,b)=>b.guests-a.guests);
   $('negTbl').innerHTML=neg.length?`<tr><th>Item</th><th>Type</th><th class="r">Guests</th><th class="r">Date</th></tr>`+neg.map(o=>`<tr class="clk" onclick="drill('Negative',[ALL.find(e=>e.id==='${jsId(o.id)}')])"><td class="nm">${statusDot(o.id)}${esc(o.label)}</td><td>${esc(o.type)}</td><td class="r">${o.guests||'—'}</td><td class="r">${fmtDate(o.date)}</td></tr>`).join(''):`<tr><td style="color:var(--gray);padding:12px 0">No negative feedback in this period.</td></tr>`;
+  renderAllTable(F);
   renderRemoved();
 }
 function renderRemoved(){

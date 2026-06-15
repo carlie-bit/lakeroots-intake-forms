@@ -59,7 +59,15 @@ It also links out to forms hosted elsewhere (Google Forms, the SOP site).
   collide).
 - **`git pull --rebase` before push.**
 
+## Dashboards here
+All four Supabase-backed review dashboards now live here, each on its original
+backend: **Artists & Live Music** (`artists-live-music.html`), **Community
+Outreach** (`community-outreach.html`), **Donation Fulfillment Board**
+(`donations.html`), and **Guest Experience** (`guest-experience.html`). Their
+old hub pages on `market-bar-reports` were retired and 301-redirect here.
+
 ## In progress
-Review dashboards are migrating in from `market-bar-reports` and the SOP site
-(incident, service-provider). Keep each one's **same Supabase backend** as it
-moves; **repoint their links last**, after the page is verified live here.
+The SOP-site review dashboards (incident, service-provider) may still migrate
+in. Keep each one's **same Supabase backend** as it moves; **repoint its links
+last**, after the page is verified live here. Do dashboard/data work in **this**
+repo — not `market-bar-reports`.
