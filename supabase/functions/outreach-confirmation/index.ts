@@ -1,9 +1,11 @@
 // Sends a branded "thanks for reaching out" confirmation + summary to the person
 // who submitted the Community Outreach / partnership form.
 //
-// Triggered by a Database Webhook on INSERT into public.outreach_contacts
-// (fires once the contact row — which carries the submitter's email — exists).
-// Reads the linked outreach_submissions row for the summary, then sends via Resend.
+// Invoked by an AFTER INSERT trigger on public.outreach_contacts (via pg_net),
+// which passes {submission_id}. The function looks up the contact email + the
+// submission itself with the service role, so it can only ever email an address
+// already on file for a real submission (no arbitrary sends). verify_jwt is off
+// because the trigger is internal and carries no JWT; the DB lookup is the guard.
 //
 // Required secret: RESEND_API_KEY. SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are
 // provided to edge functions automatically.
@@ -13,6 +15,7 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const FROM = "Lake Roots <hello@lakerootscl.com>";
+const H = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` };
 
 const esc = (s: unknown) =>
   String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]!));
@@ -24,13 +27,8 @@ function buildEmail(name: string, s: Record<string, unknown>): string {
     ["Proposed / needed-by date", s.proposed_date],
     ["Details", s.donation_details || s.event_desc || s.market_products || s.brief_desc || s.donation_purpose || s.other_notes],
   ];
-  const summary = rows
-    .filter(([, v]) => v)
-    .map(
-      ([l, v]) =>
-        `<tr><td style="padding:6px 14px 6px 0;color:#717F7F;font-size:12px;text-transform:uppercase;letter-spacing:.6px;vertical-align:top;white-space:nowrap">${esc(l)}</td><td style="padding:6px 0;color:#2B3026;font-size:14px;vertical-align:top">${esc(v)}</td></tr>`,
-    )
-    .join("");
+  const summary = rows.filter(([, v]) => v).map(([l, v]) =>
+    `<tr><td style="padding:6px 14px 6px 0;color:#717F7F;font-size:12px;text-transform:uppercase;letter-spacing:.6px;vertical-align:top;white-space:nowrap">${esc(l)}</td><td style="padding:6px 0;color:#2B3026;font-size:14px;vertical-align:top">${esc(v)}</td></tr>`).join("");
   return `<!doctype html><html><body style="margin:0;background:#F7F4E6;padding:0">
   <div style="max-width:560px;margin:0 auto;padding:28px 22px;font-family:'Helvetica Neue',Arial,sans-serif;color:#2B3026">
     <div style="font-family:Georgia,serif;font-weight:bold;letter-spacing:2px;font-size:20px;color:#363A2E">LAKE ROOTS</div>
@@ -49,42 +47,36 @@ function buildEmail(name: string, s: Record<string, unknown>): string {
 
 Deno.serve(async (req: Request) => {
   try {
-    const body = await req.json().catch(() => ({}));
-    const rec = body?.record ?? body ?? {};
-    const email: string | undefined = rec?.email;
-    const subId: string | undefined = rec?.submission_id;
-    if (!email || !subId) return Response.json({ skipped: "no email/submission_id" });
+    const body = await req.json().catch(() => ({} as Record<string, unknown>));
+    const subId = (body?.submission_id ?? (body?.record as Record<string, unknown>)?.submission_id) as string | undefined;
+    if (!subId) return Response.json({ skipped: "no submission_id" });
 
-    // Pull the submission for the summary (service role bypasses RLS).
-    let s: Record<string, unknown> = {};
-    try {
-      const r = await fetch(
-        `${SUPABASE_URL}/rest/v1/outreach_submissions?id=eq.${subId}&select=*`,
-        { headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` } },
-      );
-      s = (await r.json())?.[0] ?? {};
-    } catch (_) { /* summary is best-effort */ }
+    const c = (await (await fetch(
+      `${SUPABASE_URL}/rest/v1/outreach_contacts?submission_id=eq.${subId}&select=first_name,email`,
+      { headers: H },
+    )).json())?.[0] as { first_name?: string; email?: string } | undefined;
+    if (!c?.email) return Response.json({ skipped: "no contact email on file" });
 
-    // Only auto-confirm real web submissions (skip manual/legacy dashboard adds).
+    const s = ((await (await fetch(
+      `${SUPABASE_URL}/rest/v1/outreach_submissions?id=eq.${subId}&select=*`,
+      { headers: H },
+    )).json())?.[0] ?? {}) as Record<string, unknown>;
     if (s.source && s.source !== "web") return Response.json({ skipped: "non-web source" });
 
-    const name = String(rec.first_name ?? "").trim() || "there";
     if (!RESEND_API_KEY) return Response.json({ skipped: "RESEND_API_KEY not set" });
-
     const send = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from: FROM,
-        to: [email],
+        to: [c.email],
         subject: "Thanks for reaching out to Lake Roots",
-        html: buildEmail(name, s),
+        html: buildEmail(String(c.first_name ?? "").trim() || "there", s),
       }),
     });
     const out = await send.json().catch(() => ({}));
     return Response.json({ ok: send.ok, resend: out }, { status: send.ok ? 200 : 502 });
   } catch (e) {
-    // Never throw back at the webhook — confirmation email is best-effort.
     return Response.json({ error: String(e) });
   }
 });
