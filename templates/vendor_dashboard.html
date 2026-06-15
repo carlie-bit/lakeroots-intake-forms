@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lake Roots — Market Vendors</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Barlow+Condensed:wght@300;400;500;600&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>__CSS__</style>
+<style>
+.topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:16px 0 2px}
+.periodbar{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.periodbar .pl{font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;font-size:10.5px;color:var(--gray);margin-right:2px}
+.periodbar button{font-family:var(--disp);text-transform:uppercase;letter-spacing:.6px;font-size:11px;padding:6px 11px;border-radius:8px;border:1.5px solid var(--line);background:#fff;color:var(--mid);cursor:pointer}
+.periodbar button.on{background:var(--forest);color:var(--cream);border-color:var(--forest)}
+.whoami{margin-left:auto;font-family:var(--disp);text-transform:uppercase;letter-spacing:.6px;font-size:10.5px;color:var(--gray);display:flex;align-items:center;gap:6px}
+.whoami input{text-transform:none;letter-spacing:0;font-size:12px;border:1.5px solid var(--line);border-radius:8px;padding:5px 9px;width:130px}
+.filterbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 2px}
+.filterbar input{border:1.5px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;background:#fff;color:var(--ink);flex:1;min-width:200px}
+.filterbar .clearf{font-size:11px;color:var(--gray);cursor:pointer;text-decoration:underline}
+.kpi.clk,.bar.clk{cursor:pointer}.kpi.clk:hover{border-color:var(--gold)}.bar.clk:hover .bl{color:var(--forest);font-weight:600}
+.dash-table tr.clk{cursor:pointer}.dash-table tr.clk:hover td{background:var(--sand)}
+.dash-table th+th,.dash-table td+td{padding-left:18px}
+.dash-table td.r,.dash-table th.r{text-align:right;white-space:nowrap}
+.dash-table th.srt{cursor:pointer;user-select:none;white-space:nowrap}.dash-table th.srt:hover{color:var(--forest)}
+.dash-table th .arr{font-size:9px;color:var(--gold);margin-left:3px}
+.dash-table td.nm{max-width:0;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.allcount{font-size:11px;color:var(--gray);margin-top:8px}
+.sdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.sdot.new{background:var(--sage)}.sdot.reviewing{background:var(--gold)}.sdot.contacted{background:#4a6b7c}.sdot.approved{background:var(--forest)}.sdot.onboarded{background:#2f6f4e}.sdot.paused{background:#9b8467}.sdot.declined{background:var(--red)}
+.pill{white-space:nowrap;display:inline-block;color:#fff;border-radius:999px;padding:2px 9px;font-size:11px}
+.foodtag{font-size:10px;font-family:var(--disp);text-transform:uppercase;letter-spacing:.5px;color:var(--forest);border:1px solid var(--line);border-radius:6px;padding:1px 6px}
+@media(max-width:680px){.allt th:nth-child(2),.allt td:nth-child(2),.allt th:nth-child(3),.allt td:nth-child(3){display:none}}
+.modal-bg{position:fixed;inset:0;background:rgba(43,48,38,.5);display:none;align-items:center;justify-content:center;padding:18px;z-index:100}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:14px;max-width:600px;width:100%;max-height:88vh;overflow:auto;padding:18px 20px}
+.modal .mh{display:flex;justify-content:space-between;align-items:center}
+.modal .mt{font-family:var(--disp);font-weight:600;font-size:19px;color:var(--forest);text-transform:uppercase;letter-spacing:.5px}
+.modal .mx{border:none;background:none;font-size:22px;cursor:pointer;color:var(--gray)}
+.modal .mc{font-size:12px;color:var(--gray);margin-bottom:12px}
+.dentry{border:1px solid var(--line);border-radius:11px;padding:11px 12px;margin-bottom:10px}
+.dentry .dhead{font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px}
+.dentry .dlabel{font-size:16px;margin:3px 0 8px;color:var(--ink);font-weight:600}
+.detrows{margin:2px 0 8px;font-size:12.5px;color:var(--mid);line-height:1.55}.detrows b{color:var(--forest)}
+.docs{margin:6px 0;font-size:12.5px;color:var(--mid);line-height:1.7}.docs b{color:var(--forest)}
+.dchips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.dchips button{font-size:11px;padding:4px 9px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--mid);cursor:pointer}
+.dchips button.on{color:#fff;border-color:transparent}
+.dchips button.on[data-s=new]{background:var(--sage)}.dchips button.on[data-s=reviewing]{background:var(--gold)}.dchips button.on[data-s=contacted]{background:#4a6b7c}.dchips button.on[data-s=approved]{background:var(--forest)}.dchips button.on[data-s=onboarded]{background:#2f6f4e}.dchips button.on[data-s=paused]{background:#9b8467}.dchips button.on[data-s=declined]{background:var(--red)}
+.comments{margin:4px 0 8px}.cmt{font-size:12.5px;padding:6px 0;border-top:1px dashed var(--line)}
+.cmt .by{font-weight:600;color:var(--forest)}.cmt .at{color:var(--gray);font-size:11px;margin-left:5px}.cmt .tx{display:block;margin-top:1px;color:var(--ink)}
+.addcmt{display:flex;gap:6px;margin-top:6px}.addcmt input{flex:1;border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px}
+.addcmt button{border:1.5px solid var(--forest);background:var(--forest);color:var(--cream);border-radius:8px;padding:0 12px;font-size:12px;cursor:pointer}
+.nouser{font-size:11px;color:var(--red);margin-top:4px;display:none}
+</style>
+</head>
+<body>
+<header><div class="hd">
+  <div class="mono"><img src="data:image/png;base64,__LOGO__" alt="LR"></div>
+  <div class="wordmark"><div class="t1">LAKE ROOTS</div><div class="t2">Café · Market · Bar</div></div>
+  <div class="tag"><div class="tt">Market Vendors</div><div class="td" id="updated"></div></div>
+</div></header>
+<div class="wrap">
+  <div class="title">
+    <div class="g1">MARKET VENDORS <span class="live snap" id="liveBadge">SNAPSHOT</span></div>
+    <div class="g2">makers &amp; suppliers who want to sell in our market</div>
+  </div>
+  <div class="topbar">
+    <div class="periodbar" id="periodbar"><span class="pl">Period</span></div>
+    <div class="whoami">You: <input id="who" placeholder="your name" oninput="setUser(this.value)"></div>
+  </div>
+  <div class="filterbar">
+    <input id="q" placeholder="🔍 Search vendors, products, category, notes…" oninput="SEARCH=this.value.toLowerCase().trim();renderAll()">
+    <span class="clearf" onclick="clearSearch()">clear search</span>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <div class="panels">
+    <div class="panel"><h3>By Stage <span class="hint">click to view</span></h3><div class="bars" id="statusBars"></div></div>
+    <div class="panel"><h3>By Category <span class="hint" id="catHint"></span></h3><div class="bars" id="catBars"></div></div>
+    <div class="panel full"><h3>🆕 New — needs review <span class="hint">fresh vendor inquiries · click a row</span></h3><table class="dash-table" id="newTbl"></table></div>
+    <div class="panel full"><h3>📋 All Vendors <span class="hint">every inquiry · click a column to sort, search above to filter · click a row</span></h3><table class="dash-table allt" id="allTbl"></table><div class="allcount" id="allCount"></div></div>
+    <div class="panel full" id="removedPanel" style="display:none"><h3>Removed Entries <span class="hint">kept out of the counts · restore anytime</span></h3><table class="dash-table" id="removedTbl"></table></div>
+  </div>
+  <div class="note" id="note"></div>
+  <div class="foot">rooted in community</div>
+</div>
+
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeDrill()">
+  <div class="modal">
+    <div class="mh"><div class="mt" id="mTitle">Vendor</div><button class="mx" onclick="closeDrill()">×</button></div>
+    <div class="mc" id="mCount"></div>
+    <div id="mBody"></div>
+  </div>
+</div>
+
+<script>
+const BAKED=__DATA__||{};
+const SUPA_URL="https://gqgjppxzdwzypxontmou.supabase.co";
+const SUPA_KEY="sb_publishable_DieuLBMaMTJwZD3SUfgvGA_9I2tMOhP";
+const sb=window.supabase?window.supabase.createClient(SUPA_URL,SUPA_KEY):null;
+const $=id=>document.getElementById(id);
+const STATUSES=[['new','New'],['reviewing','Reviewing'],['contacted','Contacted'],['approved','Approved'],['onboarded','Onboarded'],['paused','Paused'],['declined','Declined']];
+const SLABEL=Object.fromEntries(STATUSES);
+const SCOL={new:'var(--sage)',reviewing:'var(--gold)',contacted:'#4a6b7c',approved:'var(--forest)',onboarded:'#2f6f4e',paused:'#9b8467',declined:'var(--red)'};
+const PERIODS=[['All time',0],['12 mo',365],['6 mo',183],['3 mo',92],['30 days',30]];
+let ALL=[], periodDays=0, LIVE=false, SEARCH='', sortKey='submitted', sortDir=-1;
+const SORTS=[['name','Business'],['category','Category'],['status','Stage'],['submitted','Submitted']];
+const STAGE_ORDER=Object.fromEntries(STATUSES.map(([k],i)=>[k,i]));
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function jsId(s){return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/[\r\n]/g,' ');}
+function cssId(id){return (id||'').replace(/[^a-zA-Z0-9]/g,'');}
+function getUser(){return (localStorage.getItem('lr_user')||'').trim();}
+function setUser(v){localStorage.setItem('lr_user',(v||'').trim());}
+function today(){return new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function fmtDate(s){const d=s?new Date(s):null;return d&&!isNaN(d)?d.toLocaleDateString('en-US',{month:'short',day:'numeric'}):'—';}
+function inPeriod(e){if(!periodDays)return true;const d=new Date(e.created_at);if(isNaN(d))return true;return (Date.now()-d.getTime())/86400000<=periodDays;}
+function clearSearch(){SEARCH='';const q=$('q');if(q)q.value='';renderAll();}
+
+function mapV(r){return {id:r.id,sid:r.id,created_at:r.created_at,name:r.dba||r.legal_name||'(unnamed)',legal:r.legal_name||'',dba:r.dba||'',
+  category:r.product_category||'—',food:!!r.offers_food,status:r.status||'new',
+  product_desc:r.product_desc||'',where_sell:r.where_sell||'',website:r.website||'',social:r.social||'',
+  addr:[r.biz_street,r.biz_city,r.biz_state,r.biz_zip].filter(Boolean).join(', '),title:r.title||'',
+  kitchen_name:r.kitchen_name||'',kitchen_address:r.kitchen_address||'',copacker:r.copacker||'',
+  barcodes:r.barcodes,labels:r.labels_confirmed,notes:r.notes||'',
+  insurance:r.insurance_path||'',health:r.health_path||'',materials:r.materials_paths||'',
+  comments:r.comments||[],source:r.source||'web',deleted:!!r.deleted_at};}
+
+function matchSearch(e){if(!SEARCH)return true;return ((e.name+' '+e.legal+' '+e.category+' '+e.product_desc+' '+e.where_sell+' '+e.notes).toLowerCase()).includes(SEARCH);}
+function filtered(){return ALL.filter(e=>!e.deleted&&inPeriod(e)&&matchSearch(e));}
+function statusPill(e){return `<span class="pill" style="background:${SCOL[e.status]||'var(--gray)'}">${SLABEL[e.status]||'New'}</span>`;}
+function statusDot(e){return `<span class="sdot ${e.status}"></span>`;}
+
+function renderPeriodBar(){$('periodbar').innerHTML='<span class="pl">Period</span>'+PERIODS.map(([l,d])=>`<button class="${d===periodDays?'on':''}" onclick="setPeriod(${d})">${l}</button>`).join('');}
+function setPeriod(d){periodDays=d;renderPeriodBar();renderAll();}
+function bars(el,entries,colf,clickf){const mx=Math.max(1,...entries.map(e=>e[1]));
+  el.innerHTML=entries.map(([l,n])=>`<div class="bar clk" onclick="${clickf(l)}"><div class="bl">${esc(l)}</div><div class="bt"><div class="bf" style="width:${100*n/mx}%;background:${colf(l)}"></div></div><div class="bv">${n}</div></div>`).join('');}
+
+function renderAll(){
+  const F=filtered();
+  const news=F.filter(e=>['new','reviewing'].includes(e.status));
+  const appr=F.filter(e=>['approved','onboarded'].includes(e.status));
+  const food=F.filter(e=>e.food);
+  const kpis=[
+    ['New to review',news.length,'fresh + reviewing','hl',()=>drill('New — needs review',news)],
+    ['Approved',appr.length,'approved + onboarded','gold',()=>drill('Approved vendors',appr)],
+    ['Food vendors',food.length,'need compliance docs','',()=>drill('Food vendors',food)],
+    ['Total',F.length,'vendor inquiries','',()=>drill('All vendors',F)],
+  ];
+  $('kpis').innerHTML=kpis.map(([l,v,s,c],i)=>`<div class="kpi clk ${c}" onclick="KPI[${i}]()"><div class="kl">${l}</div><div class="kv">${v}</div><div class="ks">${s}</div></div>`).join('');
+  window.KPI=kpis.map(x=>x[4]);
+
+  const sC={};F.forEach(e=>sC[e.status]=(sC[e.status]||0)+1);
+  bars($('statusBars'),STATUSES.filter(([k])=>sC[k]).map(([k,l])=>[l,sC[k]]),l=>{const k=STATUSES.find(x=>x[1]===l)[0];return SCOL[k];},l=>{const k=STATUSES.find(x=>x[1]===l)[0];return `drill('${esc(l)}',filtered().filter(e=>e.status==='${k}'))`;});
+  const cC={};F.forEach(e=>{const c=e.category||'—';cC[c]=(cC[c]||0)+1;});
+  const cats=Object.entries(cC).sort((a,b)=>b[1]-a[1]);$('catHint').textContent=cats.length+' categories';
+  bars($('catBars'),cats.slice(0,8),()=>'var(--brown)',l=>`drill('${esc(l)} vendors',filtered().filter(e=>(e.category||'—')==='${esc(l)}'))`);
+
+  const news2=F.filter(e=>e.status==='new');
+  const row=e=>`<tr class="clk" onclick="drillOne('${jsId(e.id)}')"><td class="nm">${statusDot(e)}${esc(e.name)}${e.food?' <span class="foodtag">food</span>':''}</td><td>${esc(e.category)}</td><td class="r">${fmtDate(e.created_at)}</td></tr>`;
+  $('newTbl').innerHTML=news2.length?`<tr><th>Business</th><th>Category</th><th class="r">Submitted</th></tr>`+news2.map(row).join(''):`<tr><td style="color:var(--gray);padding:12px 0">No new vendor inquiries${SEARCH?' match your search':''}.</td></tr>`;
+
+  renderAllTable(F);
+  const del=ALL.filter(e=>e.deleted);
+  $('removedPanel').style.display=del.length?'':'none';
+  $('removedTbl').innerHTML=del.length?`<tr><th>Business</th><th>Category</th><th class="r"></th></tr>`+del.map(e=>`<tr><td class="nm" style="color:var(--gray)">${esc(e.name)}</td><td style="color:var(--gray)">${esc(e.category)}</td><td class="r"><a href="#" style="color:var(--forest);font-size:12px" onclick="setDeleted('${jsId(e.id)}',false);return false">Restore</a></td></tr>`).join(''):'';
+}
+function sortVal(e,k){if(k==='status')return STAGE_ORDER[e.status]??99;if(k==='submitted')return new Date(e.created_at).getTime()||0;return (e[k]||'').toString().toLowerCase();}
+function setSort(k){if(sortKey===k)sortDir=-sortDir;else{sortKey=k;sortDir=(k==='submitted')?-1:1;}renderAll();}
+function renderAllTable(F){
+  const rows=F.slice().sort((a,b)=>{const va=sortVal(a,sortKey),vb=sortVal(b,sortKey);if(va<vb)return -sortDir;if(va>vb)return sortDir;return (new Date(b.created_at)-new Date(a.created_at));});
+  const arrow=k=>sortKey===k?`<span class="arr">${sortDir<0?'▼':'▲'}</span>`:'';
+  const head=`<tr><th class="srt" onclick="setSort('name')">Business${arrow('name')}</th><th class="srt" onclick="setSort('category')">Category${arrow('category')}</th><th class="srt" onclick="setSort('status')">Stage${arrow('status')}</th><th class="srt r" onclick="setSort('submitted')">Submitted${arrow('submitted')}</th></tr>`;
+  const body=rows.length?rows.map(e=>`<tr class="clk" onclick="drillOne('${jsId(e.id)}')"><td class="nm">${statusDot(e)}${esc(e.name)}${e.food?' <span class="foodtag">food</span>':''}</td><td>${esc(e.category)}</td><td>${statusPill(e)}</td><td class="r">${fmtDate(e.created_at)}</td></tr>`).join('')
+    :`<tr><td style="color:var(--gray);padding:12px 0" colspan="4">No vendors${SEARCH?' match your search':''}.</td></tr>`;
+  $('allTbl').innerHTML=head+body;
+  $('allCount').textContent=`${rows.length} ${rows.length===1?'vendor':'vendors'}${SEARCH?' (filtered)':''} · sorted by ${SORTS.find(s=>s[0]===sortKey)[1]} ${sortDir<0?'↓':'↑'}`;
+}
+
+function drillOne(id){drill('Vendor',[ALL.find(e=>e.id===id)]);}
+function docLine(label,val){if(!val)return '';
+  const parts=val.split(',').map(s=>s.trim()).filter(Boolean);
+  const links=parts.map((p,i)=>{const lbl=parts.length>1?'File '+(i+1):'Open';
+    return /^https?:/i.test(p)?`<a href="${esc(p)}" target="_blank" rel="noopener" style="color:var(--forest)">${lbl} ↗</a>`
+      :`<a href="#" style="color:var(--forest)" onclick="openDoc('${jsId(p)}');return false">🔒 ${lbl}</a>`;}).join(' · ');
+  return `<div><b>${label}:</b> ${links}</div>`;}
+async function openDoc(path){if(!sb){alert('Open the live dashboard to view documents.');return;}
+  const {data,error}=await sb.storage.from('vendor-docs').createSignedUrl(path,3600);
+  if(error||!data){alert('Could not open this file.');return;}window.open(data.signedUrl,'_blank','noopener');}
+
+function detailBlock(e){
+  const rows=[['Legal name',e.legal&&e.legal!==e.dba?e.legal:''],['Products',e.product_desc],['Category',e.category!=='—'?e.category:''],
+    ['Where else they sell',e.where_sell],['Address',e.addr],['Title',e.title],
+    ['Food products',e.food?'Yes':''],['Commercial kitchen',e.kitchen_name],['Kitchen address',e.kitchen_address],['Co-packer',e.copacker],
+    ['Labels confirmed',e.food?(e.labels?'Yes':'No'):''],['Barcodes',e.barcodes==null?'':(e.barcodes?'Yes':'No')],['Notes',e.notes]].filter(x=>x[1]);
+  let h=rows.length?`<div class="detrows">${rows.map(([l,v])=>`<div><b>${l}:</b> ${esc(String(v))}</div>`).join('')}</div>`:'';
+  const w=e.website?`<div><b>Website:</b> <a href="${esc(/^https?:/i.test(e.website)?e.website:'https://'+e.website)}" target="_blank" rel="noopener" style="color:var(--forest)">${esc(e.website)}</a></div>`:'';
+  const s=e.social?`<div><b>Social:</b> ${esc(e.social)}</div>`:'';
+  const docs=(docLine('Insurance',e.insurance)+docLine('Health inspection',e.health)+docLine('Marketing materials',e.materials));
+  return h+(w||s?`<div class="detrows">${w}${s}</div>`:'')+(docs?`<div class="docs">${docs}</div>`:'');}
+
+function drill(title,list){list=(list||[]).filter(Boolean);
+  $('mTitle').textContent=title;$('mCount').textContent=list.length+' '+(list.length===1?'vendor':'vendors');
+  $('mBody').innerHTML=list.map(e=>{const c=cssId(e.id);
+    return `<div class="dentry">
+      <div class="dhead">Submitted ${fmtDate(e.created_at)} · ${esc(e.category)}${e.food?' · food':''}</div>
+      <div class="dlabel">${esc(e.name)}</div>
+      ${detailBlock(e)}
+      <div class="dchips">${STATUSES.map(([k,l])=>`<button data-s="${k}" class="${e.status===k?'on':''}" onclick="setStatus('${jsId(e.id)}','${k}',this)">${l}</button>`).join('')}</div>
+      <div style="margin:4px 0 6px;font-size:12px"><b style="color:var(--forest)">Contact:</b> <span id="ct-${c}" style="color:var(--mid)">${e.sid?'<a href="#" style="color:var(--forest)" onclick="showContact(\''+jsId(e.id)+'\');return false">🔒 View contact info</a>':'—'}</span></div>
+      <div class="comments" id="cmts-${c}">${renderComments(e.comments)}</div>
+      <div class="addcmt"><input id="cin-${c}" placeholder="Add a note…" onkeydown="if(event.key==='Enter')addComment('${jsId(e.id)}')"><button onclick="addComment('${jsId(e.id)}')">Post</button></div>
+      <div class="nouser" id="nu-${c}">Enter your name (top right) to post.</div>
+      <div style="margin-top:8px"><a href="#" style="font-size:11px;color:var(--red)" onclick="setDeleted('${jsId(e.id)}',true);return false">Delete this entry</a></div>
+    </div>`;}).join('')||'<div style="color:var(--gray)">No vendors.</div>';
+  $('modalBg').classList.add('open');
+}
+function closeDrill(){$('modalBg').classList.remove('open');}
+function renderComments(list){list=list||[];if(!list.length)return '<div style="font-size:12px;color:var(--gray)">No notes yet.</div>';
+  return list.map(x=>`<div class="cmt"><span class="by">${esc(x.by||'team')}</span><span class="at">${esc(x.at||'')}</span><span class="tx">${esc(x.text||'')}</span></div>`).join('');}
+
+async function persist(e){if(!sb)return;const {error}=await sb.from('vendor_submissions').update({status:e.status,comments:e.comments}).eq('id',e.sid);if(error)console.warn('save',error.message);}
+async function setStatus(id,status,btn){const e=ALL.find(x=>x.id===id);if(!e)return;e.status=status;
+  btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.s===status));
+  await persist(e);renderAll();}
+async function addComment(id){const e=ALL.find(x=>x.id===id);if(!e)return;const c=cssId(id);const inp=$('cin-'+c);const text=(inp.value||'').trim();if(!text)return;
+  const user=getUser();if(!user){$('nu-'+c).style.display='block';$('who').focus();return;}
+  e.comments=(e.comments||[]).concat([{by:user,at:today(),text}]);inp.value='';$('cmts-'+c).innerHTML=renderComments(e.comments);await persist(e);}
+async function setDeleted(id,flag){const e=ALL.find(x=>x.id===id);if(!e||!sb){alert('Open the live dashboard to remove or restore.');return;}
+  if(flag&&!confirm('Remove this vendor? It moves to "Removed Entries" — restore anytime.'))return;
+  const {error}=await sb.from('vendor_submissions').update({deleted_at:flag?new Date().toISOString():null}).eq('id',e.sid);
+  if(error){alert('Failed: '+error.message);return;}e.deleted=flag;if(flag)closeDrill();renderAll();}
+async function showContact(id){const e=ALL.find(x=>x.id===id);if(!e||!sb){$('ct-'+cssId(id)).textContent='Open the live dashboard.';return;}
+  const el=$('ct-'+cssId(id));el.textContent='loading…';
+  const {data,error}=await sb.rpc('get_contact',{kind:'vendor',sid:e.sid,pass:''});
+  if(error){el.textContent='Lookup failed.';return;}
+  if(!data||data._none){el.textContent='No contact on file.';return;}
+  el.textContent=[[data.first_name,data.last_name].filter(Boolean).join(' '),data.email,data.phone].filter(Boolean).join(' · ')||'(empty)';}
+
+function setMeta(){$('updated').textContent='Updated '+today();
+  if(LIVE){const b=$('liveBadge');b.textContent='LIVE';b.classList.remove('snap');}
+  $('note').innerHTML=`<b>Contact info on click.</b> Vendor names, emails &amp; phones are stored separately and load only when you click 🔒 View contact info. Documents open in a new tab (legacy ones link to Google Drive; new ones via a secure, expiring link). Stage &amp; notes save live for the whole team. New inquiries from the <a style="color:var(--gold)" href="vendor.html" target="_blank" rel="noopener">vendor form ↗</a> appear on refresh.`;}
+
+async function boot(){
+  $('who').value=getUser();
+  if(sb){try{const {data,error}=await sb.from('vendor_submissions').select('*').order('created_at',{ascending:false});
+    if(!error&&data){ALL=data.map(mapV);LIVE=true;setMeta();renderPeriodBar();renderAll();return;}
+  }catch(e){console.warn(e);}}
+  ALL=(BAKED.entries||[]).map(mapV);setMeta();renderPeriodBar();renderAll();
+}
+boot();
+</script>
+</body>
+</html>

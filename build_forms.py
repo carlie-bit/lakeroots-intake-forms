@@ -48,6 +48,7 @@ PAGES = [
     ("music_dashboard.html",   "artists-live-music.html",  "music_deid.json"),
     ("outreach_dashboard.html","community-outreach.html",  "outreach_deid.json"),
     ("guest_dashboard.html",   "guest-experience.html",    "guest_deid.json"),
+    ("vendor_dashboard.html",  "vendor-review.html",       None),  # live-only from vendor_submissions
     # Donation Fulfillment Board — self-contained (own inline CSS/logo), live-only
     # from the `donations` table, no PII. Fed by the outreach page's "Commitment made".
     ("donation_board.html",    "donations.html",           None),
