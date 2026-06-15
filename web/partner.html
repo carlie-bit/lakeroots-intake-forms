@@ -99,6 +99,11 @@ header{background:var(--forest);color:var(--cream);padding:16px 20px}
 @media(max-width:520px){.row2{grid-template-columns:1fr}}
 .sect{display:none;border-top:1px dashed var(--line);margin-top:18px;padding-top:4px}
 .sect.on{display:block}
+.hidden{display:none}
+.route{display:none;margin:16px 0 4px;padding:16px 18px;background:var(--sand);border:1.5px solid var(--line);border-radius:12px}
+.route.on{display:block}
+.route p{margin:0 0 12px;color:var(--ink);font-size:14.5px;line-height:1.5}
+.route .rbtn{display:inline-flex;align-items:center;gap:7px;background:var(--forest);color:var(--cream);text-decoration:none;padding:12px 20px;border-radius:999px;font-family:var(--disp);text-transform:uppercase;letter-spacing:.8px;font-size:13px}
 .submitbar{margin-top:24px;display:flex;align-items:center;gap:14px}
 .submitbar button{border:none;background:var(--forest);color:var(--cream);border-radius:999px;padding:13px 30px;font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;font-size:14px;cursor:pointer}
 .submitbar button:disabled{opacity:.5;cursor:default}
@@ -130,6 +135,9 @@ header{background:var(--forest);color:var(--cream);padding:16px 20px}
       <option>Event/Hosting</option><option>Catering</option><option>Market Vendor</option><option>Other</option>
     </select>
 
+    <div class="route" id="route"></div>
+
+    <div id="generic">
     <label>Organization or business</label>
     <input id="f_org" required maxlength="300" placeholder="Your organization, business, or 'Independent'">
 
@@ -190,6 +198,7 @@ header{background:var(--forest);color:var(--cream);padding:16px 20px}
     <div class="submitbar"><button id="sendBtn" type="submit">Send inquiry</button></div>
     <div class="errline" id="err"></div>
     <div class="privnote">We'll only use your contact info to follow up about this inquiry. Thanks for thinking of Lake Roots — we read every one of these.</div>
+    </div>
   </form>
 
   <div class="thanks" id="thanks">
@@ -207,14 +216,27 @@ const sb=window.supabase?window.supabase.createClient(SUPA_URL,SUPA_KEY):null;
 const $=id=>document.getElementById(id);
 const v=id=>($(id).value||'').trim()||null;
 
+// Event/Hosting, Catering, and Market Vendor are handled by dedicated forms, not
+// this general intake — route the guest there instead of collecting it here.
+const ROUTES={
+  'Event/Hosting':{msg:'Hosting an event at Lake Roots? Please use our dedicated events form so it reaches the right team right away.',
+    btn:'Open the Events form',url:'https://www.toasttab.com/invoice/lead?rx=3477ef2e-ca38-4b67-a8d3-b0ad50fce024&ot=49621c33-4543-4944-bca0-30c0ac6b4c8d'},
+  'Catering':{msg:'Looking for catering? Please use our dedicated catering form so it reaches the right team right away.',
+    btn:'Open the Catering form',url:'https://www.toasttab.com/invoice/lead?rx=3477ef2e-ca38-4b67-a8d3-b0ad50fce024&ot=45774fc6-5674-4347-9ff0-8460700a4161'},
+  'Market Vendor':{msg:'Want to sell in our market? We have a dedicated vendor form that collects everything we need.',
+    btn:'Open the Vendor form',url:'https://docs.google.com/forms/d/e/1FAIpQLScc2-bkd9SF-Bu3LJ16y6DCtvR9yXAsaR58dTojctN7J1X0DA/viewform'}
+};
 function sections(){
   const t=$('f_type').value;
-  const don=['Donation','Sponsorship','Fundraiser'].includes(t);
-  const evt=['Workshop','Tasting','Event/Hosting','Catering','Collaboration'].includes(t);
-  const mkt=t==='Market Vendor';
-  $('s_donation').classList.toggle('on',don);
-  $('s_event').classList.toggle('on',evt);
-  $('s_market').classList.toggle('on',mkt);
+  const r=ROUTES[t];
+  if(r){
+    $('route').innerHTML=`<p>${r.msg}</p><a class="rbtn" href="${r.url}" target="_blank" rel="noopener">${r.btn} →</a>`;
+    $('route').classList.add('on'); $('generic').classList.add('hidden'); return;
+  }
+  $('route').classList.remove('on'); $('generic').classList.remove('hidden');
+  $('s_donation').classList.toggle('on',['Donation','Sponsorship','Fundraiser'].includes(t));
+  $('s_event').classList.toggle('on',['Workshop','Tasting','Collaboration'].includes(t));
+  $('s_market').classList.toggle('on',false);
 }
 sections();
 
