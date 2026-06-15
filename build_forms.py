@@ -30,7 +30,7 @@ Writes:
 
 Run:  python3 build_forms.py
 """
-import os, base64
+import os, base64, shutil
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 TPL = os.path.join(ROOT, "templates")
@@ -121,6 +121,10 @@ def main():
         html = inject_hub_link(html, out_name)
         open(os.path.join(WEB, out_name), "w").write(html)
         print(f"  {out_name:24s} <- templates/{tpl_name}  ({len(html)//1024} KB)")
+
+    # Brand logo as a real file (transactional emails reference it by URL — email
+    # clients won't render the base64-inlined version the pages use).
+    shutil.copyfile(os.path.join(ASSETS, "lr_monogram.png"), os.path.join(WEB, "lr-logo.png"))
 
     # keep the forms out of search engines (same as the dashboards)
     open(os.path.join(WEB, "_headers"), "w").write("/*\n  X-Robots-Tag: noindex, nofollow\n")
