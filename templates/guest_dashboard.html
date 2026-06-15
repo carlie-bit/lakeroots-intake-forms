@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lake Roots — Guest Experience</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Barlow+Condensed:wght@300;400;500;600&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>__CSS__</style>
+<style>
+.periodbar{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:16px 0 2px}
+.periodbar .pl{font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;font-size:10.5px;color:var(--gray);margin-right:2px}
+.periodbar button{font-family:var(--disp);text-transform:uppercase;letter-spacing:.6px;font-size:11px;padding:6px 11px;border-radius:8px;border:1.5px solid var(--line);background:#fff;color:var(--mid);cursor:pointer}
+.periodbar button.on{background:var(--forest);color:var(--cream);border-color:var(--forest)}
+.kpi.clk,.bar.clk,.li.clk{cursor:pointer}
+.kpi.clk:hover{border-color:var(--gold)}
+.bar.clk:hover .bl{color:var(--forest);font-weight:600}
+.li.clk:hover{text-decoration:underline}
+.dash-table tr.clk{cursor:pointer}
+.dash-table tr.clk:hover td{background:var(--sand)}
+.sdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.sdot.watching{background:var(--gray)} .sdot.planned{background:var(--gold)} .sdot.in_progress{background:#4a6b7c} .sdot.resolved{background:var(--sage)} .sdot.declined{background:#9b8467}
+.modal-bg{position:fixed;inset:0;background:rgba(43,48,38,.5);display:none;align-items:center;justify-content:center;padding:18px;z-index:100}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:14px;max-width:560px;width:100%;max-height:88vh;overflow:auto;padding:18px 20px}
+.modal .mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.modal .mt{font-family:var(--disp);font-weight:600;font-size:19px;color:var(--forest);text-transform:uppercase;letter-spacing:.5px}
+.modal .mx{border:none;background:none;font-size:22px;cursor:pointer;color:var(--gray);line-height:1}
+.modal .mc{font-size:12px;color:var(--gray);margin-bottom:12px}
+.dentry{border:1px solid var(--line);border-radius:11px;padding:11px 12px;margin-bottom:10px}
+.dentry .dhead{font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px}
+.dentry .dlabel{font-size:14px;margin:3px 0 8px;color:var(--ink)}
+.dchips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.dchips button{font-size:11px;padding:4px 9px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--mid);cursor:pointer}
+.dchips button.on{color:#fff;border-color:transparent}
+.dchips button.on[data-s=watching]{background:var(--gray)} .dchips button.on[data-s=planned]{background:var(--gold)}
+.dchips button.on[data-s=in_progress]{background:#4a6b7c} .dchips button.on[data-s=resolved]{background:var(--sage)} .dchips button.on[data-s=declined]{background:#9b8467}
+.whoami{margin-left:auto;font-family:var(--disp);text-transform:uppercase;letter-spacing:.6px;font-size:10.5px;color:var(--gray);display:flex;align-items:center;gap:6px}
+.whoami input{font-family:var(--body,inherit);text-transform:none;letter-spacing:0;font-size:12px;border:1.5px solid var(--line);border-radius:8px;padding:5px 9px;width:130px}
+.comments{margin:4px 0 8px}
+.cmt{font-size:12.5px;padding:6px 0;border-top:1px dashed var(--line)}
+.cmt .by{font-weight:600;color:var(--forest)}
+.cmt .at{color:var(--gray);font-size:11px;margin-left:5px}
+.cmt .tx{display:block;margin-top:1px;color:var(--ink)}
+.addcmt{display:flex;gap:6px;margin-top:6px}
+.addcmt input{flex:1;border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px}
+.addcmt button{border:1.5px solid var(--forest);background:var(--forest);color:var(--cream);border-radius:8px;padding:0 12px;font-size:12px;cursor:pointer}
+.nouser{font-size:11px;color:var(--red);margin-top:4px;display:none}
+</style>
+</head>
+<body>
+<header><div class="hd">
+  <div class="mono"><img src="data:image/png;base64,__LOGO__" alt="LR"></div>
+  <div class="wordmark"><div class="t1">LAKE ROOTS</div><div class="t2">Café · Market · Bar</div></div>
+  <div class="tag"><div class="tt">Guest Experience</div><div class="td" id="updated"></div></div>
+</div></header>
+<div class="wrap">
+  <div class="title">
+    <div class="g1">GUEST EXPERIENCE <span class="live snap" id="liveBadge">SNAPSHOT</span></div>
+    <div class="g2">what our guests are telling us</div>
+  </div>
+  <div class="topbar" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <div class="periodbar" id="periodbar"><span class="pl">Period</span></div>
+    <div class="whoami">You: <input id="who" placeholder="your name" oninput="setUser(this.value)"></div>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <div class="panels">
+    <div class="panel"><h3>Sentiment Mix <span class="hint">click to view entries</span></h3><div class="donut"><div id="donut"></div><div class="legend" id="donutLegend"></div></div></div>
+    <div class="panel"><h3>Feedback by Type <span class="hint" id="typeHint"></span></h3><div class="bars" id="typeBars"></div></div>
+    <div class="panel full"><h3>Open Follow-ups <span class="hint">calls/voicemails not yet resolved · de-identified</span></h3><table class="dash-table" id="openTbl"></table></div>
+    <div class="panel full"><h3>Negative Watch List <span class="hint">most guests impacted first · click a row</span></h3><table class="dash-table" id="negTbl"></table></div>
+    <div class="panel full" id="removedPanel" style="display:none"><h3>Removed Entries <span class="hint">kept out of the counts · restore anytime</span></h3><table class="dash-table" id="removedTbl"></table></div>
+  </div>
+  <div class="note" id="note"></div>
+  <div class="foot">listen · log · improve</div>
+</div>
+
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeDrill()">
+  <div class="modal">
+    <div class="mh"><div class="mt" id="mTitle">Entries</div><button class="mx" onclick="closeDrill()">×</button></div>
+    <div class="mc" id="mCount"></div>
+    <div id="mBody"></div>
+  </div>
+</div>
+
+<script>
+const BAKED=__DATA__; const PROXY="__PROXY__";
+const SUPA_URL="https://gqgjppxzdwzypxontmou.supabase.co";
+const SUPA_KEY="sb_publishable_DieuLBMaMTJwZD3SUfgvGA_9I2tMOhP";
+const ACTIONS_TABLE="feedback_actions";
+const sb=window.supabase?window.supabase.createClient(SUPA_URL,SUPA_KEY):null;
+
+const $=id=>document.getElementById(id);
+const COL={'Negative':'var(--red)','Idea':'var(--gold)','Positive':'var(--sage)','Other':'var(--gray)','Other / Log':'var(--gray)'};
+const STATUSES=[['watching','Watching'],['planned','Action planned'],['in_progress','In progress'],['resolved','Resolved'],['declined','Decided not to pursue']];
+const PERIODS=[['All time',0],['12 mo',365],['6 mo',183],['3 mo',92],['30 days',30]];
+let ALL=[], ACTIONS={}, periodDays=0, LIVE=false;
+
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+// Safe inside a single-quoted inline handler within a double-quoted attribute:
+// JS-escape backslash/quote, then HTML-escape & and ". Guards against ids or
+// type names that contain an apostrophe (e.g. "lost Driver's Licnse").
+function jsId(s){return String(s==null?'':s)
+  .replace(/\\/g,'\\\\').replace(/'/g,"\\'")
+  .replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/[\r\n]/g,' ');}
+function parseD(s){const m=(s||'').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);return m?new Date(m[3],m[1]-1,m[2]):null;}
+function fmtDate(s){const d=parseD(s);return d?d.toLocaleDateString('en-US',{month:'short',day:'numeric'}):(s||'—');}
+function inPeriod(e){if(!periodDays)return true;const d=parseD(e.date);if(!d)return true;return (Date.now()-d.getTime())/86400000<=periodDays;}
+function filtered(){return ALL.filter(e=>!e.deleted&&inPeriod(e));}
+
+function donut(data){
+  const tot=data.reduce((s,d)=>s+d.value,0)||1; let a=-Math.PI/2; const R=58,r=34,cx=70,cy=70; let p='';
+  data.forEach(d=>{const ang=d.value/tot*2*Math.PI,b=a+ang;
+    const x1=cx+R*Math.cos(a),y1=cy+R*Math.sin(a),x2=cx+R*Math.cos(b),y2=cy+R*Math.sin(b);
+    const xx1=cx+r*Math.cos(b),yy1=cy+r*Math.sin(b),xx2=cx+r*Math.cos(a),yy2=cy+r*Math.sin(a);
+    const lg=ang>Math.PI?1:0;
+    if(d.value>0)p+=`<path d="M${x1} ${y1} A${R} ${R} 0 ${lg} 1 ${x2} ${y2} L${xx1} ${yy1} A${r} ${r} 0 ${lg} 0 ${xx2} ${yy2} Z" fill="${d.color}"></path>`;
+    a=b;});
+  return `<svg viewBox="0 0 140 140" width="140" height="140">${p}<text x="70" y="66" text-anchor="middle" font-family="var(--disp)" font-weight="600" font-size="26" fill="var(--forest)">${tot}</text><text x="70" y="84" text-anchor="middle" font-family="var(--disp)" font-size="10" fill="var(--gray)">ENTRIES</text></svg>`;
+}
+
+function renderPeriodBar(){
+  $('periodbar').innerHTML='<span class="pl">Period</span>'+PERIODS.map(([l,d])=>
+    `<button class="${d===periodDays?'on':''}" onclick="setPeriod(${d})">${l}</button>`).join('');
+}
+function setPeriod(d){periodDays=d;renderPeriodBar();renderAll();}
+
+function renderAll(){
+  const F=filtered();
+  const cnt=s=>F.filter(e=>e.sentiment===s).length;
+  const kpis=[
+    ['Total Feedback',F.length,(periodDays?'in period':'all time'),'hl',()=>drill('All feedback',F)],
+    ['Negative',cnt('Negative'),'to address','',()=>drill('Negative feedback',F.filter(e=>e.sentiment==='Negative'))],
+    ['Ideas',cnt('Idea'),'suggestions','',()=>drill('Ideas & suggestions',F.filter(e=>e.sentiment==='Idea'))],
+    ['Positive',cnt('Positive'),'shout-outs','',()=>drill('Positive feedback',F.filter(e=>e.sentiment==='Positive'))],
+    ['Open Follow-ups',F.filter(e=>e.followup).length,'awaiting close','gold',()=>drill('Open follow-ups',F.filter(e=>e.followup))],
+  ];
+  $('kpis').innerHTML=kpis.map(([l,v,s,c],i)=>`<div class="kpi clk ${c}" onclick="KPI[${i}]()"><div class="kl">${l}</div><div class="kv">${v}</div><div class="ks">${s}</div></div>`).join('');
+  window.KPI=kpis.map(x=>x[4]);
+
+  const sCounts={}; F.forEach(e=>sCounts[e.sentiment]=(sCounts[e.sentiment]||0)+1);
+  const sd=Object.entries(sCounts).map(([label,value])=>({label,value,color:COL[label]||'var(--mid)'})).sort((a,b)=>b.value-a.value);
+  $('donut').innerHTML=donut(sd);
+  $('donutLegend').innerHTML=sd.map(x=>`<div class="li clk" onclick="drill('${x.label} feedback',filtered().filter(e=>e.sentiment==='${x.label}'))"><i style="background:${x.color}"></i>${x.label} · <b>${x.value}</b></div>`).join('');
+
+  const tCounts={}; F.forEach(e=>tCounts[e.type]=(tCounts[e.type]||0)+1);
+  const types=Object.entries(tCounts).sort((a,b)=>b[1]-a[1]); const mx=Math.max(1,...types.map(t=>t[1]));
+  $('typeHint').textContent=types.length+' categories';
+  $('typeBars').innerHTML=types.slice(0,9).map(([t,n])=>`<div class="bar clk" onclick="drill('${jsId(t)} feedback',filtered().filter(e=>e.type==='${jsId(t)}'))"><div class="bl">${esc(t)}</div><div class="bt"><div class="bf" style="width:${100*n/mx}%;background:var(--mid)"></div></div><div class="bv">${n}</div></div>`).join('');
+
+  const open=F.filter(e=>e.followup);
+  $('openTbl').innerHTML=open.length?`<tr><th>Item</th><th>Type</th><th class="r">Logged</th></tr>`+open.map(o=>`<tr class="clk" onclick="drill('Follow-up',[ALL.find(e=>e.id==='${jsId(o.id)}')])"><td class="nm">${statusDot(o.id)}${esc(o.label)}</td><td>${esc(o.type)}</td><td class="r">${fmtDate(o.date)}</td></tr>`).join(''):`<tr><td style="color:var(--gray);padding:12px 0">Nothing open in this period — all caught up. 🎉</td></tr>`;
+
+  const neg=F.filter(e=>e.sentiment==='Negative').slice().sort((a,b)=>b.guests-a.guests);
+  $('negTbl').innerHTML=neg.length?`<tr><th>Item</th><th>Type</th><th class="r">Guests</th><th class="r">Date</th></tr>`+neg.map(o=>`<tr class="clk" onclick="drill('Negative',[ALL.find(e=>e.id==='${jsId(o.id)}')])"><td class="nm">${statusDot(o.id)}${esc(o.label)}</td><td>${esc(o.type)}</td><td class="r">${o.guests||'—'}</td><td class="r">${fmtDate(o.date)}</td></tr>`).join(''):`<tr><td style="color:var(--gray);padding:12px 0">No negative feedback in this period.</td></tr>`;
+  renderRemoved();
+}
+function renderRemoved(){
+  const del=ALL.filter(e=>e.deleted);
+  $('removedPanel').style.display=del.length?'':'none';
+  $('removedTbl').innerHTML=del.length?`<tr><th>Item</th><th>Type</th><th class="r">Date</th><th class="r"></th></tr>`+del.map(e=>`<tr><td class="nm" style="color:var(--gray)">${esc(e.label)}</td><td style="color:var(--gray)">${esc(e.type)}</td><td class="r" style="color:var(--gray)">${fmtDate(e.date)}</td><td class="r"><a href="#" style="color:var(--forest);font-size:12px" onclick="setDeleted('${jsId(e.id)}',false);return false">Restore</a></td></tr>`).join(''):'';
+}
+
+function statusDot(id){const a=ACTIONS[id];return a&&a.status?`<span class="sdot ${a.status}" title="${a.status.replace('_',' ')}"></span>`:'';}
+
+/* ---- drill-in modal with per-entry status + notes ---- */
+function drill(title,list){
+  list=(list||[]).filter(Boolean);
+  $('mTitle').textContent=title;
+  $('mCount').textContent=list.length+' '+(list.length===1?'entry':'entries')+(periodDays?' · in period':'');
+  $('mBody').innerHTML=list.map(e=>{
+    const a=ACTIONS[e.id]||{};
+    return `<div class="dentry" data-id="${esc(e.id)}">
+      <div class="dhead">${fmtDate(e.date)} · ${esc(e.type)} · ${e.guests||0} guest${e.guests===1?'':'s'} · ${esc(e.sentiment)}</div>
+      <div class="dlabel">${esc(e.label)}</div>
+      ${e.feedback&&e.feedback!==e.label?`<div style="font-size:12.5px;color:var(--mid);margin:-2px 0 6px;white-space:pre-wrap">${esc(e.feedback)}</div>`:''}
+      ${e.extra?`<div style="font-size:12px;color:var(--gray);margin:0 0 6px;white-space:pre-wrap">${esc(e.extra)}</div>`:''}
+      ${e.call&&e.sid?`<div style="margin:0 0 6px;font-size:12px"><a href="#" style="color:var(--forest)" onclick="showContact('${jsId(e.id)}');return false">🔒 View caller info</a> <span id="ct-${cssId(e.id)}" style="color:var(--mid)"></span></div>`:''}
+      <div class="dchips">${STATUSES.map(([k,lbl])=>`<button data-s="${k}" class="${a.status===k?'on':''}" onclick="setStatus('${jsId(e.id)}','${k}',this)">${lbl}</button>`).join('')}</div>
+      <div class="comments" id="cmts-${cssId(e.id)}">${renderComments(a.comments)}</div>
+      <div class="addcmt"><input id="cin-${cssId(e.id)}" placeholder="Add a comment…" onkeydown="if(event.key==='Enter')addComment('${jsId(e.id)}')"><button onclick="addComment('${jsId(e.id)}')">Post</button></div>
+      <div class="nouser" id="nu-${cssId(e.id)}">Enter your name (top right) to comment.</div>
+      ${e.sid?`<div style="margin-top:8px"><a href="#" style="font-size:11px;color:var(--red)" onclick="setDeleted('${jsId(e.id)}',true);return false">Delete this entry</a></div>`:''}
+    </div>`;
+  }).join('')||'<div style="color:var(--gray)">No entries.</div>';
+  $('modalBg').classList.add('open');
+}
+function closeDrill(){$('modalBg').classList.remove('open');}
+function cssId(id){return id.replace(/[^a-zA-Z0-9]/g,'');}
+function getUser(){return (localStorage.getItem('lr_user')||'').trim();}
+function setUser(v){localStorage.setItem('lr_user',(v||'').trim());}
+function today(){return new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function renderComments(list){list=list||[];if(!list.length)return '<div style="font-size:12px;color:var(--gray)">No comments yet.</div>';
+  return list.map(c=>`<div class="cmt"><span class="by">${esc(c.by||'team')}</span><span class="at">${esc(c.at||'')}</span><span class="tx">${esc(c.text||'')}</span></div>`).join('');}
+
+async function setStatus(id,status,btn){
+  const a=ACTIONS[id]||{}; a.status=(a.status===status?null:status); ACTIONS[id]=a;
+  btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.s===a.status));
+  await persist(id); renderAll();
+}
+async function addComment(id){
+  const inp=$('cin-'+cssId(id)); const text=(inp.value||'').trim(); if(!text)return;
+  const user=getUser();
+  if(!user){$('nu-'+cssId(id)).style.display='block'; $('who').focus(); return;}
+  const a=ACTIONS[id]||{}; a.comments=(a.comments||[]).concat([{by:user,at:today(),text}]); ACTIONS[id]=a;
+  inp.value=''; $('cmts-'+cssId(id)).innerHTML=renderComments(a.comments);
+  await persist(id);
+}
+async function persist(id){
+  if(!sb)return;
+  const a=ACTIONS[id]||{};
+  const {error}=await sb.from(ACTIONS_TABLE).upsert({submission_id:id,status:a.status||null,comments:a.comments||[],updated_by:getUser()||'team'},{onConflict:'submission_id'});
+  if(error)console.warn('save failed',error.message);
+}
+async function loadActions(){
+  if(!sb)return;
+  const {data,error}=await sb.from(ACTIONS_TABLE).select('*');
+  if(error){console.warn(error.message);return;}
+  ACTIONS={}; (data||[]).forEach(r=>ACTIONS[r.submission_id]={status:r.status,comments:r.comments||[]});
+}
+async function setDeleted(id,flag){
+  const e=ALL.find(x=>x.id===id); if(!e)return;
+  if(!e.sid||!sb){alert('Open the live dashboard to remove or restore entries.');return;}
+  if(flag&&!confirm('Remove this entry? It moves to "Removed entries" at the bottom — you can restore it anytime.'))return;
+  const {error}=await sb.from('feedback_submissions').update({deleted_at:flag?new Date().toISOString():null}).eq('id',e.sid);
+  if(error){alert('Failed: '+error.message);return;}
+  e.deleted=flag; if(flag)closeDrill(); renderAll();
+}
+
+function setMeta(d){
+  $('updated').textContent='Updated '+fmtDate(d.meta.updated||d.meta.generated);
+  if(LIVE){const b=$('liveBadge');b.textContent='LIVE';b.classList.remove('snap');}
+  $('note').innerHTML=`<b>Contact info on click.</b> Caller names and phone numbers are stored separately — click 🔒 View caller info on any call log. Status &amp; notes you set are saved live for the whole team. ${LIVE?'Live — new entries from the <a style="color:var(--gold)" href="feedback.html" target="_blank" rel="noopener">feedback form ↗</a> appear on refresh.':'Snapshot — refreshed when the dashboard is rebuilt.'}`;
+}
+
+function mapFb(r){
+  const date=r.fb_date||new Date(r.created_at).toLocaleDateString('en-US');
+  const d=parseD(date);
+  const month=d?d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2):'';
+  return {id:r.legacy_key||r.id, sid:r.id, date, month,
+    sentiment:r.sentiment||'Other', type:r.type||'Other', guests:r.guests||0,
+    label:r.label||(r.feedback||'').slice(0,90),
+    feedback:r.feedback||'', extra:r.extra||'',
+    followup:!!(r.followup||(r.is_call&&r.resolved!=='Yes')), call:!!r.is_call, deleted:!!r.deleted_at};
+}
+async function showContact(id){const e=ALL.find(x=>x.id===id);if(!e||!e.sid||!sb)return;
+  const el=$('ct-'+cssId(id));
+  const {data,error}=await sb.rpc('get_contact',{kind:'feedback',sid:e.sid,pass:''});
+  if(error){el.textContent='Lookup failed.';return;}
+  if(!data||data._none){el.textContent='No contact on file for this one.';return;}
+  el.textContent=[data.caller_name,data.phone,data.email].filter(Boolean).join(' · ')||'(empty)';}
+
+async function boot(){
+  if(sb){try{
+    const {data,error}=await sb.from('feedback_submissions').select('*').order('created_at');
+    if(!error&&data&&data.length){
+      ALL=data.map(mapFb);LIVE=true;
+      setMeta({meta:{generated:new Date().toLocaleDateString('en-US')}});
+      renderPeriodBar();$('who').value=getUser();await loadActions();renderAll();return;}
+  }catch(e){console.warn(e);}}
+  let d=BAKED;
+  if(PROXY){try{const r=await fetch(PROXY);if(r.ok){d=await r.json();LIVE=true;}}catch(e){}}
+  ALL=(d.entries||[]).slice();
+  setMeta(d); renderPeriodBar();
+  $('who').value=getUser();
+  await loadActions();
+  renderAll();
+}
+boot();
+</script>
+</body>
+</html>

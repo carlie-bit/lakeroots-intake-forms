@@ -1,0 +1,370 @@
+{
+ "meta": {
+  "total": 36,
+  "generated": "2026-06-10",
+  "updated": "6/9/2026",
+  "source": "snapshot"
+ },
+ "entries": [
+  {
+   "id": "12/22/2025 13:23:55",
+   "date": "12/22/2025",
+   "month": "2025-12",
+   "sentiment": "Other",
+   "type": "Hours",
+   "guests": 5,
+   "label": "Closed Mondays — ~10 guests came by when we were closed",
+   "followup": false
+  },
+  {
+   "id": "12/22/2025 13:46:35",
+   "date": "12/19/2025",
+   "month": "2025-12",
+   "sentiment": "Idea",
+   "type": "Service",
+   "guests": 5,
+   "label": "Add servers on weekends with live music",
+   "followup": false
+  },
+  {
+   "id": "12/24/2025 10:58:45",
+   "date": "12/23/2025",
+   "month": "2025-12",
+   "sentiment": "Negative",
+   "type": "Market",
+   "guests": 1,
+   "label": "Expired popcorn noticed on the shelf",
+   "followup": false
+  },
+  {
+   "id": "12/26/2025 11:08:07",
+   "date": "12/26/2025",
+   "month": "2025-12",
+   "sentiment": "Negative",
+   "type": "Packaging",
+   "guests": 7,
+   "label": "Too much packaging for a single slice of toast",
+   "followup": false
+  },
+  {
+   "id": "1/3/2026 17:01:37",
+   "date": "1/3/2026",
+   "month": "2026-01",
+   "sentiment": "Negative",
+   "type": "Ambiance",
+   "guests": 4,
+   "label": "Dining room feels too dark (heard nightly)",
+   "followup": false
+  },
+  {
+   "id": "1/3/2026 17:50:46",
+   "date": "1/3/2026",
+   "month": "2026-01",
+   "sentiment": "Idea",
+   "type": "Birthday Dessert",
+   "guests": 3,
+   "label": "Offer a birthday dessert or candle",
+   "followup": false
+  },
+  {
+   "id": "1/20/2026 10:08:36",
+   "date": "1/20/2026",
+   "month": "2026-01",
+   "sentiment": "Negative",
+   "type": "Quality",
+   "guests": 1,
+   "label": "Caesar wrap sent back — soggy, at best-by date",
+   "followup": false
+  },
+  {
+   "id": "1/20/2026 10:10:22",
+   "date": "1/20/2026",
+   "month": "2026-01",
+   "sentiment": "Negative",
+   "type": "Quality",
+   "guests": 3,
+   "label": "Inconsistent pastry freshness",
+   "followup": false
+  },
+  {
+   "id": "1/20/2026 10:11:58",
+   "date": "1/20/2026",
+   "month": "2026-01",
+   "sentiment": "Idea",
+   "type": "Menu",
+   "guests": 4,
+   "label": "Requests for vegan-adaptable options",
+   "followup": false
+  },
+  {
+   "id": "1/20/2026 11:09:46",
+   "date": "1/16/2026",
+   "month": "2026-01",
+   "sentiment": "Negative",
+   "type": "Menu",
+   "guests": 1,
+   "label": "Ran out of skim milk",
+   "followup": false
+  },
+  {
+   "id": "1/23/2026 18:54:56",
+   "date": "1/23/2026",
+   "month": "2026-01",
+   "sentiment": "Idea",
+   "type": "Ambiance",
+   "guests": 4,
+   "label": "Guests chilly by the windows",
+   "followup": false
+  },
+  {
+   "id": "1/27/2026 10:39:40",
+   "date": "1/26/2026",
+   "month": "2026-01",
+   "sentiment": "Other",
+   "type": "Delivery",
+   "guests": 1,
+   "label": "High-top chairs delivery scheduled",
+   "followup": false
+  },
+  {
+   "id": "1/27/2026 11:35:31",
+   "date": "1/25/2026",
+   "month": "2026-01",
+   "sentiment": "Other",
+   "type": "Lost & Found",
+   "guests": 1,
+   "label": "Lost scarf reported",
+   "followup": true
+  },
+  {
+   "id": "2/2/2026 18:14:18",
+   "date": "2/1/2026",
+   "month": "2026-02",
+   "sentiment": "Negative",
+   "type": "Service",
+   "guests": 7,
+   "label": "Service-model confusion; wants QR-code ordering (Facebook)",
+   "followup": false
+  },
+  {
+   "id": "2/17/2026 12:03:26",
+   "date": "2/17/2026",
+   "month": "2026-02",
+   "sentiment": "Idea",
+   "type": "Menu",
+   "guests": 1,
+   "label": "Asked if we sell Paczki (Polish donuts)",
+   "followup": false
+  },
+  {
+   "id": "2/17/2026 13:40:41",
+   "date": "2/17/2026",
+   "month": "2026-02",
+   "sentiment": "Negative",
+   "type": "Menu",
+   "guests": 1,
+   "label": "Dinner menu not clearly marked unavailable during the day",
+   "followup": false
+  },
+  {
+   "id": "2/17/2026 18:38:38",
+   "date": "2/17/2026",
+   "month": "2026-02",
+   "sentiment": "Negative",
+   "type": "Menu",
+   "guests": 1,
+   "label": "Dislikes the new strawberry syrup",
+   "followup": false
+  },
+  {
+   "id": "2/22/2026 16:48:06",
+   "date": "2/22/2026",
+   "month": "2026-02",
+   "sentiment": "Idea",
+   "type": "Menu",
+   "guests": 10,
+   "label": "Bring back $2 beer-back bloody & iced Irish coffee",
+   "followup": false
+  },
+  {
+   "id": "2/25/2026 12:41:56",
+   "date": "2/25/2026",
+   "month": "2026-02",
+   "sentiment": "Idea",
+   "type": "Menu",
+   "guests": 7,
+   "label": "Add shareables/boards for lunch",
+   "followup": false
+  },
+  {
+   "id": "3/4/2026 10:25:18",
+   "date": "3/1/2026",
+   "month": "2026-03",
+   "sentiment": "Negative",
+   "type": "Quality",
+   "guests": 1,
+   "label": "To-go Power Bowl looked not fresh (old sweet potatoes)",
+   "followup": true
+  },
+  {
+   "id": "3/7/2026 14:55:00",
+   "date": "3/7/2026",
+   "month": "2026-03",
+   "sentiment": "Other",
+   "type": "Lost & Found",
+   "guests": 1,
+   "label": "Lost driver's license reported",
+   "followup": true
+  },
+  {
+   "id": "3/11/2026 14:03:57",
+   "date": "3/10/2026",
+   "month": "2026-03",
+   "sentiment": "Other",
+   "type": "Service",
+   "guests": 1,
+   "label": "Asked whether we take call-in takeout orders",
+   "followup": false
+  },
+  {
+   "id": "3/12/2026 13:46:04",
+   "date": "3/12/2026",
+   "month": "2026-03",
+   "sentiment": "Negative",
+   "type": "Quality",
+   "guests": 1,
+   "label": "Quiche too dry",
+   "followup": false
+  },
+  {
+   "id": "3/12/2026 13:46:31",
+   "date": "3/12/2026",
+   "month": "2026-03",
+   "sentiment": "Negative",
+   "type": "Quality",
+   "guests": 1,
+   "label": "Breakfast Bowl has too many potatoes",
+   "followup": false
+  },
+  {
+   "id": "3/15/2026 11:04:45",
+   "date": "3/15/2026",
+   "month": "2026-03",
+   "sentiment": "Negative",
+   "type": "Service",
+   "guests": 1,
+   "label": "Order wrong twice; suggests repeating orders back (praised staff)",
+   "followup": false
+  },
+  {
+   "id": "3/17/2026 11:31:11",
+   "date": "3/17/2026",
+   "month": "2026-03",
+   "sentiment": "Other",
+   "type": "Service",
+   "guests": 1,
+   "label": "Asked whether takeout orders can be called in",
+   "followup": false
+  },
+  {
+   "id": "3/18/2026 20:51:15",
+   "date": "3/18/2026",
+   "month": "2026-03",
+   "sentiment": "Idea",
+   "type": "Outdoor lighting",
+   "guests": 9,
+   "label": "Add outdoor lighting — looks closed from outside",
+   "followup": false
+  },
+  {
+   "id": "4/4/2026 8:10:34",
+   "date": "4/1/2026",
+   "month": "2026-04",
+   "sentiment": "Negative",
+   "type": "Quality",
+   "guests": 1,
+   "label": "Banana bread tasted off (chemical) — flagged",
+   "followup": false
+  },
+  {
+   "id": "4/9/2026 16:54:59",
+   "date": "4/9/2026",
+   "month": "2026-04",
+   "sentiment": "Negative",
+   "type": "Menu",
+   "guests": 2,
+   "label": "Charcuterie lists cheeses but only one served",
+   "followup": false
+  },
+  {
+   "id": "4/18/2026 19:27:30",
+   "date": "4/18/2026",
+   "month": "2026-04",
+   "sentiment": "Idea",
+   "type": "Menu",
+   "guests": 1,
+   "label": "Wants charcuterie board all day on weekends",
+   "followup": false
+  },
+  {
+   "id": "4/19/2026 6:06:11",
+   "date": "4/18/2026",
+   "month": "2026-04",
+   "sentiment": "Positive",
+   "type": "Service",
+   "guests": 9,
+   "label": "Party of 9 had a lovely time — highly recommends",
+   "followup": false
+  },
+  {
+   "id": "4/30/2026 20:08:30",
+   "date": "4/30/2026",
+   "month": "2026-04",
+   "sentiment": "Idea",
+   "type": "Menu",
+   "guests": 2,
+   "label": "Menu lists cheeses but only one on the board",
+   "followup": false
+  },
+  {
+   "id": "4/30/2026 20:10:10",
+   "date": "4/29/2026",
+   "month": "2026-04",
+   "sentiment": "Negative",
+   "type": "Ambiance",
+   "guests": 1,
+   "label": "Soap smell by cafe POS affects coffee/food",
+   "followup": false
+  },
+  {
+   "id": "5/8/2026 10:31:03",
+   "date": "5/7/2026",
+   "month": "2026-05",
+   "sentiment": "Negative",
+   "type": "Quality",
+   "guests": 1,
+   "label": "To-go burgers came out raw — refund issued",
+   "followup": false
+  },
+  {
+   "id": "5/11/2026 11:24:21",
+   "date": "5/10/2026",
+   "month": "2026-05",
+   "sentiment": "Idea",
+   "type": "Market",
+   "guests": 1,
+   "label": "Add Mother's Day pasta salad to grab-n-go",
+   "followup": false
+  },
+  {
+   "id": "6/9/2026 22:14:22",
+   "date": "6/9/2026",
+   "month": "2026-06",
+   "sentiment": "Idea",
+   "type": "Menu",
+   "guests": 3,
+   "label": "Sell Geneva Bakery granola in our market",
+   "followup": false
+  }
+ ]
+}
