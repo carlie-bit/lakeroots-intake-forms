@@ -52,9 +52,22 @@
 .dash-table th.srt{cursor:pointer;user-select:none;white-space:nowrap}
 .dash-table th.srt:hover{color:var(--forest)}
 .dash-table th .arr{font-size:9px;color:var(--gold);margin-left:3px}
-.allt td.it{max-width:520px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* give every column after the first some breathing room so right-side columns
+   (Type / Sentiment / Guests / Date) don't collide, and keep dates on one line */
+.dash-table th+th,.dash-table td+td{padding-left:18px}
+.dash-table td.r,.dash-table th.r{white-space:nowrap}
 .allcount{font-size:11px;color:var(--gray);margin-top:8px}
-@media(max-width:680px){.allt td.it{max-width:150px}.allt th:nth-child(4),.allt td:nth-child(4){display:none}}
+@media(max-width:680px){.allt th:nth-child(2),.allt td:nth-child(2),.allt th:nth-child(3),.allt td:nth-child(3){display:none}}
+/* inline edit-details form */
+.sdetail{margin:6px 0 8px;padding:9px 11px;background:var(--sand);border:1px solid var(--line);border-radius:9px}
+.sdetail label{display:block;font-size:11px;font-family:var(--disp);text-transform:uppercase;letter-spacing:.5px;color:var(--forest);margin:8px 0 4px}
+.sdetail label:first-child{margin-top:0}
+.sdetail input,.sdetail select,.sdetail textarea{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;background:#fff;color:var(--ink)}
+.sdetail textarea{min-height:54px;resize:vertical}
+.sdetail .two{display:flex;gap:8px}.sdetail .two>div{flex:1}
+.sdetail .row{display:flex;gap:8px;margin-top:8px;align-items:center}
+.sdetail .row button{border:1.5px solid var(--forest);background:var(--forest);color:var(--cream);border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer}
+.editlink{font-size:11px;color:var(--gray);font-weight:400;text-decoration:underline;cursor:pointer}
 </style>
 </head>
 <body>
@@ -88,6 +101,12 @@
   <div class="note" id="note"></div>
   <div class="foot">listen · log · improve</div>
 </div>
+
+<datalist id="gtypes">
+  <option>Service</option><option>Quality</option><option>Menu</option><option>Ambiance</option>
+  <option>Market</option><option>Packaging</option><option>Hours</option><option>Delivery</option>
+  <option>Lost &amp; Found</option><option>Birthday Dessert</option><option>Pricing</option><option>Other</option>
+</datalist>
 
 <div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeDrill()">
   <div class="modal">
@@ -132,8 +151,8 @@ function renderAllTable(F){
     if(va<vb)return -1*sortDir;if(va>vb)return 1*sortDir;
     return (parseD(b.date)||0)-(parseD(a.date)||0);});
   const arrow=k=>sortKey===k?`<span class="arr">${sortDir<0?'▼':'▲'}</span>`:'';
-  const head=`<tr><th class="srt" onclick="setSort('date')">Date${arrow('date')}</th><th class="srt" onclick="setSort('type')">Type${arrow('type')}</th><th class="srt" onclick="setSort('sentiment')">Sentiment${arrow('sentiment')}</th><th class="srt r" onclick="setSort('guests')">Guests${arrow('guests')}</th><th>Item</th></tr>`;
-  const body=rows.length?rows.map(e=>`<tr class="clk" onclick="drill('Feedback',[ALL.find(x=>x.id==='${jsId(e.id)}')])"><td class="r">${fmtDate(e.date)}</td><td>${esc(e.type)}</td><td>${statusDot(e.id)}${esc(e.sentiment)}</td><td class="r">${e.guests||'—'}</td><td class="it" title="${esc(e.label)}">${esc(e.label)}</td></tr>`).join('')
+  const head=`<tr><th>Item</th><th class="srt" onclick="setSort('type')">Type${arrow('type')}</th><th class="srt" onclick="setSort('sentiment')">Sentiment${arrow('sentiment')}</th><th class="srt r" onclick="setSort('guests')">Guests${arrow('guests')}</th><th class="srt r" onclick="setSort('date')">Date${arrow('date')}</th></tr>`;
+  const body=rows.length?rows.map(e=>`<tr class="clk" onclick="drill('Feedback',[ALL.find(x=>x.id==='${jsId(e.id)}')])"><td class="nm" title="${esc(e.label)}">${statusDot(e.id)}${esc(e.label)}</td><td>${esc(e.type)}</td><td>${esc(e.sentiment)}</td><td class="r">${e.guests||'—'}</td><td class="r">${fmtDate(e.date)}</td></tr>`).join('')
     :`<tr><td style="color:var(--gray);padding:12px 0" colspan="5">No feedback${SEARCH?' matches your search — try clearing it':''}.</td></tr>`;
   $('allTbl').innerHTML=head+body;
   $('allCount').textContent=`${rows.length} ${rows.length===1?'entry':'entries'}${SEARCH?' (filtered)':''} · sorted by ${SORTS.find(s=>s[0]===sortKey)[1]} ${sortDir<0?'↓':'↑'}`;
@@ -204,8 +223,9 @@ function drill(title,list){
     const a=ACTIONS[e.id]||{};
     return `<div class="dentry" data-id="${esc(e.id)}">
       <div class="dhead">${fmtDate(e.date)} · ${esc(e.type)} · ${e.guests||0} guest${e.guests===1?'':'s'} · ${esc(e.sentiment)}</div>
-      <div class="dlabel">${esc(e.label)}</div>
-      ${e.feedback&&e.feedback!==e.label?`<div style="font-size:12.5px;color:var(--mid);margin:-2px 0 6px;white-space:pre-wrap">${esc(e.feedback)}</div>`:''}
+      <div class="dlabel">${esc(e.label)} ${e.sid?`<a class="editlink" onclick="editEntry('${jsId(e.id)}');return false">✎ edit details</a>`:''}</div>
+      <div id="ed-${cssId(e.id)}"></div>
+      ${e.feedback&&e.feedback!==e.label?`<div id="fb-${cssId(e.id)}" style="font-size:12.5px;color:var(--mid);margin:-2px 0 6px;white-space:pre-wrap">${esc(e.feedback)}</div>`:''}
       ${e.extra?`<div style="font-size:12px;color:var(--gray);margin:0 0 6px;white-space:pre-wrap">${esc(e.extra)}</div>`:''}
       ${e.call&&e.sid?`<div style="margin:0 0 6px;font-size:12px"><a href="#" style="color:var(--forest)" onclick="showContact('${jsId(e.id)}');return false">🔒 View caller info</a> <span id="ct-${cssId(e.id)}" style="color:var(--mid)"></span></div>`:''}
       <div class="dchips">${STATUSES.map(([k,lbl])=>`<button data-s="${k}" class="${a.status===k?'on':''}" onclick="setStatus('${jsId(e.id)}','${k}',this)">${lbl}</button>`).join('')}</div>
@@ -257,6 +277,34 @@ async function setDeleted(id,flag){
   const {error}=await sb.from('feedback_submissions').update({deleted_at:flag?new Date().toISOString():null}).eq('id',e.sid);
   if(error){alert('Failed: '+error.message);return;}
   e.deleted=flag; if(flag)closeDrill(); renderAll();
+}
+const SENTIMENTS=['Positive','Negative','Idea','Other'];
+function editEntry(id){const e=ALL.find(x=>x.id===id);if(!e)return;const c=cssId(id);
+  if(!e.sid||!sb){alert('Open the live dashboard to edit entries.');return;}
+  const sentOpts=SENTIMENTS.concat(SENTIMENTS.includes(e.sentiment)?[]:[e.sentiment])
+    .map(s=>`<option value="${esc(s)}"${s===e.sentiment?' selected':''}>${esc(s)}</option>`).join('');
+  $('ed-'+c).innerHTML=`<div class="sdetail">
+    <label>Brief title</label><input id="el-${c}" value="${esc(e.label)}">
+    <div class="two"><div><label>Date (M/D/YYYY)</label><input id="ed2-${c}" value="${esc(parseD(e.date)?e.date:'')}" placeholder="e.g. 6/9/2026"></div>
+      <div><label>Guests impacted</label><input id="eg-${c}" type="number" min="0" value="${e.guests||0}"></div></div>
+    <div class="two"><div><label>Type</label><input id="et-${c}" value="${esc(e.type)}" list="gtypes"></div>
+      <div><label>Sentiment</label><select id="es-${c}">${sentOpts}</select></div></div>
+    <label>What happened / what was said</label><textarea id="ef-${c}">${esc(e.feedback)}</textarea>
+    <label>Additional thoughts or ideas</label><textarea id="ex-${c}">${esc(e.extra)}</textarea>
+    <div class="row"><button onclick="saveEntry('${jsId(id)}')">Save changes</button>
+      <a class="editlink" onclick="document.getElementById('ed-${c}').innerHTML='';return false">cancel</a></div>
+  </div>`;}
+async function saveEntry(id){const e=ALL.find(x=>x.id===id);if(!e||!e.sid||!sb)return;const c=cssId(id);
+  const label=($('el-'+c).value||'').trim();
+  const upd={label:label||null, fb_date:($('ed2-'+c).value||'').trim()||null,
+    guests:parseInt(($('eg-'+c).value||'').replace(/[^\d]/g,''),10)||0,
+    type:($('et-'+c).value||'').trim()||'Other', sentiment:$('es-'+c).value,
+    feedback:($('ef-'+c).value||'').trim()||null, extra:($('ex-'+c).value||'').trim()||null};
+  const {error}=await sb.from('feedback_submissions').update(upd).eq('id',e.sid);
+  if(error){alert('Save failed: '+error.message);return;}
+  e.label=upd.label||''; if(upd.fb_date)e.date=upd.fb_date; e.guests=upd.guests; e.type=upd.type;
+  e.sentiment=upd.sentiment; e.feedback=upd.feedback||''; e.extra=upd.extra||'';
+  renderAll(); drill('Feedback',[e]);
 }
 
 function setMeta(d){
