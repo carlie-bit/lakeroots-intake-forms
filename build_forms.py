@@ -43,6 +43,7 @@ PAGES = [
     ("index.html",         "index.html",            None),  # landing / forms directory
     ("feedback_form.html", "feedback.html",         None),  # guest feedback intake
     ("partner_form.html",  "partner.html",          None),  # community partnership intake
+    ("vendor_form.html",   "vendor.html",           None),  # market vendor onboarding intake
     # Review dashboards — live from Supabase, de-identified snapshot fallback.
     ("music_dashboard.html",   "artists-live-music.html",  "music_deid.json"),
     ("outreach_dashboard.html","community-outreach.html",  "outreach_deid.json"),

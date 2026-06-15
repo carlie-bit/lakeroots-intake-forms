@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Become a Lake Roots Vendor</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>__CSS__</style>
+<style>
+.formwrap{max-width:680px;margin:0 auto;padding:0 18px 60px}
+.fpanel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 22px 26px;margin-top:14px}
+.fpanel label{display:block;font-family:var(--disp);text-transform:uppercase;letter-spacing:.7px;font-size:11.5px;color:var(--forest);margin:14px 0 5px}
+.fpanel label .opt{color:var(--gray);text-transform:none;letter-spacing:0;font-size:11px}
+.fpanel input,.fpanel select,.fpanel textarea{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14.5px;background:var(--cream)}
+.fpanel textarea{min-height:80px;resize:vertical}
+.fpanel input[type=file]{padding:8px;font-size:13px;background:#fff}
+.fpanel input:focus,.fpanel select:focus,.fpanel textarea:focus{outline:none;border-color:var(--forest)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.row3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:0 14px}
+@media(max-width:520px){.row2,.row3{grid-template-columns:1fr}}
+.sect{display:none;border-top:1px dashed var(--line);margin-top:18px;padding-top:4px}
+.sect.on{display:block}
+.checkrow{display:flex;gap:9px;align-items:flex-start;margin:12px 0 2px}
+.checkrow input{width:auto;margin-top:3px}
+.checkrow span{font-size:13px;color:var(--mid);line-height:1.45;text-transform:none;letter-spacing:0}
+.hint2{font-size:12px;color:var(--gray);margin:3px 0 0;line-height:1.45}
+.submitbar{margin-top:24px;display:flex;align-items:center;gap:14px}
+.submitbar button{border:none;background:var(--forest);color:var(--cream);border-radius:999px;padding:13px 30px;font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;font-size:14px;cursor:pointer}
+.submitbar button:disabled{opacity:.5;cursor:default}
+.errline{color:var(--red);font-size:13px;margin-top:10px;display:none}
+.thanks{display:none;text-align:center;padding:50px 10px}
+.thanks .big{font-family:var(--disp);font-size:30px;color:var(--forest);text-transform:uppercase;letter-spacing:1px}
+.thanks p{color:var(--mid);font-size:15px;max-width:440px;margin:14px auto 0}
+.hp{position:absolute;left:-9999px;opacity:0;height:0;overflow:hidden}
+.privnote{font-size:12px;color:var(--gray);margin-top:14px;line-height:1.5}
+</style>
+</head>
+<body>
+<header><div class="hd">
+  <div class="mono"><img src="data:image/png;base64,__LOGO__" alt="LR"></div>
+  <div class="wordmark"><div class="t1">LAKE ROOTS</div><div class="t2">Café · Market · Bar</div></div>
+  <div class="tag"><div class="tt">Become a Vendor</div><div class="td">market vendor inquiries</div></div>
+</div></header>
+<div class="formwrap">
+  <div class="title" style="text-align:center;margin-top:26px">
+    <div class="g1">SELL IN THE LAKE ROOTS MARKET</div>
+    <div class="g2">tell us about your products — we review every vendor as a team</div>
+  </div>
+
+  <form class="fpanel" id="form" onsubmit="return submitForm(event)">
+    <div class="row2">
+      <div><label>Legal business name <span class="opt">— if different from brand</span></label><input id="f_legal" maxlength="200"></div>
+      <div><label>DBA / brand name</label><input id="f_dba" required maxlength="200" placeholder="The name customers know you by"></div>
+    </div>
+
+    <div class="row2">
+      <div><label>Your first name</label><input id="f_first" required maxlength="100"></div>
+      <div><label>Your last name</label><input id="f_last" required maxlength="100"></div>
+    </div>
+    <div class="row2">
+      <div><label>Email</label><input id="f_email" type="email" required maxlength="200"></div>
+      <div><label>Phone</label><input id="f_phone" maxlength="50"></div>
+    </div>
+    <label>Your title / role <span class="opt">— optional</span></label><input id="f_title" maxlength="100" placeholder="e.g. Owner">
+
+    <label>Describe the products you'd like to sell</label>
+    <textarea id="f_products" required maxlength="4000" placeholder="What you make, what's special about it"></textarea>
+
+    <div class="row2">
+      <div><label>Product category</label>
+        <select id="f_category">
+          <option value="">Select…</option>
+          <option>Food &amp; Beverage</option><option>Art, Prints &amp; Photography</option>
+          <option>Home &amp; Garden</option><option>Apparel &amp; Accessories</option>
+          <option>Health &amp; Wellness</option><option>Crafts &amp; Handmade</option><option>Other</option>
+        </select></div>
+      <div><label>Do your products have barcodes?</label>
+        <select id="f_barcodes"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+    </div>
+
+    <label>Where else do you currently sell? <span class="opt">— optional</span></label>
+    <input id="f_wheresell" maxlength="600" placeholder="Other markets, shops, online, etc.">
+
+    <div class="row2">
+      <div><label>Website <span class="opt">— optional</span></label><input id="f_website" maxlength="300"></div>
+      <div><label>Instagram / social <span class="opt">— optional</span></label><input id="f_social" maxlength="200" placeholder="@handle"></div>
+    </div>
+
+    <label>Business address <span class="opt">— optional</span></label>
+    <input id="f_street" maxlength="200" placeholder="Street address">
+    <div class="row3" style="margin-top:8px">
+      <div><input id="f_city" maxlength="100" placeholder="City"></div>
+      <div><input id="f_state" maxlength="60" placeholder="State"></div>
+      <div><input id="f_zip" maxlength="20" placeholder="ZIP"></div>
+    </div>
+
+    <label style="margin-top:18px">Do you offer food or beverage products?</label>
+    <select id="f_food" onchange="foodToggle()"><option value="">Select…</option><option>Yes</option><option>No</option></select>
+
+    <div class="sect" id="s_food">
+      <label>Commercial kitchen / production facility name <span class="opt">— if applicable</span></label>
+      <input id="f_kitchen" maxlength="200">
+      <label>Commercial kitchen address <span class="opt">— if applicable</span></label>
+      <input id="f_kitchenaddr" maxlength="200">
+      <label>Co-packer name <span class="opt">— if co-packed</span></label>
+      <input id="f_copacker" maxlength="200">
+      <label>Most recent health inspection</label>
+      <input id="f_health" type="file" accept=".pdf,.jpg,.jpeg,.png,.heic">
+      <div class="checkrow"><input type="checkbox" id="f_labels">
+        <span>I confirm our product labels include: product name, full ingredient list (descending order),
+        allergen declaration, net weight/volume, manufacturer name &amp; address, storage instructions
+        (if required), and a best-by date and/or batch code.</span></div>
+    </div>
+
+    <label style="margin-top:18px">Proof of product liability insurance</label>
+    <input id="f_insurance" type="file" accept=".pdf,.jpg,.jpeg,.png,.heic">
+    <div class="hint2">Please list <b>Lake Roots Market and Cafe LLC</b> as additionally insured. You can also email this later if you don't have it handy.</div>
+
+    <label style="margin-top:14px">Product / marketing materials <span class="opt">— optional</span></label>
+    <input id="f_materials" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.heic,.doc,.docx">
+    <div class="hint2">Price lists, line sheets, photos — anything that helps us understand your product.</div>
+
+    <label style="margin-top:14px">Anything else we should know? <span class="opt">— optional</span></label>
+    <textarea id="f_notes" maxlength="4000"></textarea>
+
+    <div class="hp"><label>Company</label><input id="f_company" tabindex="-1" autocomplete="off"></div>
+
+    <div class="submitbar"><button id="sendBtn" type="submit">Submit vendor inquiry</button></div>
+    <div class="errline" id="err"></div>
+    <div class="privnote">Your contact info and documents are stored securely and used only to review your products for our market. Thanks for thinking of Lake Roots — we read every one of these.</div>
+  </form>
+
+  <div class="thanks" id="thanks">
+    <div class="big">Thank you!</div>
+    <p>Your vendor inquiry is in our review queue. We look at every submission as a team and someone will follow up — usually within a week or two.</p>
+    <p id="emaildocs" style="font-size:13px"></p>
+    <p style="font-family:var(--script,inherit);color:var(--gold);font-size:18px">rooted in community</p>
+  </div>
+  <div class="foot" style="text-align:center">Lake Roots Café Market Bar · Crystal Lake</div>
+</div>
+
+<script>
+const SUPA_URL="https://gqgjppxzdwzypxontmou.supabase.co";
+const SUPA_KEY="sb_publishable_DieuLBMaMTJwZD3SUfgvGA_9I2tMOhP";
+const sb=window.supabase?window.supabase.createClient(SUPA_URL,SUPA_KEY):null;
+const $=id=>document.getElementById(id);
+const v=id=>($(id).value||'').trim()||null;
+const yn=id=>{const x=$(id).value;return x?x==='Yes':null;};
+
+function foodToggle(){$('s_food').classList.toggle('on',$('f_food').value==='Yes');}
+foodToggle();
+
+async function up(file,id,key){
+  if(!file)return null;
+  const safe=(file.name||'file').replace(/[^\w.\-]+/g,'_');
+  const path=id+'/'+key+'-'+safe;
+  const {error}=await sb.storage.from('vendor-docs').upload(path,file,{upsert:false,contentType:file.type||undefined});
+  if(error){console.warn('upload failed',error.message);return null;}
+  return path;
+}
+
+async function submitForm(ev){
+  ev.preventDefault();
+  if(v('f_company')){$('form').style.display='none';$('thanks').style.display='block';return false;}
+  const err=$('err');err.style.display='none';
+  if(!sb){err.textContent='Could not connect — please try again in a moment.';err.style.display='block';return false;}
+  const food=$('f_food').value==='Yes';
+  const btn=$('sendBtn');btn.disabled=true;btn.textContent='Submitting…';
+  const sub={
+    legal_name:v('f_legal'),dba:v('f_dba'),product_desc:v('f_products'),
+    product_category:$('f_category').value||null,where_sell:v('f_wheresell'),
+    website:v('f_website'),social:v('f_social'),
+    biz_street:v('f_street'),biz_city:v('f_city'),biz_state:v('f_state'),biz_zip:v('f_zip'),
+    title:v('f_title'),offers_food:food,
+    kitchen_name:food?v('f_kitchen'):null,kitchen_address:food?v('f_kitchenaddr'):null,copacker:food?v('f_copacker'):null,
+    barcodes:yn('f_barcodes'),labels_confirmed:food?$('f_labels').checked:false,
+    notes:v('f_notes'),source:'web'
+  };
+  const {data,error}=await sb.from('vendor_submissions').insert(sub).select('id').single();
+  if(error){err.textContent='Something went wrong — please try again. ('+error.message+')';err.style.display='block';btn.disabled=false;btn.textContent='Submit vendor inquiry';return false;}
+  const id=data.id;
+  try{
+    const ins=await up($('f_insurance').files[0],id,'insurance');
+    const hea=food?await up($('f_health').files[0],id,'health'):null;
+    const mats=[];const mf=$('f_materials').files;
+    for(let i=0;i<mf.length;i++){const p=await up(mf[i],id,'materials'+i);if(p)mats.push(p);}
+    await sb.from('vendor_submissions').update({insurance_path:ins,health_path:hea,materials_paths:mats.join(', ')||null}).eq('id',id);
+  }catch(e){console.warn('upload step',e);}
+  await sb.from('vendor_contacts').insert({submission_id:id,first_name:v('f_first'),last_name:v('f_last'),email:v('f_email'),phone:v('f_phone')});
+  if(!$('f_insurance').files[0]) $('emaildocs').innerHTML='Heads up: please email your proof of liability insurance to <a href="mailto:hello@lakerootscl.com" style="color:var(--gold)">hello@lakerootscl.com</a> when you can.';
+  $('form').style.display='none';$('thanks').style.display='block';window.scrollTo(0,0);
+  return false;
+}
+</script>
+</body>
+</html>
