@@ -887,6 +887,14 @@ let ALL=[], ACTIONS={}, periodDays=0, LIVE=false;
 let DON={}, DON_DONE=new Set();   // from donations table: submission_id -> {stage,items,commitment}; DON_DONE = picked-up (stage 3)
 const money=n=>n==null?'—':(n>0?'$'+Number(n).toLocaleString('en-US'):'—');
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+// Safe to drop into a single-quoted inline handler that itself sits in a
+// double-quoted HTML attribute, e.g. onclick="drillOne('${jsId(e.id)}')".
+// Legacy ids can contain apostrophes (e.g. "...Prairie Ridge's incubator...")
+// which would otherwise close the JS string and make the row/buttons unclickable.
+// JS-escape backslash + quote, then HTML-escape & and " for the attribute.
+function jsId(s){return String(s==null?'':s)
+  .replace(/\\/g,'\\\\').replace(/'/g,"\\'")
+  .replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/[\r\n]/g,' ');}
 // Donation amount — SAME source of truth as the Donation Board chip: sum the $ literally
 // typed in the commitment items (× qty). Falls back to the outreach commitment_details.
 function parseDollars(t){return (String(t).match(/\$\s?\d[\d,]*(?:\.\d+)?/g)||[]).reduce((s,m)=>s+parseFloat(m.replace(/[$,\s]/g,'')),0);}
@@ -969,7 +977,7 @@ function shortType(t){return (t||'').length>30?t.slice(0,28)+'…':(t||'');}
 function renderDeleted(){
   const del=ALL.filter(e=>e.deleted);
   $('deletedPanel').style.display=del.length?'':'none';
-  $('delTbl').innerHTML=del.length?`<tr><th>Organization</th><th>Type</th><th class="r">Date</th><th class="r"></th></tr>`+del.map(e=>`<tr><td class="nm" style="color:var(--gray)">${esc(e.org)}</td><td class="ty" style="color:var(--gray)">${esc(shortType(e.type))}</td><td class="r" style="color:var(--gray)">${fmtDate(e.date)}</td><td class="r"><a href="#" style="color:var(--forest);font-size:12px" onclick="restoreEntry('${esc(e.id)}');return false">Restore</a></td></tr>`).join(''):'';}
+  $('delTbl').innerHTML=del.length?`<tr><th>Organization</th><th>Type</th><th class="r">Date</th><th class="r"></th></tr>`+del.map(e=>`<tr><td class="nm" style="color:var(--gray)">${esc(e.org)}</td><td class="ty" style="color:var(--gray)">${esc(shortType(e.type))}</td><td class="r" style="color:var(--gray)">${fmtDate(e.date)}</td><td class="r"><a href="#" style="color:var(--forest);font-size:12px" onclick="restoreEntry('${jsId(e.id)}');return false">Restore</a></td></tr>`).join(''):'';}
 function getUser(){return (localStorage.getItem('lr_user')||'').trim();}
 function setUser(v){localStorage.setItem('lr_user',(v||'').trim());}
 function cssId(id){return (id||'').replace(/[^a-zA-Z0-9]/g,'');}
@@ -1005,7 +1013,7 @@ function renderAll(){
   const types=Object.entries(tCounts).sort((a,b)=>b[1]-a[1]);$('typeHint').textContent=types.length+' types';
   bars($('typeBars'),types.slice(0,8),()=>'var(--brown)',l=>`drillType('${esc(l)}')`);
 
-  const segRow=p=>`<tr class="clk" onclick="drillOne('${esc(p.id)}')"><td class="nm">${statusDot(p.id)}${esc(p.org)}</td><td class="ty" title="${esc(p.type)}">${esc(shortType(p.type))}</td><td class="st">${statusPill(p)}</td><td class="r">${fmtDate(p.submitted)}</td><td class="r">${fmtDate(p.date)}</td><td class="r">${amtCell(p)}</td><td class="sp"></td></tr>`;
+  const segRow=p=>`<tr class="clk" onclick="drillOne('${jsId(p.id)}')"><td class="nm">${statusDot(p.id)}${esc(p.org)}</td><td class="ty" title="${esc(p.type)}">${esc(shortType(p.type))}</td><td class="st">${statusPill(p)}</td><td class="r">${fmtDate(p.submitted)}</td><td class="r">${fmtDate(p.date)}</td><td class="r">${amtCell(p)}</td><td class="sp"></td></tr>`;
   const SEGS=[
     ['pipe','pipeTbl',null,e=>e.bucket==='In Review','Pipeline clear in this period'],
     ['fwd','fwdTbl','fwdPanel',e=>e.bucket==='Approved',''],
@@ -1016,9 +1024,9 @@ function renderAll(){
     if(pid)$(pid).style.display=list.length?'':'none';
     $(tid).innerHTML=list.length?`<tr>${hd(t,'org','Organization')}${hd(t,'type','Type')}${hd(t,'status','Status')}${hd(t,'submitted','Submitted','r')}${hd(t,'date','Proposed','r')}${hd(t,'value','$','r')}<th class="sp"></th></tr>`+sortBy(list,t).map(segRow).join(''):`<tr><td style="color:var(--gray);padding:12px 0">${emptyMsg||'Nothing here'}${($('q')&&$('q').value)?' (try clearing the search/filters)':''}.</td></tr>`;});
   const give=givingYr;
-  $('giveTbl').innerHTML=give.length?`<tr>${hd('give','org','Organization')}${hd('give','type','Type')}${hd('give','value','$ Recorded','r')}${hd('give','date','Date','r')}<th class="sp"></th></tr>`+sortBy(give,'give').map(g=>`<tr class="clk" onclick="drillOne('${esc(g.id)}')"><td class="nm">${statusDot(g.id)}${esc(g.org)}</td><td class="ty" title="${esc(g.type)}">${esc(shortType(g.type))}</td><td class="r">${amtCell(g)}</td><td class="r">${fmtDate(g.date)}</td><td class="sp"></td></tr>`).join(''):`<tr><td style="color:var(--gray);padding:12px 0">No completed giving in this period.</td></tr>`;
+  $('giveTbl').innerHTML=give.length?`<tr>${hd('give','org','Organization')}${hd('give','type','Type')}${hd('give','value','$ Recorded','r')}${hd('give','date','Date','r')}<th class="sp"></th></tr>`+sortBy(give,'give').map(g=>`<tr class="clk" onclick="drillOne('${jsId(g.id)}')"><td class="nm">${statusDot(g.id)}${esc(g.org)}</td><td class="ty" title="${esc(g.type)}">${esc(shortType(g.type))}</td><td class="r">${amtCell(g)}</td><td class="r">${fmtDate(g.date)}</td><td class="sp"></td></tr>`).join(''):`<tr><td style="color:var(--gray);padding:12px 0">No completed giving in this period.</td></tr>`;
   $('otherPanel').style.display=otherDone.length?'':'none';
-  $('otherTbl').innerHTML=otherDone.length?`<tr>${hd('other','org','Organization')}${hd('other','type','Type')}${hd('other','date','Completed','r')}<th class="sp"></th></tr>`+sortBy(otherDone,'other').map(g=>`<tr class="clk" onclick="drillOne('${esc(g.id)}')"><td class="nm">${statusDot(g.id)}${esc(g.org)}</td><td class="ty" title="${esc(g.type)}">${esc(shortType(g.type))}</td><td class="r">${fmtDate(g.date)}</td><td class="sp"></td></tr>`).join(''):'';
+  $('otherTbl').innerHTML=otherDone.length?`<tr>${hd('other','org','Organization')}${hd('other','type','Type')}${hd('other','date','Completed','r')}<th class="sp"></th></tr>`+sortBy(otherDone,'other').map(g=>`<tr class="clk" onclick="drillOne('${jsId(g.id)}')"><td class="nm">${statusDot(g.id)}${esc(g.org)}</td><td class="ty" title="${esc(g.type)}">${esc(shortType(g.type))}</td><td class="r">${fmtDate(g.date)}</td><td class="sp"></td></tr>`).join(''):'';
   renderDeleted();
 }
 function statusDot(id){const a=ACTIONS[id];return a&&a.status?`<span class="sdot ${a.status}"></span>`:'';}
@@ -1032,16 +1040,16 @@ function drill(title,list){
   $('mBody').innerHTML=list.map(e=>{const a=ACTIONS[e.id]||{};
     return `<div class="dentry">
       <div class="dhead">${fmtDate(e.date)} · ${esc(e.type)} · <span id="ts-${cssId(e.id)}">${esc(stLabel(a.status)||e.bucket)}</span>${e._amt>0?' · '+(e._amtApprox?'~':'')+money(e._amt):''}</div>
-      <div class="dlabel">${esc(e.org)} <a href="#" style="font-size:11px;color:var(--gray);font-weight:400;text-decoration:underline" onclick="editEntry('${esc(e.id)}');return false">✎ edit details</a></div>
+      <div class="dlabel">${esc(e.org)} <a href="#" style="font-size:11px;color:var(--gray);font-weight:400;text-decoration:underline" onclick="editEntry('${jsId(e.id)}');return false">✎ edit details</a></div>
       <div id="ed-${cssId(e.id)}"></div>
       ${detailBlock(e)}
-      <div class="dchips">${statusesFor(e).map(([k,lbl])=>`<button data-s="${k}" class="${a.status===k?'on':''}" onclick="setStatus('${esc(e.id)}','${k}',this)">${lbl}</button>`).join('')}</div>
+      <div class="dchips">${statusesFor(e).map(([k,lbl])=>`<button data-s="${k}" class="${a.status===k?'on':''}" onclick="setStatus('${jsId(e.id)}','${k}',this)">${lbl}</button>`).join('')}</div>
       <div id="sd-${cssId(e.id)}">${renderDetail(e.id)}</div>
       <div class="comments" id="cmts-${cssId(e.id)}">${renderComments(a.comments)}</div>
-      <div class="addcmt"><input id="cin-${cssId(e.id)}" placeholder="Add a comment…" onkeydown="if(event.key==='Enter')addComment('${esc(e.id)}')"><button onclick="addComment('${esc(e.id)}')">Post</button></div>
+      <div class="addcmt"><input id="cin-${cssId(e.id)}" placeholder="Add a comment…" onkeydown="if(event.key==='Enter')addComment('${jsId(e.id)}')"><button onclick="addComment('${jsId(e.id)}')">Post</button></div>
       <div class="nouser" id="nu-${cssId(e.id)}">Enter your name (top right) to comment.</div>
       ${e.sid?`<div style="margin-top:6px;font-size:12px"><b style="color:var(--forest)">Contact:</b> <span id="ct-${cssId(e.id)}" style="color:var(--mid)">loading…</span> · <a href="${esc(e.email_link||('https://mail.google.com/mail/u/0/#search/'+encodeURIComponent('"'+e.org+'"')))}" target="_blank" rel="noopener" style="color:var(--forest)">${e.email_link?'📧 Open inquiry email':'📧 Search inbox'}</a></div>`:''}
-      ${e.manual?`<div style="margin-top:6px"><a href="#" style="font-size:11px;color:var(--red)" onclick="deleteManual('${esc(e.id)}');return false">Delete this entry</a></div>`:''}
+      ${e.manual?`<div style="margin-top:6px"><a href="#" style="font-size:11px;color:var(--red)" onclick="deleteManual('${jsId(e.id)}');return false">Delete this entry</a></div>`:''}
     </div>`;}).join('')||'<div style="color:var(--gray)">No items.</div>';
   $('modalBg').classList.add('open');
   if(list.length<=8)list.forEach(e=>{if(e.sid)showContact(e.id);});
@@ -1062,20 +1070,20 @@ function renderDetail(id){const a=ACTIONS[id]||{};const c=cssId(id);
   if(a.status==='commitment'){const items=(a.commitment_details||[]).join('\n');
     return `<div class="sdetail"><label>Commitment details — one item per line</label>
       <textarea id="dt-${c}" placeholder="e.g.&#10;$50 gift card&#10;Pastry box (12)">${esc(items)}</textarea>
-      <div class="row"><button onclick="saveDetail('${esc(id)}')">Save commitment</button><span class="saved" id="sv-${c}">Saved ✓ — added to Donation Board</span></div>
+      <div class="row"><button onclick="saveDetail('${jsId(id)}')">Save commitment</button><span class="saved" id="sv-${c}">Saved ✓ — added to Donation Board</span></div>
       <div class="hintline">Saving sends this to the 🎁 Donation Fulfillment Board (lane: Commitment made).</div></div>`;}
   if(a.status==='passed'){
     return `<div class="sdetail"><label>Reason passed</label>
       <input id="dt-${c}" placeholder="Why we passed on this one" value="${esc(a.passed_reason||'')}">
-      <div class="row"><button onclick="saveDetail('${esc(id)}')">Save</button><span class="saved" id="sv-${c}">Saved ✓</span></div></div>`;}
+      <div class="row"><button onclick="saveDetail('${jsId(id)}')">Save</button><span class="saved" id="sv-${c}">Saved ✓</span></div></div>`;}
   if(a.status==='paused'){
     return `<div class="sdetail"><label>Reason paused</label>
       <input id="dt-${c}" placeholder="Why this is on pause (e.g. revisit in fall)" value="${esc(a.paused_reason||'')}">
-      <div class="row"><button onclick="saveDetail('${esc(id)}')">Save</button><span class="saved" id="sv-${c}">Saved ✓</span></div></div>`;}
+      <div class="row"><button onclick="saveDetail('${jsId(id)}')">Save</button><span class="saved" id="sv-${c}">Saved ✓</span></div></div>`;}
   if(a.status==='decision_needed'){
     return `<div class="sdetail"><label>What are we waiting on?</label>
       <input id="dt-${c}" placeholder="e.g. confirm budget with Sam, date from the org…" value="${esc(a.waiting_on||'')}">
-      <div class="row"><button onclick="saveDetail('${esc(id)}')">Save</button><span class="saved" id="sv-${c}">Saved ✓</span></div></div>`;}
+      <div class="row"><button onclick="saveDetail('${jsId(id)}')">Save</button><span class="saved" id="sv-${c}">Saved ✓</span></div></div>`;}
   return '';}
 async function saveDetail(id){const a=ACTIONS[id]||{};const c=cssId(id);const el=$('dt-'+c);if(!el)return;
   if(a.status==='commitment'){a.commitment_details=el.value.split('\n').map(s=>s.trim()).filter(Boolean);}
@@ -1180,7 +1188,7 @@ function editEntry(id){const e=ALL.find(x=>x.id===id);if(!e)return;const c=cssId
     <input id="etc-${c}" placeholder="New type…" style="display:none;margin-top:6px">
     <label style="margin-top:8px">Proposed date (M/D/YYYY)</label><input id="ep-${c}" value="${esc(parseD(e.date)?e.date:'')}" placeholder="e.g. 7/4/2026">
     <label style="margin-top:8px">$ value</label><input id="ev-${c}" value="${e.value||''}" placeholder="e.g. 50">
-    <div class="row"><button onclick="saveEntry('${esc(id)}')">Save changes</button>
+    <div class="row"><button onclick="saveEntry('${jsId(id)}')">Save changes</button>
     <a href="#" style="font-size:11px;color:var(--gray)" onclick="document.getElementById('ed-${c}').innerHTML='';return false">cancel</a></div>
   </div>`;}
 async function saveEntry(id){const e=ALL.find(x=>x.id===id);if(!e||!e.sid||!sb)return;const c=cssId(id);
