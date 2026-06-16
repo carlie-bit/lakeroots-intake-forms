@@ -10,6 +10,7 @@ const FROM = "Lake Roots <hello@lakerootscl.com>";
 // Managers notified on each new service report. Edit this list to add/remove
 // recipients (kept in code, not the hello@ distro, per the maintenance owners).
 const MANAGERS = [
+  "carlie@lakerootscl.com",
   "rod@lakerootscl.com",
   "andy@lakerootscl.com",
   "mike@lakerootscl.com",
