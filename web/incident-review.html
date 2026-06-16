@@ -258,11 +258,10 @@ function renderAll(){
   const open=F.filter(e=>e.status!=='resolved');
   const resolved=F.filter(e=>e.status==='resolved');
   const inj=F.filter(isInjury);
-  const month=F.filter(e=>{const d=new Date(occ(e));return !isNaN(d)&&(Date.now()-d.getTime())/86400000<=30;});
   const kpis=[
     ['Open',open.length,'need attention','hl',()=>drill('Open incidents',open)],
+    ['Resolved',resolved.length,'closed out','',()=>drill('Resolved incidents',resolved)],
     ['Injuries',inj.length,'people involved','gold',()=>drill('Injuries',inj)],
-    ['Last 30 days',month.length,'recent','',()=>drill('Last 30 days',month)],
     ['Total',F.length,'incidents','',()=>drill('All incidents',F)],
   ];
   $('kpis').innerHTML=kpis.map(([l,v,s,c],i)=>`<div class="kpi clk ${c}" onclick="KPI[${i}]()"><div class="kl">${l}</div><div class="kv">${v}</div><div class="ks">${s}</div></div>`).join('');
