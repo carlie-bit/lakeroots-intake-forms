@@ -122,9 +122,11 @@ def main():
         open(os.path.join(WEB, out_name), "w").write(html)
         print(f"  {out_name:24s} <- templates/{tpl_name}  ({len(html)//1024} KB)")
 
-    # Brand logo as a real file (transactional emails reference it by URL — email
-    # clients won't render the base64-inlined version the pages use).
+    # Brand logos as real files (transactional emails reference them by URL — email
+    # clients won't render the base64-inlined version the pages use). lr-email-logo
+    # is the website's linear sailboat lockup, for on-brand confirmation emails.
     shutil.copyfile(os.path.join(ASSETS, "lr_monogram.png"), os.path.join(WEB, "lr-logo.png"))
+    shutil.copyfile(os.path.join(ASSETS, "lr_email_logo.png"), os.path.join(WEB, "lr-email-logo.png"))
 
     # keep the forms out of search engines (same as the dashboards)
     open(os.path.join(WEB, "_headers"), "w").write("/*\n  X-Robots-Tag: noindex, nofollow\n")
