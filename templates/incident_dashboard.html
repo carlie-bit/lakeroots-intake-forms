@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Lake Roots — Incident Review</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Barlow+Condensed:wght@300;400;500;600&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>__CSS__</style>
+<style>
+/* SOP-playbook branding to match the incident form. */
+body{background-image:radial-gradient(circle at 12% -5%,rgba(153,186,180,.10),transparent 55%),radial-gradient(circle at 95% 8%,rgba(182,128,54,.07),transparent 45%)}
+header.sop{background:var(--forest);color:var(--cream);padding:24px 18px 20px;text-align:center;box-shadow:0 6px 22px rgba(54,58,46,.18);position:relative}
+header.sop .eyebrow{font-family:var(--body);font-size:12px;font-weight:600;letter-spacing:6px;color:var(--sand);text-transform:uppercase;margin-bottom:9px}
+header.sop .wordmark{font-family:var(--script);font-size:36px;color:var(--cream);margin-bottom:6px;line-height:1}
+header.sop h1{font-family:var(--disp);font-weight:600;text-transform:uppercase;font-size:clamp(20px,4.5vw,28px);letter-spacing:2px;margin:0}
+header.sop .subtitle{font-style:italic;color:var(--sage);font-size:14.5px;margin-top:7px}
+header.sop .upd{font-family:var(--body);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--sage);opacity:.75;margin-top:8px}
+header.sop .logout{position:absolute;right:16px;top:16px;font-family:var(--body);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--sand);background:none;border:1px solid rgba(239,219,178,.4);border-radius:999px;padding:5px 11px;cursor:pointer}
+/* login gate */
+.gate{max-width:420px;margin:60px auto;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(54,58,46,.10);padding:26px 24px;text-align:center}
+.gate h2{font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;color:var(--forest);font-size:20px;margin:0 0 6px}
+.gate p{color:var(--mid);font-size:14px;margin:0 0 16px;line-height:1.5}
+.gate input{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:9px;padding:11px 12px;font-family:inherit;font-size:16px;background:var(--cream);margin-bottom:12px}
+.gate button{width:100%;border:none;background:var(--forest);color:var(--cream);border-radius:999px;padding:12px;font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;font-size:14px;cursor:pointer}
+.gate button:disabled{opacity:.5;cursor:default}
+.gate .msg{font-size:13px;margin-top:12px;min-height:18px}
+.gate .ok{color:var(--forest)}.gate .bad{color:var(--red)}
+.topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:16px 0 2px}
+.periodbar{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.periodbar .pl{font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;font-size:10.5px;color:var(--gray);margin-right:2px}
+.periodbar button{font-family:var(--disp);text-transform:uppercase;letter-spacing:.6px;font-size:11px;padding:6px 11px;border-radius:8px;border:1.5px solid var(--line);background:#fff;color:var(--mid);cursor:pointer}
+.periodbar button.on{background:var(--forest);color:var(--cream);border-color:var(--forest)}
+.whoami{margin-left:auto;font-family:var(--disp);text-transform:uppercase;letter-spacing:.6px;font-size:10.5px;color:var(--gray)}
+.filterbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 2px}
+.filterbar input{border:1.5px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;background:#fff;color:var(--ink);flex:1;min-width:200px}
+.filterbar .clearf{font-size:11px;color:var(--gray);cursor:pointer;text-decoration:underline}
+.kpi.clk,.bar.clk{cursor:pointer}.kpi.clk:hover{border-color:var(--gold)}.bar.clk:hover .bl{color:var(--forest);font-weight:600}
+.dash-table tr.clk{cursor:pointer}.dash-table tr.clk:hover td{background:var(--sand)}
+.dash-table th+th,.dash-table td+td{padding-left:18px}
+.dash-table td.r,.dash-table th.r{text-align:right;white-space:nowrap}
+.dash-table th.srt{cursor:pointer;user-select:none;white-space:nowrap}.dash-table th.srt:hover{color:var(--forest)}
+.dash-table th .arr{font-size:9px;color:var(--gold);margin-left:3px}
+.dash-table td.nm{max-width:0;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.allcount{font-size:11px;color:var(--gray);margin-top:8px}
+.pill{white-space:nowrap;display:inline-block;color:#fff;border-radius:999px;padding:2px 9px;font-size:11px}
+.injtag{font-size:10px;font-family:var(--disp);text-transform:uppercase;letter-spacing:.5px;color:#fff;background:var(--red);border-radius:6px;padding:1px 6px}
+@media(max-width:680px){.allt th:nth-child(2),.allt td:nth-child(2){display:none}}
+.modal-bg{position:fixed;inset:0;background:rgba(43,48,38,.5);display:none;align-items:center;justify-content:center;padding:18px;z-index:100}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:14px;max-width:600px;width:100%;max-height:88vh;overflow:auto;padding:18px 20px}
+.modal .mh{display:flex;justify-content:space-between;align-items:center}
+.modal .mt{font-family:var(--disp);font-weight:600;font-size:19px;color:var(--forest);text-transform:uppercase;letter-spacing:.5px}
+.modal .mx{border:none;background:none;font-size:22px;cursor:pointer;color:var(--gray)}
+.modal .mc{font-size:12px;color:var(--gray);margin-bottom:12px}
+.dentry{border:1px solid var(--line);border-radius:11px;padding:11px 12px;margin-bottom:10px}
+.dentry .dhead{font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px}
+.dentry .dlabel{font-size:16px;margin:3px 0 8px;color:var(--ink);font-weight:600}
+.detrows{margin:2px 0 8px;font-size:12.5px;color:var(--mid);line-height:1.55}.detrows b{color:var(--forest)}
+.photos{margin:6px 0;font-size:12.5px;line-height:1.7}.photos b{color:var(--forest)}
+.dchips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.dchips button{font-size:11px;padding:4px 9px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--mid);cursor:pointer}
+.dchips button.on[data-s=open]{background:var(--gold);color:#fff;border-color:transparent}
+.dchips button.on[data-s=resolved]{background:var(--forest);color:#fff;border-color:transparent}
+.edit label{display:block;font-family:var(--disp);text-transform:uppercase;letter-spacing:.6px;font-size:11px;color:var(--forest);margin:8px 0 4px}
+.edit textarea,.edit input{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;font-family:inherit;font-size:14px;background:var(--cream)}
+.edit textarea{min-height:60px;resize:vertical}
+.savebtn{margin-top:10px;border:1.5px solid var(--forest);background:var(--forest);color:var(--cream);border-radius:8px;padding:8px 16px;font-size:12px;font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;cursor:pointer}
+.saved{font-size:12px;color:var(--forest);margin-left:10px}
+</style>
+</head>
+<body>
+<header class="sop">
+  <button class="logout" id="logoutBtn" style="display:none" onclick="logout()">Log out</button>
+  <div class="eyebrow">Café&nbsp;·&nbsp;Market&nbsp;·&nbsp;Bar</div>
+  <div class="wordmark">Lake Roots</div>
+  <h1>Incident Review</h1>
+  <div class="subtitle">damage, injuries, equipment &amp; building issues</div>
+  <div class="upd" id="updated"></div>
+</header>
+
+<!-- LOGIN GATE -->
+<div class="gate" id="gate" style="display:none">
+  <h2>Manager sign-in</h2>
+  <p>Incident reports are private. Enter your Lake Roots email and we'll send a one-time sign-in link.</p>
+  <input id="email" type="email" placeholder="you@lakerootscl.com" autocomplete="email">
+  <button id="sendBtn" onclick="sendLink()">Email me a sign-in link</button>
+  <div class="msg" id="gmsg"></div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="wrap" id="dash" style="display:none">
+  <div class="topbar">
+    <div class="periodbar" id="periodbar"><span class="pl">Period</span></div>
+    <div class="whoami" id="whoami"></div>
+  </div>
+  <div class="filterbar">
+    <input id="q" placeholder="🔍 Search nature, description, reporter, notes…" oninput="SEARCH=this.value.toLowerCase().trim();renderAll()">
+    <span class="clearf" onclick="clearSearch()">clear search</span>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <div class="panels">
+    <div class="panel"><h3>By Nature <span class="hint">click to view</span></h3><div class="bars" id="natBars"></div></div>
+    <div class="panel full"><h3>🔵 Open — needs attention <span class="hint">unresolved incidents · click a row</span></h3><table class="dash-table" id="openTbl"></table></div>
+    <div class="panel full"><h3>📋 All Incidents <span class="hint">every report · click a column to sort, search above to filter · click a row</span></h3><table class="dash-table allt" id="allTbl"></table><div class="allcount" id="allCount"></div></div>
+  </div>
+  <div class="note" id="note"></div>
+  <div class="foot">rooted in community</div>
+</div>
+
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeDrill()">
+  <div class="modal">
+    <div class="mh"><div class="mt" id="mTitle">Incident</div><button class="mx" onclick="closeDrill()">×</button></div>
+    <div class="mc" id="mCount"></div>
+    <div id="mBody"></div>
+  </div>
+</div>
+
+<script>
+// Incident form's own backend (lakeroots-production) — kept exactly, per repo
+// rule: the dashboard reads the same table/keys the form writes to.
+const SUPA_URL="https://nocufjsinhbxqneinvcn.supabase.co";
+const SUPA_KEY="sb_publishable_ASEdCGk7BGuqh2w8BFib7A_4MBpAfF8";
+const sb=window.supabase?window.supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
+const $=id=>document.getElementById(id);
+const STATUSES=[['open','Open'],['resolved','Resolved']];
+const SLABEL=Object.fromEntries(STATUSES);
+const SCOL={open:'var(--gold)',resolved:'var(--forest)'};
+const PERIODS=[['All time',0],['12 mo',365],['6 mo',183],['3 mo',92],['30 days',30]];
+const INJURY=/inj|fall|cut|hurt|burn|slip/i;
+let ALL=[], periodDays=0, SEARCH='', sortKey='occurred', sortDir=-1;
+const SORTS=[['occurred','Date'],['nature','Nature'],['status','Status'],['reporter','Reported by']];
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function jsId(s){return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/[\r\n]/g,' ');}
+function cssId(id){return (id||'').replace(/[^a-zA-Z0-9]/g,'');}
+function today(){return new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function occ(e){return e.occurred_date||e.created_at;}
+function fmtDate(s){const d=s?new Date(s+(/^\d{4}-\d{2}-\d{2}$/.test(s)?'T00:00:00':'')):null;return d&&!isNaN(d)?d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';}
+function inPeriod(e){if(!periodDays)return true;const d=new Date(occ(e));if(isNaN(d))return true;return (Date.now()-d.getTime())/86400000<=periodDays;}
+function clearSearch(){SEARCH='';const q=$('q');if(q)q.value='';renderAll();}
+function isInjury(e){return INJURY.test(e.nature||'')||INJURY.test(e.description||'');}
+
+function mapI(r){return {id:r.id,occurred_date:r.occurred_date||'',occurred_time:r.occurred_time||'',created_at:r.created_at,
+  nature:r.nature||'—',description:r.description||'',photos:Array.isArray(r.photo_urls)?r.photo_urls:[],
+  repair_needed:r.repair_needed||'',reporter:r.reported_by||'',mgmt_notes:r.management_notes||'',
+  resolution:r.resolution||'',resolution_date:r.resolution_date||'',status:r.status||'open',source:r.source||''};}
+
+function matchSearch(e){if(!SEARCH)return true;return ((e.nature+' '+e.description+' '+e.reporter+' '+e.mgmt_notes+' '+e.resolution).toLowerCase()).includes(SEARCH);}
+function filtered(){return ALL.filter(e=>inPeriod(e)&&matchSearch(e));}
+function statusPill(e){return `<span class="pill" style="background:${SCOL[e.status]||'var(--gray)'}">${SLABEL[e.status]||e.status}</span>`;}
+
+function renderPeriodBar(){$('periodbar').innerHTML='<span class="pl">Period</span>'+PERIODS.map(([l,d])=>`<button class="${d===periodDays?'on':''}" onclick="setPeriod(${d})">${l}</button>`).join('');}
+function setPeriod(d){periodDays=d;renderPeriodBar();renderAll();}
+function bars(el,entries,colf,clickf){const mx=Math.max(1,...entries.map(e=>e[1]));
+  el.innerHTML=entries.map(([l,n])=>`<div class="bar clk" onclick="${clickf(l)}"><div class="bl">${esc(l)}</div><div class="bt"><div class="bf" style="width:${100*n/mx}%;background:${colf(l)}"></div></div><div class="bv">${n}</div></div>`).join('');}
+
+function renderAll(){
+  const F=filtered();
+  const open=F.filter(e=>e.status!=='resolved');
+  const resolved=F.filter(e=>e.status==='resolved');
+  const inj=F.filter(isInjury);
+  const month=F.filter(e=>{const d=new Date(occ(e));return !isNaN(d)&&(Date.now()-d.getTime())/86400000<=30;});
+  const kpis=[
+    ['Open',open.length,'need attention','hl',()=>drill('Open incidents',open)],
+    ['Injuries',inj.length,'people involved','gold',()=>drill('Injuries',inj)],
+    ['Last 30 days',month.length,'recent','',()=>drill('Last 30 days',month)],
+    ['Total',F.length,'incidents','',()=>drill('All incidents',F)],
+  ];
+  $('kpis').innerHTML=kpis.map(([l,v,s,c],i)=>`<div class="kpi clk ${c}" onclick="KPI[${i}]()"><div class="kl">${l}</div><div class="kv">${v}</div><div class="ks">${s}</div></div>`).join('');
+  window.KPI=kpis.map(x=>x[4]);
+
+  const nC={};F.forEach(e=>{const n=e.nature||'—';nC[n]=(nC[n]||0)+1;});
+  bars($('natBars'),Object.entries(nC).sort((a,b)=>b[1]-a[1]),()=>'var(--brown)',l=>`drill('${esc(l)}',filtered().filter(e=>(e.nature||'—')==='${esc(l)}'))`);
+
+  const row=e=>`<tr class="clk" onclick="drillOne('${jsId(e.id)}')"><td class="nm">${esc(e.nature)}${isInjury(e)?' <span class="injtag">injury</span>':''} — ${esc(e.description.slice(0,60))}</td><td>${esc(e.reporter)||'—'}</td><td class="r">${fmtDate(occ(e))}</td></tr>`;
+  $('openTbl').innerHTML=open.length?`<tr><th>Incident</th><th>Reported by</th><th class="r">Date</th></tr>`+open.map(row).join(''):`<tr><td style="color:var(--gray);padding:12px 0">No open incidents${SEARCH?' in this search':''}. 🎉</td></tr>`;
+
+  renderAllTable(F);
+}
+function sortVal(e,k){if(k==='occurred')return new Date(occ(e)).getTime()||0;if(k==='status')return e.status==='resolved'?1:0;return (e[k]||'').toString().toLowerCase();}
+function setSort(k){if(sortKey===k)sortDir=-sortDir;else{sortKey=k;sortDir=(k==='occurred')?-1:1;}renderAll();}
+function renderAllTable(F){
+  const rows=F.slice().sort((a,b)=>{const va=sortVal(a,sortKey),vb=sortVal(b,sortKey);if(va<vb)return -sortDir;if(va>vb)return sortDir;return (new Date(occ(b))-new Date(occ(a)));});
+  const arrow=k=>sortKey===k?`<span class="arr">${sortDir<0?'▼':'▲'}</span>`:'';
+  const head=`<tr><th class="srt" onclick="setSort('nature')">Incident${arrow('nature')}</th><th class="srt" onclick="setSort('reporter')">Reported by${arrow('reporter')}</th><th class="srt" onclick="setSort('status')">Status${arrow('status')}</th><th class="srt r" onclick="setSort('occurred')">Date${arrow('occurred')}</th></tr>`;
+  const body=rows.length?rows.map(e=>`<tr class="clk" onclick="drillOne('${jsId(e.id)}')"><td class="nm">${esc(e.nature)}${isInjury(e)?' <span class="injtag">injury</span>':''} — ${esc(e.description.slice(0,55))}</td><td>${esc(e.reporter)||'—'}</td><td>${statusPill(e)}</td><td class="r">${fmtDate(occ(e))}</td></tr>`).join('')
+    :`<tr><td style="color:var(--gray);padding:12px 0" colspan="4">No incidents${SEARCH?' match your search':''}.</td></tr>`;
+  $('allTbl').innerHTML=head+body;
+  $('allCount').textContent=`${rows.length} ${rows.length===1?'incident':'incidents'}${SEARCH?' (filtered)':''} · sorted by ${SORTS.find(s=>s[0]===sortKey)[1]} ${sortDir<0?'↓':'↑'}`;
+}
+
+function drillOne(id){drill('Incident',[ALL.find(e=>e.id===id)]);}
+function photoLine(e){if(!e.photos.length)return '';
+  const links=e.photos.map((p,i)=>`<a href="${esc(p)}" target="_blank" rel="noopener" style="color:var(--forest)">Photo ${i+1} ↗</a>`).join(' · ');
+  return `<div class="photos"><b>Photos:</b> ${links}</div>`;}
+function detailBlock(e){
+  const rows=[['When',fmtDate(occ(e))+(e.occurred_time?' · '+e.occurred_time:'')],['Nature',e.nature!=='—'?e.nature:''],
+    ['Description',e.description],['Repair needed',e.repair_needed],['Reported by',e.reporter]].filter(x=>x[1]);
+  return rows.length?`<div class="detrows">${rows.map(([l,v])=>`<div><b>${l}:</b> ${esc(String(v))}</div>`).join('')}</div>`:'';}
+
+function drill(title,list){list=(list||[]).filter(Boolean);
+  $('mTitle').textContent=title;$('mCount').textContent=list.length+' '+(list.length===1?'incident':'incidents');
+  $('mBody').innerHTML=list.map(e=>{const c=cssId(e.id);
+    return `<div class="dentry">
+      <div class="dhead">${fmtDate(occ(e))}${e.source?' · '+esc(e.source):''}</div>
+      <div class="dlabel">${esc(e.nature)}${isInjury(e)?' <span class="injtag">injury</span>':''}</div>
+      ${detailBlock(e)}
+      ${photoLine(e)}
+      <div class="dchips">${STATUSES.map(([k,l])=>`<button data-s="${k}" class="${e.status===k?'on':''}" onclick="setStatus('${jsId(e.id)}','${k}',this)">${l}</button>`).join('')}</div>
+      <div class="edit">
+        <label>Management notes</label><textarea id="mn-${c}">${esc(e.mgmt_notes)}</textarea>
+        <label>Resolution</label><textarea id="rs-${c}">${esc(e.resolution)}</textarea>
+        <label>Resolution date</label><input id="rd-${c}" type="date" value="${esc(e.resolution_date)}">
+        <button class="savebtn" onclick="saveEntry('${jsId(e.id)}')">Save</button><span class="saved" id="sv-${c}"></span>
+      </div>
+    </div>`;}).join('')||'<div style="color:var(--gray)">No incidents.</div>';
+  $('modalBg').classList.add('open');
+}
+function closeDrill(){$('modalBg').classList.remove('open');}
+
+async function update(id,patch){const {error}=await sb.from('incidents').update(patch).eq('id',id);
+  if(error){alert('Save failed: '+error.message);return false;}return true;}
+async function setStatus(id,status,btn){const e=ALL.find(x=>x.id===id);if(!e)return;
+  const patch={status};if(status==='resolved'&&!e.resolution_date){patch.resolution_date=new Date().toISOString().slice(0,10);}
+  if(!await update(id,patch))return;
+  e.status=status;if(patch.resolution_date){e.resolution_date=patch.resolution_date;const rd=$('rd-'+cssId(id));if(rd)rd.value=patch.resolution_date;}
+  btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.s===status));renderAll();}
+async function saveEntry(id){const e=ALL.find(x=>x.id===id);if(!e)return;const c=cssId(id);
+  const patch={management_notes:($('mn-'+c).value||'').trim()||null,resolution:($('rs-'+c).value||'').trim()||null,resolution_date:$('rd-'+c).value||null};
+  if(!await update(id,patch))return;
+  Object.assign(e,{mgmt_notes:patch.management_notes||'',resolution:patch.resolution||'',resolution_date:patch.resolution_date||''});
+  $('sv-'+c).textContent='Saved ✓';setTimeout(()=>{const s=$('sv-'+c);if(s)s.textContent='';},2500);}
+
+async function load(){
+  const {data,error}=await sb.from('incidents').select('*').order('occurred_date',{ascending:false,nullsFirst:false});
+  if(error){$('note').innerHTML='<b style="color:var(--red)">Could not load incidents.</b> '+esc(error.message);return;}
+  ALL=(data||[]).map(mapI);
+  $('updated').textContent='Updated '+today();
+  $('note').innerHTML='Status, notes &amp; resolution save live to the incident log. New reports from the <a style="color:var(--gold)" href="https://lakerootsplaybook.netlify.app/incident-report.html" target="_blank" rel="noopener">incident form ↗</a> appear on refresh.';
+  renderPeriodBar();renderAll();
+}
+
+/* ---- auth gate ---- */
+function showDash(session){
+  $('gate').style.display='none';$('dash').style.display='';
+  $('logoutBtn').style.display='';
+  $('whoami').textContent=session?.user?.email?('Signed in: '+session.user.email):'';
+  load();
+}
+function showGate(){$('dash').style.display='none';$('gate').style.display='';$('logoutBtn').style.display='none';$('updated').textContent='';}
+async function sendLink(){
+  const email=($('email').value||'').trim();const m=$('gmsg');
+  if(!email){m.className='msg bad';m.textContent='Enter your email.';return;}
+  $('sendBtn').disabled=true;m.className='msg';m.textContent='Sending…';
+  const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:location.origin+location.pathname}});
+  if(error){m.className='msg bad';m.textContent=/not allowed|signups|user/i.test(error.message)?'That email isn’t set up for access. Ask an admin to add you.':('Could not send: '+error.message);$('sendBtn').disabled=false;return;}
+  m.className='msg ok';m.textContent='Check your email for a sign-in link, then come back to this page.';
+}
+async function logout(){await sb.auth.signOut();showGate();}
+
+async function boot(){
+  if(!sb){$('gate').style.display='';$('gmsg').className='msg bad';$('gmsg').textContent='Could not connect.';return;}
+  const {data:{session}}=await sb.auth.getSession();
+  if(session)showDash(session);else showGate();
+  sb.auth.onAuthStateChange((_e,s)=>{if(s)showDash(s);else showGate();});
+}
+boot();
+</script>
+</body>
+</html>

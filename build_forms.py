@@ -52,6 +52,7 @@ PAGES = [
     ("guest_dashboard.html",   "guest-experience.html",    "guest_deid.json"),
     ("vendor_dashboard.html",  "vendor-review.html",       None),  # live-only from vendor_submissions
     ("service_dashboard.html", "service-review.html",      None),  # live-only from service_reports (no PII)
+    ("incident_dashboard.html","incident-review.html",     None),  # login-gated; reads lakeroots-production incidents
     # Donation Fulfillment Board — self-contained (own inline CSS/logo), live-only
     # from the `donations` table, no PII. Fed by the outreach page's "Commitment made".
     ("donation_board.html",    "donations.html",           None),
