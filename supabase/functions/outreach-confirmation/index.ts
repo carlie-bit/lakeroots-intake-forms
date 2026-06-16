@@ -1,35 +1,32 @@
-// Sends a branded "thanks for reaching out" confirmation + summary to the person
-// who submitted the Community Outreach / partnership form.
-//
-// Invoked by an AFTER INSERT trigger on public.outreach_contacts (via pg_net),
-// which passes {submission_id}. The function looks up the contact email + the
-// submission itself with the service role, so it can only ever email an address
-// already on file for a real submission (no arbitrary sends). verify_jwt is off
-// because the trigger is internal and carries no JWT; the DB lookup is the guard.
-//
-// Required secret: RESEND_API_KEY. SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are
-// provided to edge functions automatically.
+// Community Outreach / partner form: confirmation to the submitter + team alert.
+// Invoked by an AFTER INSERT trigger on public.outreach_contacts (via pg_net).
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const FROM = "Lake Roots <hello@lakerootscl.com>";
+const TEAM = "hello@lakerootscl.com";
+const DASH = "https://lakeroots-intake-forms.netlify.app/community-outreach.html";
 const LOGO = "https://lakeroots-intake-forms.netlify.app/lr-email-logo.png";
 const H = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` };
 
 const esc = (s: unknown) =>
   String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]!));
 
-function buildEmail(name: string, s: Record<string, unknown>): string {
+function summaryRows(s: Record<string, unknown>): string {
   const rows: [string, unknown][] = [
     ["What you're reaching out about", s.inquiry_type],
     ["Organization", s.org],
     ["Proposed / needed-by date", s.proposed_date],
     ["Details", s.donation_details || s.event_desc || s.market_products || s.brief_desc || s.donation_purpose || s.other_notes],
   ];
-  const summary = rows.filter(([, v]) => v).map(([l, v]) =>
+  return rows.filter(([, v]) => v).map(([l, v]) =>
     `<tr><td style="padding:7px 16px 7px 0;color:#717F7F;font-size:12px;text-transform:uppercase;letter-spacing:.6px;vertical-align:top;white-space:nowrap">${esc(l)}</td><td style="padding:7px 0;color:#2B3026;font-size:14px;vertical-align:top">${esc(v)}</td></tr>`).join("");
+}
+
+function buildEmail(name: string, s: Record<string, unknown>): string {
+  const summary = summaryRows(s);
   return `<!doctype html><html><body style="margin:0;background:#FCFBE4;padding:0">
   <div style="max-width:564px;margin:0 auto;padding:30px 24px 34px;font-family:'Helvetica Neue',Arial,sans-serif;color:#2B3026">
     <div style="text-align:center;margin-bottom:26px"><img src="${LOGO}" width="208" height="179" alt="Lake Roots — Café · Market · Bar" style="display:inline-block;border:0"></div>
@@ -47,6 +44,23 @@ function buildEmail(name: string, s: Record<string, unknown>): string {
   </div></body></html>`;
 }
 
+function teamEmail(s: Record<string, unknown>, contactLine: string): string {
+  return `<div style="font-family:Arial,sans-serif;color:#2B3026;font-size:14px;line-height:1.55;max-width:560px">
+    <p>A new <b>community / partnership</b> inquiry just came in.</p>
+    <table style="border-collapse:collapse">${summaryRows(s)}</table>
+    <p style="margin-top:10px"><b>Contact:</b> ${esc(contactLine) || "—"}</p>
+    <p style="margin-top:12px"><a href="${DASH}" style="color:#363A2E;font-weight:bold">Open the Community Outreach dashboard →</a></p>
+  </div>`;
+}
+
+async function resend(payload: Record<string, unknown>) {
+  return fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
 Deno.serve(async (req: Request) => {
   try {
     const body = await req.json().catch(() => ({} as Record<string, unknown>));
@@ -54,9 +68,9 @@ Deno.serve(async (req: Request) => {
     if (!subId) return Response.json({ skipped: "no submission_id" });
 
     const c = (await (await fetch(
-      `${SUPABASE_URL}/rest/v1/outreach_contacts?submission_id=eq.${subId}&select=first_name,email`,
+      `${SUPABASE_URL}/rest/v1/outreach_contacts?submission_id=eq.${subId}&select=first_name,last_name,email,phone`,
       { headers: H },
-    )).json())?.[0] as { first_name?: string; email?: string } | undefined;
+    )).json())?.[0] as { first_name?: string; last_name?: string; email?: string; phone?: string } | undefined;
     if (!c?.email) return Response.json({ skipped: "no contact email on file" });
 
     const s = ((await (await fetch(
@@ -66,16 +80,16 @@ Deno.serve(async (req: Request) => {
     if (s.source && s.source !== "web") return Response.json({ skipped: "non-web source" });
 
     if (!RESEND_API_KEY) return Response.json({ skipped: "RESEND_API_KEY not set" });
-    const send = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        from: FROM,
-        to: [c.email],
-        subject: "Thanks for reaching out to Lake Roots",
-        html: buildEmail(String(c.first_name ?? "").trim() || "there", s),
-      }),
-    });
+    const name = String(c.first_name ?? "").trim() || "there";
+    const fullName = [c.first_name, c.last_name].filter(Boolean).join(" ").trim();
+    const contactLine = [fullName, c.email, c.phone].filter(Boolean).join(" · ");
+
+    const send = await resend({ from: FROM, to: [c.email], subject: "Thanks for reaching out to Lake Roots", html: buildEmail(name, s) });
+
+    await resend({ from: FROM, to: [TEAM], reply_to: c.email,
+      subject: `New outreach inquiry: ${String(s.org || "(organization)")}`,
+      html: teamEmail(s, contactLine) }).catch(() => {});
+
     const out = await send.json().catch(() => ({}));
     return Response.json({ ok: send.ok, resend: out }, { status: send.ok ? 200 : 502 });
   } catch (e) {
