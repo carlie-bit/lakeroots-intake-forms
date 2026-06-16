@@ -44,6 +44,7 @@ PAGES = [
     ("feedback_form.html", "feedback.html",         None),  # guest feedback intake
     ("partner_form.html",  "partner.html",          None),  # community partnership intake
     ("vendor_form.html",   "vendor.html",           None),  # market vendor onboarding intake
+    ("music_form.html",    "music.html",            None),  # live music / artist booking intake
     # Review dashboards — live from Supabase, de-identified snapshot fallback.
     ("music_dashboard.html",   "artists-live-music.html",  "music_deid.json"),
     ("outreach_dashboard.html","community-outreach.html",  "outreach_deid.json"),
@@ -60,7 +61,7 @@ PAGES = [
 # filling those out (often embedded from the website) shouldn't see, or be able
 # to click into, the internal hub. Self-contained inline styles, brand colors
 # hardcoded so they look right whether a page uses the shared brand vars or its own.
-PUBLIC_FORMS = {"feedback.html", "partner.html", "vendor.html"}  # guest-facing — no internal nav
+PUBLIC_FORMS = {"feedback.html", "partner.html", "vendor.html", "music.html"}  # guest-facing — no internal nav
 HUB_URL = "https://lrcommandcenter.netlify.app/"
 FORMS_HOME = "/"  # the Lake Roots Forms landing on this site
 

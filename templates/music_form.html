@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Play at Lake Roots</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>__CSS__</style>
+<style>
+.formwrap{max-width:680px;margin:0 auto;padding:0 18px 60px}
+.fpanel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 22px 26px;margin-top:14px}
+.fpanel label{display:block;font-family:var(--disp);text-transform:uppercase;letter-spacing:.7px;font-size:13px;color:var(--forest);margin:14px 0 5px}
+.fpanel label .opt{color:var(--gray);text-transform:none;letter-spacing:0;font-size:12px}
+.fpanel input,.fpanel select,.fpanel textarea{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:16px;background:var(--cream)}
+.fpanel textarea{min-height:80px;resize:vertical}
+.fpanel input:focus,.fpanel select:focus,.fpanel textarea:focus{outline:none;border-color:var(--forest)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+@media(max-width:520px){.row2{grid-template-columns:1fr}}
+.submitbar{margin-top:24px;display:flex;align-items:center;gap:14px}
+.submitbar button{border:none;background:var(--forest);color:var(--cream);border-radius:999px;padding:13px 30px;font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;font-size:14px;cursor:pointer}
+.submitbar button:disabled{opacity:.5;cursor:default}
+.errline{color:var(--red);font-size:13px;margin-top:10px;display:none}
+.thanks{display:none;text-align:center;padding:50px 10px}
+.thanks .big{font-family:var(--disp);font-size:30px;color:var(--forest);text-transform:uppercase;letter-spacing:1px}
+.thanks p{color:var(--mid);font-size:15px;max-width:440px;margin:14px auto 0}
+.hp{position:absolute;left:-9999px;opacity:0;height:0;overflow:hidden}
+.privnote{font-size:12px;color:var(--gray);margin-top:14px;line-height:1.5}
+</style>
+</head>
+<body>
+<header><div class="hd">
+  <div class="mono"><img src="data:image/png;base64,__LOGO__" alt="LR"></div>
+  <div class="wordmark"><div class="t1">LAKE ROOTS</div><div class="t2">Café · Market · Bar</div></div>
+  <div class="tag"><div class="tt">Play at Lake Roots</div><div class="td">live music &amp; artist inquiries</div></div>
+</div></header>
+<div class="formwrap">
+  <div class="title" style="text-align:center;margin-top:26px">
+    <div class="g1">PLAY AT LAKE ROOTS</div>
+    <div class="g2">musicians, DJs, artists &amp; authors — tell us about your act</div>
+  </div>
+
+  <form class="fpanel" id="form" onsubmit="return submitForm(event)">
+    <label>Act / band / artist name</label>
+    <input id="f_act" required maxlength="200" placeholder="What should we call you?">
+
+    <label>What best describes you?</label>
+    <select id="f_describes">
+      <option>Musician / Band</option><option>DJ</option><option>Solo acoustic</option>
+      <option>Drag performer</option><option>Artist</option><option>Author</option><option>Other</option>
+    </select>
+
+    <div class="row2">
+      <div><label>Your first name</label><input id="f_first" required maxlength="100"></div>
+      <div><label>Your last name</label><input id="f_last" required maxlength="100"></div>
+    </div>
+    <div class="row2">
+      <div><label>Email</label><input id="f_email" type="email" required maxlength="200"></div>
+      <div><label>Phone <span class="opt">— optional</span></label><input id="f_phone" maxlength="50"></div>
+    </div>
+
+    <div class="row2">
+      <div><label>Proposed date <span class="opt">— optional</span></label><input id="f_date" type="date"></div>
+      <div><label>Date notes <span class="opt">— optional</span></label><input id="f_datenotes" maxlength="200" placeholder="e.g. Friday evenings work best"></div>
+    </div>
+
+    <label>Tell us about your act <span class="opt">— bio, style, sound</span></label>
+    <textarea id="f_bio" maxlength="3000" placeholder="What you play, what makes it a fit for Lake Roots"></textarea>
+
+    <div class="row2">
+      <div><label>Website <span class="opt">— optional</span></label><input id="f_website" maxlength="300"></div>
+      <div><label>Instagram <span class="opt">— optional</span></label><input id="f_insta" maxlength="200" placeholder="@handle"></div>
+    </div>
+
+    <label>Links to your music / materials <span class="opt">— optional</span></label>
+    <input id="f_materials" maxlength="600" placeholder="Spotify, YouTube, a press kit — separate links with commas">
+
+    <label>Where else have you played? <span class="opt">— optional</span></label>
+    <input id="f_venues" maxlength="500" placeholder="Other venues, events, etc.">
+
+    <label>Tech / space needs <span class="opt">— optional</span></label>
+    <textarea id="f_tech" maxlength="1000" placeholder="PA, power, stage space, setup time…"></textarea>
+
+    <div class="row2">
+      <div><label>How did you hear about us? <span class="opt">— optional</span></label><input id="f_heard" maxlength="200"></div>
+      <div><label>Anything else? <span class="opt">— optional</span></label><input id="f_other" maxlength="600"></div>
+    </div>
+
+    <div class="hp"><label>Company</label><input id="f_company" tabindex="-1" autocomplete="off"></div>
+
+    <div class="submitbar"><button id="sendBtn" type="submit">Send inquiry</button></div>
+    <div class="errline" id="err"></div>
+    <div class="privnote">We'll only use your contact info to follow up about playing at Lake Roots. Thanks for thinking of us — we listen to every submission.</div>
+  </form>
+
+  <div class="thanks" id="thanks">
+    <div class="big">Thank you!</div>
+    <p>Your inquiry is in our booking queue. We review every act as a team and someone will follow up with you — usually within a week or two.</p>
+    <p style="font-family:var(--script,inherit);color:var(--gold);font-size:18px">rooted in community</p>
+  </div>
+  <div class="foot" style="text-align:center">Lake Roots Café Market Bar · Crystal Lake</div>
+</div>
+
+<script>
+const SUPA_URL="https://gqgjppxzdwzypxontmou.supabase.co";
+const SUPA_KEY="sb_publishable_DieuLBMaMTJwZD3SUfgvGA_9I2tMOhP";
+const sb=window.supabase?window.supabase.createClient(SUPA_URL,SUPA_KEY):null;
+const $=id=>document.getElementById(id);
+const v=id=>($(id).value||'').trim()||null;
+function fmtDate(iso){if(!iso)return null;const [y,m,d]=iso.split('-');return Number(m)+'/'+Number(d)+'/'+y;}
+
+async function submitForm(ev){
+  ev.preventDefault();
+  if(v('f_company')){$('form').style.display='none';$('thanks').style.display='block';return false;}
+  const err=$('err');err.style.display='none';
+  if(!sb){err.textContent='Could not connect — please try again in a moment.';err.style.display='block';return false;}
+  $('sendBtn').disabled=true;
+  const sub={
+    act_name:v('f_act'),describes:$('f_describes').value,
+    proposed_date:fmtDate($('f_date').value),date_notes:v('f_datenotes'),
+    bio:v('f_bio'),website:v('f_website'),instagram:v('f_insta'),
+    materials:v('f_materials'),prior_venues:v('f_venues'),tech_needs:v('f_tech'),
+    heard_about:v('f_heard'),other_notes:v('f_other'),source:'web'
+  };
+  const {data,error}=await sb.from('music_inquiries').insert(sub).select('id').single();
+  if(error){err.textContent='Something went wrong — please try again. ('+error.message+')';err.style.display='block';$('sendBtn').disabled=false;return false;}
+  await sb.from('music_contacts').insert({submission_id:data.id,
+    first_name:v('f_first'),last_name:v('f_last'),email:v('f_email'),phone:v('f_phone')});
+  $('form').style.display='none';$('thanks').style.display='block';window.scrollTo(0,0);
+  return false;
+}
+</script>
+</body>
+</html>
