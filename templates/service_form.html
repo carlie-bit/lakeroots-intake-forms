@@ -8,16 +8,27 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>__CSS__</style>
 <style>
-.formwrap{max-width:680px;margin:0 auto;padding:0 18px 60px}
-.fpanel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 22px 26px;margin-top:14px}
-.fpanel label{display:block;font-family:var(--disp);text-transform:uppercase;letter-spacing:.7px;font-size:13px;color:var(--forest);margin:14px 0 5px}
-.fpanel label .opt{color:var(--gray);text-transform:none;letter-spacing:0;font-size:12px}
-.fpanel input,.fpanel select,.fpanel textarea{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:16px;background:var(--cream)}
-.fpanel textarea{min-height:90px;resize:vertical}
-.fpanel input:focus,.fpanel select:focus,.fpanel textarea:focus{outline:none;border-color:var(--forest)}
+/* SOP-playbook branding: dark centered header + banded cards, so internal/ops
+   pages read differently from the light guest-facing forms. */
+body{background-image:radial-gradient(circle at 12% -5%,rgba(153,186,180,.10),transparent 55%),radial-gradient(circle at 95% 8%,rgba(182,128,54,.07),transparent 45%)}
+header.sop{background:var(--forest);color:var(--cream);padding:26px 18px 22px;text-align:center;box-shadow:0 6px 22px rgba(54,58,46,.18)}
+header.sop .eyebrow{font-family:var(--body);font-size:12px;font-weight:600;letter-spacing:6px;color:var(--sand);text-transform:uppercase;margin-bottom:10px}
+header.sop .wordmark{font-family:var(--script);font-size:38px;color:var(--cream);margin-bottom:6px;line-height:1}
+header.sop h1{font-family:var(--disp);font-weight:600;text-transform:uppercase;font-size:clamp(22px,5vw,30px);letter-spacing:2px;margin:0}
+header.sop .subtitle{font-style:italic;color:var(--sage);font-size:15px;margin-top:8px}
+.formwrap{max-width:680px;margin:0 auto;padding:22px 18px 60px}
+.scard{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(54,58,46,.10);margin-bottom:16px;overflow:hidden}
+.scard .band{background:var(--forest);color:var(--cream);padding:11px 15px;font-family:var(--disp);text-transform:uppercase;letter-spacing:1.5px;font-size:15px}
+.scard .body{padding:14px 16px 18px}
+.scard label{display:block;font-family:var(--disp);text-transform:uppercase;letter-spacing:.7px;font-size:13px;color:var(--forest);margin:14px 0 5px}
+.scard .body>label:first-child,.scard .row2:first-child label{margin-top:2px}
+.scard label .opt{color:var(--gray);text-transform:none;letter-spacing:0;font-size:12px}
+.scard input,.scard select,.scard textarea{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:16px;background:var(--cream)}
+.scard textarea{min-height:90px;resize:vertical}
+.scard input:focus,.scard select:focus,.scard textarea:focus{outline:none;border-color:var(--forest)}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
 @media(max-width:520px){.row2{grid-template-columns:1fr}}
-.submitbar{margin-top:24px;display:flex;align-items:center;gap:14px}
+.submitbar{margin-top:4px;display:flex;align-items:center;gap:14px}
 .submitbar button{border:none;background:var(--forest);color:var(--cream);border-radius:999px;padding:13px 30px;font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;font-size:14px;cursor:pointer}
 .submitbar button:disabled{opacity:.5;cursor:default}
 .errline{color:var(--red);font-size:13px;margin-top:10px;display:none}
@@ -29,79 +40,72 @@
 </style>
 </head>
 <body>
-<header><div class="hd">
-  <div class="mono"><img src="data:image/png;base64,__LOGO__" alt="LR"></div>
-  <div class="wordmark"><div class="t1">LAKE ROOTS</div><div class="t2">Café · Market · Bar</div></div>
-  <div class="tag"><div class="tt">Service Report</div><div class="td">service &amp; maintenance log</div></div>
-</div></header>
+<header class="sop">
+  <div class="eyebrow">Café&nbsp;·&nbsp;Market&nbsp;·&nbsp;Bar</div>
+  <div class="wordmark">Lake Roots</div>
+  <h1>Service / Maintenance Report</h1>
+  <div class="subtitle">log a completed service, repair, or maintenance visit — what was done, to what, and by whom</div>
+</header>
 <div class="formwrap">
-  <div class="title" style="text-align:center;margin-top:26px">
-    <div class="g1">SERVICE / MAINTENANCE REPORT</div>
-    <div class="g2">log a completed service, repair, or maintenance visit — what was done, to what, and by whom</div>
-  </div>
+  <form id="form" onsubmit="return submitForm(event)">
 
-  <form class="fpanel" id="form" onsubmit="return submitForm(event)">
-    <div class="row2">
-      <div><label>Date of service</label><input id="f_date" type="date" required></div>
-      <div><label>Time <span class="opt">— optional</span></label><input id="f_time" type="time"></div>
-    </div>
-
-    <label>Area</label>
-    <select id="f_area" onchange="onArea()">
-      <option value="">Select an area…</option>
-      <option>Kitchen</option><option>Café</option><option>Bar</option>
-      <option>Market</option><option>Building</option><option>Other</option>
-    </select>
-
-    <div id="assetWrap" class="hideme">
-      <label>Equipment / asset</label>
-      <select id="f_asset" onchange="onAsset()"><option value="">Select an area first…</option></select>
-    </div>
-    <div id="equipOtherWrap" class="hideme">
-      <label>Equipment / asset <span class="opt">— describe it</span></label>
-      <input id="f_equip_other" maxlength="200" placeholder="e.g. patio heater, or an asset not on the list">
-    </div>
-
-    <div class="row2">
-      <div>
-        <label>Scheduled or repair?</label>
-        <select id="f_type" onchange="onType()">
-          <option>Scheduled</option><option>Repair</option>
-        </select>
+    <div class="scard"><div class="band">The visit</div><div class="body">
+      <div class="row2">
+        <div><label>Date of service</label><input id="f_date" type="date" required></div>
+        <div><label>Time <span class="opt">— optional</span></label><input id="f_time" type="time"></div>
       </div>
-      <div id="warrantyWrap" class="hideme">
-        <label>Under warranty?</label>
-        <select id="f_warranty">
-          <option>Warranty repair</option>
-          <option>Not covered by warranty</option>
-          <option>Not applicable</option>
-        </select>
+      <label>Area</label>
+      <select id="f_area" onchange="onArea()">
+        <option value="">Select an area…</option>
+        <option>Kitchen</option><option>Café</option><option>Bar</option>
+        <option>Market</option><option>Building</option><option>Other</option>
+      </select>
+      <div id="assetWrap" class="hideme">
+        <label>Equipment / asset</label>
+        <select id="f_asset" onchange="onAsset()"><option value="">Select an area first…</option></select>
       </div>
-    </div>
+      <div id="equipOtherWrap" class="hideme">
+        <label>Equipment / asset <span class="opt">— describe it</span></label>
+        <input id="f_equip_other" maxlength="200" placeholder="e.g. patio heater, or an asset not on the list">
+      </div>
+    </div></div>
 
-    <div class="row2">
-      <div><label>Service provider <span class="opt">— company</span></label><input id="f_provider" required maxlength="200" placeholder="e.g. Althoff, Z-Chem, Atosa"></div>
-      <div><label>Technician name <span class="opt">— optional</span></label><input id="f_tech" maxlength="200"></div>
-    </div>
+    <div class="scard"><div class="band">Service performed</div><div class="body">
+      <div class="row2">
+        <div>
+          <label>Scheduled or repair?</label>
+          <select id="f_type" onchange="onType()"><option>Scheduled</option><option>Repair</option></select>
+        </div>
+        <div id="warrantyWrap" class="hideme">
+          <label>Under warranty?</label>
+          <select id="f_warranty">
+            <option>Warranty repair</option><option>Not covered by warranty</option><option>Not applicable</option>
+          </select>
+        </div>
+      </div>
+      <div class="row2">
+        <div><label>Service provider <span class="opt">— company</span></label><input id="f_provider" required maxlength="200" placeholder="e.g. Althoff, Z-Chem, Atosa"></div>
+        <div><label>Technician name <span class="opt">— optional</span></label><input id="f_tech" maxlength="200"></div>
+      </div>
+    </div></div>
 
-    <label>Description of the work done</label>
-    <textarea id="f_desc" required maxlength="8000" placeholder="What was done, to what, and any findings"></textarea>
-
-    <label>Resolution</label>
-    <select id="f_resolution">
-      <option>This was a regular maintenance visit and maintenance complete without any follow up!</option>
-      <option>It was a problem and it was fixed!</option>
-      <option>Issues remain</option>
-      <option>Not exactly - nothing was fixed, so the problem may come up again?</option>
-      <option>Couldn't complete maintenance for some reason and they need to come back...</option>
-      <option>Other</option>
-    </select>
-
-    <label>Link to report / photos <span class="opt">— optional</span></label>
-    <input id="f_link" maxlength="600" placeholder="Drive folder, ServiceTrade, MarginEdge, etc.">
-
-    <label>Any other details <span class="opt">— optional</span></label>
-    <textarea id="f_other" maxlength="6000" placeholder="Follow-ups, who to bill, scheduling notes…"></textarea>
+    <div class="scard"><div class="band">What happened</div><div class="body">
+      <label>Description of the work done</label>
+      <textarea id="f_desc" required maxlength="8000" placeholder="What was done, to what, and any findings"></textarea>
+      <label>Resolution</label>
+      <select id="f_resolution">
+        <option>This was a regular maintenance visit and maintenance complete without any follow up!</option>
+        <option>It was a problem and it was fixed!</option>
+        <option>Issues remain</option>
+        <option>Not exactly - nothing was fixed, so the problem may come up again?</option>
+        <option>Couldn't complete maintenance for some reason and they need to come back...</option>
+        <option>Other</option>
+      </select>
+      <label>Link to report / photos <span class="opt">— optional</span></label>
+      <input id="f_link" maxlength="600" placeholder="Drive folder, ServiceTrade, MarginEdge, etc.">
+      <label>Any other details <span class="opt">— optional</span></label>
+      <textarea id="f_other" maxlength="6000" placeholder="Follow-ups, who to bill, scheduling notes…"></textarea>
+    </div></div>
 
     <div class="submitbar"><button id="sendBtn" type="submit">Save report</button></div>
     <div class="errline" id="err"></div>
@@ -145,7 +149,6 @@ function onArea(){
     show('assetWrap',true);
     show('equipOtherWrap',false);
   }else{
-    // "Other" area, or none chosen — free-text equipment
     show('assetWrap',false);
     show('equipOtherWrap', area==='Other');
   }
@@ -160,7 +163,6 @@ async function submitForm(ev){
   ev.preventDefault();
   const err=$('err');err.style.display='none';
   if(!sb){err.textContent='Could not connect — please try again in a moment.';err.style.display='block';return false;}
-  // resolve the equipment value + asset number
   let equipment=null;
   if($('f_asset').value && $('f_asset').value!==OTHER) equipment=$('f_asset').value;
   else if(v('f_equip_other')) equipment=v('f_equip_other');

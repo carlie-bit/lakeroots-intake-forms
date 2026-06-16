@@ -9,6 +9,15 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>__CSS__</style>
 <style>
+/* SOP-playbook branding: dark centered header so this internal/ops board reads
+   differently from the light guest-facing forms. */
+body{background-image:radial-gradient(circle at 12% -5%,rgba(153,186,180,.10),transparent 55%),radial-gradient(circle at 95% 8%,rgba(182,128,54,.07),transparent 45%)}
+header.sop{background:var(--forest);color:var(--cream);padding:24px 18px 20px;text-align:center;box-shadow:0 6px 22px rgba(54,58,46,.18)}
+header.sop .eyebrow{font-family:var(--body);font-size:12px;font-weight:600;letter-spacing:6px;color:var(--sand);text-transform:uppercase;margin-bottom:9px}
+header.sop .wordmark{font-family:var(--script);font-size:36px;color:var(--cream);margin-bottom:6px;line-height:1}
+header.sop h1{font-family:var(--disp);font-weight:600;text-transform:uppercase;font-size:clamp(20px,4.5vw,28px);letter-spacing:2px;margin:0}
+header.sop .subtitle{font-style:italic;color:var(--sage);font-size:14.5px;margin-top:7px}
+header.sop .upd{font-family:var(--body);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--sage);opacity:.75;margin-top:8px}
 .topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:16px 0 2px}
 .periodbar{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
 .periodbar .pl{font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;font-size:10.5px;color:var(--gray);margin-right:2px}
@@ -55,16 +64,14 @@
 </style>
 </head>
 <body>
-<header><div class="hd">
-  <div class="mono"><img src="data:image/png;base64,__LOGO__" alt="LR"></div>
-  <div class="wordmark"><div class="t1">LAKE ROOTS</div><div class="t2">Café · Market · Bar</div></div>
-  <div class="tag"><div class="tt">Service &amp; Maintenance</div><div class="td" id="updated"></div></div>
-</div></header>
+<header class="sop">
+  <div class="eyebrow">Café&nbsp;·&nbsp;Market&nbsp;·&nbsp;Bar</div>
+  <div class="wordmark">Lake Roots</div>
+  <h1>Service &amp; Maintenance <span class="live snap" id="liveBadge">SNAPSHOT</span></h1>
+  <div class="subtitle">completed service, repair &amp; maintenance visits across the building</div>
+  <div class="upd" id="updated"></div>
+</header>
 <div class="wrap">
-  <div class="title">
-    <div class="g1">SERVICE &amp; MAINTENANCE <span class="live snap" id="liveBadge">SNAPSHOT</span></div>
-    <div class="g2">completed service, repair &amp; maintenance visits across the building</div>
-  </div>
   <div class="topbar">
     <div class="periodbar" id="periodbar"><span class="pl">Period</span></div>
     <div class="whoami">You: <input id="who" placeholder="your name" oninput="setUser(this.value)"></div>
