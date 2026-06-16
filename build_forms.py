@@ -54,11 +54,13 @@ PAGES = [
     ("donation_board.html",    "donations.html",           None),
 ]
 
-# Persistent corner shortcuts stamped into every page (forms + dashboards): a
-# "Forms" link back to this site's landing and a "Command Center" link to the
-# hub, so the team can always get home from anywhere. Self-contained inline
-# styles (no dependency on each page's CSS), brand colors hardcoded so they look
-# right whether the page uses the shared brand vars or its own.
+# Persistent corner shortcuts ("Forms" + "Command Center") so the TEAM can get
+# home from any internal page (the landing + the review dashboards). These are
+# deliberately NOT stamped onto the public-facing intake forms below — guests
+# filling those out (often embedded from the website) shouldn't see, or be able
+# to click into, the internal hub. Self-contained inline styles, brand colors
+# hardcoded so they look right whether a page uses the shared brand vars or its own.
+PUBLIC_FORMS = {"feedback.html", "partner.html", "vendor.html"}  # guest-facing — no internal nav
 HUB_URL = "https://lrcommandcenter.netlify.app/"
 FORMS_HOME = "/"  # the Lake Roots Forms landing on this site
 
@@ -118,7 +120,8 @@ def main():
         html = html.replace("__CSS__", css).replace("__LOGO__", logo)
         # PROXY stays empty (no Apps Script proxy); DATA is the baked snapshot or null.
         html = html.replace("__PROXY__", "").replace("__DATA__", data)
-        html = inject_hub_link(html, out_name)
+        if out_name not in PUBLIC_FORMS:  # internal pages only — keep the corner nav off guest forms
+            html = inject_hub_link(html, out_name)
         open(os.path.join(WEB, out_name), "w").write(html)
         print(f"  {out_name:24s} <- templates/{tpl_name}  ({len(html)//1024} KB)")
 
