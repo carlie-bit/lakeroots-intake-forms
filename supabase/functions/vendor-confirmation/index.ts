@@ -32,7 +32,7 @@ function buildEmail(name: string, s: Record<string, unknown>): string {
   <div style="max-width:564px;margin:0 auto;padding:30px 24px 34px;font-family:'Helvetica Neue',Arial,sans-serif;color:#2B3026">
     <div style="text-align:center;margin-bottom:26px"><img src="${LOGO}" width="208" height="179" alt="Lake Roots — Café · Market · Bar" style="display:inline-block;border:0"></div>
     <p style="font-size:16px;line-height:1.55;margin:0 0 14px">Hi ${esc(name)},</p>
-    <p style="font-size:15px;line-height:1.62;margin:0 0 18px">Thanks for your interest in selling in the Lake Roots Market! We've received your vendor inquiry and it's in our review queue. We look at every vendor as a team, and someone will be in touch shortly &mdash; usually within a week or two.</p>
+    <p style="font-size:15px;line-height:1.62;margin:0 0 18px">Thanks for your interest in becoming a Lake Roots vendor &mdash; whether that's selling your products in our Market or being a trusted café, food, or bar partner! We've received your inquiry and it's in our review queue. We look at every vendor as a team, and someone will be in touch shortly &mdash; usually within a week or two.</p>
     <div style="background:#ffffff;border:1px solid #DCD8BE;border-radius:12px;padding:16px 18px;margin:0 0 20px">
       <div style="font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:#363A2E;font-weight:bold;margin-bottom:10px">Here's what you sent us</div>
       <table style="width:100%;border-collapse:collapse">${summary || `<tr><td style="color:#717F7F;font-size:13px">We have your inquiry on file.</td></tr>`}</table>
