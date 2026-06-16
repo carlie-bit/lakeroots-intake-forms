@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Lake Roots — Service &amp; Maintenance</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Barlow+Condensed:wght@300;400;500;600&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>__CSS__</style>
+<style>
+.topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:16px 0 2px}
+.periodbar{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.periodbar .pl{font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;font-size:10.5px;color:var(--gray);margin-right:2px}
+.periodbar button{font-family:var(--disp);text-transform:uppercase;letter-spacing:.6px;font-size:11px;padding:6px 11px;border-radius:8px;border:1.5px solid var(--line);background:#fff;color:var(--mid);cursor:pointer}
+.periodbar button.on{background:var(--forest);color:var(--cream);border-color:var(--forest)}
+.whoami{margin-left:auto;font-family:var(--disp);text-transform:uppercase;letter-spacing:.6px;font-size:10.5px;color:var(--gray);display:flex;align-items:center;gap:6px}
+.whoami input{text-transform:none;letter-spacing:0;font-size:12px;border:1.5px solid var(--line);border-radius:8px;padding:5px 9px;width:130px}
+.filterbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 2px}
+.filterbar input{border:1.5px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;background:#fff;color:var(--ink);flex:1;min-width:200px}
+.filterbar .clearf{font-size:11px;color:var(--gray);cursor:pointer;text-decoration:underline}
+.kpi.clk,.bar.clk{cursor:pointer}.kpi.clk:hover{border-color:var(--gold)}.bar.clk:hover .bl{color:var(--forest);font-weight:600}
+.dash-table tr.clk{cursor:pointer}.dash-table tr.clk:hover td{background:var(--sand)}
+.dash-table th+th,.dash-table td+td{padding-left:18px}
+.dash-table td.r,.dash-table th.r{text-align:right;white-space:nowrap}
+.dash-table th.srt{cursor:pointer;user-select:none;white-space:nowrap}.dash-table th.srt:hover{color:var(--forest)}
+.dash-table th .arr{font-size:9px;color:var(--gold);margin-left:3px}
+.dash-table td.nm{max-width:0;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.allcount{font-size:11px;color:var(--gray);margin-top:8px}
+.pill{white-space:nowrap;display:inline-block;color:#fff;border-radius:999px;padding:2px 9px;font-size:11px}
+.tag2{font-size:10px;font-family:var(--disp);text-transform:uppercase;letter-spacing:.5px;border-radius:6px;padding:1px 6px;border:1px solid var(--line)}
+.tag2.repair{color:#fff;background:var(--gold);border-color:transparent}
+.tag2.sched{color:var(--forest)}
+@media(max-width:680px){.allt th:nth-child(3),.allt td:nth-child(3),.allt th:nth-child(4),.allt td:nth-child(4){display:none}}
+.modal-bg{position:fixed;inset:0;background:rgba(43,48,38,.5);display:none;align-items:center;justify-content:center;padding:18px;z-index:100}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:14px;max-width:600px;width:100%;max-height:88vh;overflow:auto;padding:18px 20px}
+.modal .mh{display:flex;justify-content:space-between;align-items:center}
+.modal .mt{font-family:var(--disp);font-weight:600;font-size:19px;color:var(--forest);text-transform:uppercase;letter-spacing:.5px}
+.modal .mx{border:none;background:none;font-size:22px;cursor:pointer;color:var(--gray)}
+.modal .mc{font-size:12px;color:var(--gray);margin-bottom:12px}
+.dentry{border:1px solid var(--line);border-radius:11px;padding:11px 12px;margin-bottom:10px}
+.dentry .dhead{font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px}
+.dentry .dlabel{font-size:16px;margin:3px 0 8px;color:var(--ink);font-weight:600}
+.detrows{margin:2px 0 8px;font-size:12.5px;color:var(--mid);line-height:1.55}.detrows b{color:var(--forest)}
+.dchips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.dchips button{font-size:11px;padding:4px 9px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--mid);cursor:pointer}
+.dchips button.on{color:#fff;border-color:transparent}
+.dchips button.on[data-s=logged]{background:#4a6b7c}.dchips button.on[data-s=follow_up]{background:var(--gold)}.dchips button.on[data-s=closed]{background:var(--forest)}
+.comments{margin:4px 0 8px}.cmt{font-size:12.5px;padding:6px 0;border-top:1px dashed var(--line)}
+.cmt .by{font-weight:600;color:var(--forest)}.cmt .at{color:var(--gray);font-size:11px;margin-left:5px}.cmt .tx{display:block;margin-top:1px;color:var(--ink)}
+.addcmt{display:flex;gap:6px;margin-top:6px}.addcmt input{flex:1;border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px}
+.addcmt button{border:1.5px solid var(--forest);background:var(--forest);color:var(--cream);border-radius:8px;padding:0 12px;font-size:12px;cursor:pointer}
+.nouser{font-size:11px;color:var(--red);margin-top:4px;display:none}
+</style>
+</head>
+<body>
+<header><div class="hd">
+  <div class="mono"><img src="data:image/png;base64,__LOGO__" alt="LR"></div>
+  <div class="wordmark"><div class="t1">LAKE ROOTS</div><div class="t2">Café · Market · Bar</div></div>
+  <div class="tag"><div class="tt">Service &amp; Maintenance</div><div class="td" id="updated"></div></div>
+</div></header>
+<div class="wrap">
+  <div class="title">
+    <div class="g1">SERVICE &amp; MAINTENANCE <span class="live snap" id="liveBadge">SNAPSHOT</span></div>
+    <div class="g2">completed service, repair &amp; maintenance visits across the building</div>
+  </div>
+  <div class="topbar">
+    <div class="periodbar" id="periodbar"><span class="pl">Period</span></div>
+    <div class="whoami">You: <input id="who" placeholder="your name" oninput="setUser(this.value)"></div>
+  </div>
+  <div class="filterbar">
+    <input id="q" placeholder="🔍 Search equipment, provider, technician, description…" oninput="SEARCH=this.value.toLowerCase().trim();renderAll()">
+    <span class="clearf" onclick="clearSearch()">clear search</span>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <div class="panels">
+    <div class="panel"><h3>By Area <span class="hint">click to view</span></h3><div class="bars" id="areaBars"></div></div>
+    <div class="panel"><h3>By Provider <span class="hint" id="provHint"></span></h3><div class="bars" id="provBars"></div></div>
+    <div class="panel full"><h3>⚠️ Needs follow-up <span class="hint">unresolved or come-back visits · click a row</span></h3><table class="dash-table" id="openTbl"></table></div>
+    <div class="panel full"><h3>🛠️ All Reports <span class="hint">every visit · click a column to sort, search above to filter · click a row</span></h3><table class="dash-table allt" id="allTbl"></table><div class="allcount" id="allCount"></div></div>
+    <div class="panel full" id="removedPanel" style="display:none"><h3>Removed Entries <span class="hint">kept out of the counts · restore anytime</span></h3><table class="dash-table" id="removedTbl"></table></div>
+  </div>
+  <div class="note" id="note"></div>
+  <div class="foot">rooted in community</div>
+</div>
+
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeDrill()">
+  <div class="modal">
+    <div class="mh"><div class="mt" id="mTitle">Service report</div><button class="mx" onclick="closeDrill()">×</button></div>
+    <div class="mc" id="mCount"></div>
+    <div id="mBody"></div>
+  </div>
+</div>
+
+<script>
+const BAKED=__DATA__||{};
+const SUPA_URL="https://gqgjppxzdwzypxontmou.supabase.co";
+const SUPA_KEY="sb_publishable_DieuLBMaMTJwZD3SUfgvGA_9I2tMOhP";
+const sb=window.supabase?window.supabase.createClient(SUPA_URL,SUPA_KEY):null;
+const $=id=>document.getElementById(id);
+const STATUSES=[['logged','Logged'],['follow_up','Follow-up'],['closed','Closed']];
+const SLABEL=Object.fromEntries(STATUSES);
+const SCOL={logged:'#4a6b7c',follow_up:'var(--gold)',closed:'var(--forest)'};
+const PERIODS=[['All time',0],['12 mo',365],['6 mo',183],['3 mo',92],['30 days',30]];
+// resolutions that mean the visit closed cleanly — anything else needs attention
+const RESOLVED=["This was a regular maintenance visit and maintenance complete without any follow up!","It was a problem and it was fixed!"];
+let ALL=[], periodDays=0, LIVE=false, SEARCH='', sortKey='service', sortDir=-1;
+const SORTS=[['service','Date'],['equipment','Equipment'],['provider','Provider'],['type','Type'],['resolution','Resolution']];
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function jsId(s){return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/[\r\n]/g,' ');}
+function cssId(id){return (id||'').replace(/[^a-zA-Z0-9]/g,'');}
+function getUser(){return (localStorage.getItem('lr_user')||'').trim();}
+function setUser(v){localStorage.setItem('lr_user',(v||'').trim());}
+function today(){return new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function svcDate(e){return e.service_date||e.created_at;}
+function fmtDate(s){const d=s?new Date(s+(/^\d{4}-\d{2}-\d{2}$/.test(s)?'T00:00:00':'')):null;return d&&!isNaN(d)?d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';}
+function inPeriod(e){if(!periodDays)return true;const d=new Date(svcDate(e));if(isNaN(d))return true;return (Date.now()-d.getTime())/86400000<=periodDays;}
+function clearSearch(){SEARCH='';const q=$('q');if(q)q.value='';renderAll();}
+function needsFollowup(e){return e.status==='follow_up'||(e.status!=='closed'&&e.resolution&&!RESOLVED.includes(e.resolution));}
+
+function mapR(r){return {id:r.id,sid:r.id,created_at:r.created_at,service_date:r.service_date||'',service_time:r.service_time||'',
+  area:r.area||'—',equipment:r.equipment||'—',asset_no:r.asset_no||'',type:r.visit_type||'',warranty:r.warranty||'',
+  provider:r.provider||'—',technician:r.technician||'',link:r.report_link||'',description:r.description||'',
+  resolution:r.resolution||'',other:r.other_details||'',status:r.status||'logged',
+  comments:r.comments||[],source:r.source||'web',deleted:!!r.deleted_at};}
+
+function matchSearch(e){if(!SEARCH)return true;return ((e.equipment+' '+e.area+' '+e.provider+' '+e.technician+' '+e.description+' '+e.resolution+' '+e.other).toLowerCase()).includes(SEARCH);}
+function filtered(){return ALL.filter(e=>!e.deleted&&inPeriod(e)&&matchSearch(e));}
+function statusPill(e){return `<span class="pill" style="background:${SCOL[e.status]||'var(--gray)'}">${SLABEL[e.status]||'Logged'}</span>`;}
+function typeTag(e){return e.type==='Repair'?'<span class="tag2 repair">repair</span>':(e.type?'<span class="tag2 sched">scheduled</span>':'');}
+
+function renderPeriodBar(){$('periodbar').innerHTML='<span class="pl">Period</span>'+PERIODS.map(([l,d])=>`<button class="${d===periodDays?'on':''}" onclick="setPeriod(${d})">${l}</button>`).join('');}
+function setPeriod(d){periodDays=d;renderPeriodBar();renderAll();}
+function bars(el,entries,colf,clickf){const mx=Math.max(1,...entries.map(e=>e[1]));
+  el.innerHTML=entries.map(([l,n])=>`<div class="bar clk" onclick="${clickf(l)}"><div class="bl">${esc(l)}</div><div class="bt"><div class="bf" style="width:${100*n/mx}%;background:${colf(l)}"></div></div><div class="bv">${n}</div></div>`).join('');}
+
+function renderAll(){
+  const F=filtered();
+  const repairs=F.filter(e=>e.type==='Repair');
+  const open=F.filter(needsFollowup);
+  const month=F.filter(e=>{const d=new Date(svcDate(e));return !isNaN(d)&&(Date.now()-d.getTime())/86400000<=30;});
+  const kpis=[
+    ['Needs follow-up',open.length,'unresolved visits','hl',()=>drill('Needs follow-up',open)],
+    ['Repairs',repairs.length,'vs. scheduled','gold',()=>drill('Repairs',repairs)],
+    ['Last 30 days',month.length,'recent visits','',()=>drill('Last 30 days',month)],
+    ['Total',F.length,'service reports','',()=>drill('All reports',F)],
+  ];
+  $('kpis').innerHTML=kpis.map(([l,v,s,c],i)=>`<div class="kpi clk ${c}" onclick="KPI[${i}]()"><div class="kl">${l}</div><div class="kv">${v}</div><div class="ks">${s}</div></div>`).join('');
+  window.KPI=kpis.map(x=>x[4]);
+
+  const aC={};F.forEach(e=>{const a=e.area||'—';aC[a]=(aC[a]||0)+1;});
+  bars($('areaBars'),Object.entries(aC).sort((a,b)=>b[1]-a[1]),()=>'var(--brown)',l=>`drill('${esc(l)}',filtered().filter(e=>(e.area||'—')==='${esc(l)}'))`);
+  const pC={};F.forEach(e=>{const p=e.provider||'—';pC[p]=(pC[p]||0)+1;});
+  const provs=Object.entries(pC).sort((a,b)=>b[1]-a[1]);$('provHint').textContent=provs.length+' providers';
+  bars($('provBars'),provs.slice(0,8),()=>'var(--sage)',l=>`drill('${esc(l)}',filtered().filter(e=>(e.provider||'—')==='${esc(l)}'))`);
+
+  const row=e=>`<tr class="clk" onclick="drillOne('${jsId(e.id)}')"><td class="nm">${esc(e.equipment)} ${typeTag(e)}</td><td>${esc(e.provider)}</td><td>${esc(e.area)}</td><td class="r">${fmtDate(svcDate(e))}</td></tr>`;
+  $('openTbl').innerHTML=open.length?`<tr><th>Equipment</th><th>Provider</th><th>Area</th><th class="r">Date</th></tr>`+open.map(row).join(''):`<tr><td style="color:var(--gray);padding:12px 0">Nothing needs follow-up${SEARCH?' in this search':''}. 🎉</td></tr>`;
+
+  renderAllTable(F);
+  const del=ALL.filter(e=>e.deleted);
+  $('removedPanel').style.display=del.length?'':'none';
+  $('removedTbl').innerHTML=del.length?`<tr><th>Equipment</th><th>Provider</th><th class="r"></th></tr>`+del.map(e=>`<tr><td class="nm" style="color:var(--gray)">${esc(e.equipment)}</td><td style="color:var(--gray)">${esc(e.provider)}</td><td class="r"><a href="#" style="color:var(--forest);font-size:12px" onclick="setDeleted('${jsId(e.id)}',false);return false">Restore</a></td></tr>`).join(''):'';
+}
+function sortVal(e,k){if(k==='service')return new Date(svcDate(e)).getTime()||0;return (e[k]||'').toString().toLowerCase();}
+function setSort(k){if(sortKey===k)sortDir=-sortDir;else{sortKey=k;sortDir=(k==='service')?-1:1;}renderAll();}
+function renderAllTable(F){
+  const rows=F.slice().sort((a,b)=>{const va=sortVal(a,sortKey),vb=sortVal(b,sortKey);if(va<vb)return -sortDir;if(va>vb)return sortDir;return (new Date(svcDate(b))-new Date(svcDate(a)));});
+  const arrow=k=>sortKey===k?`<span class="arr">${sortDir<0?'▼':'▲'}</span>`:'';
+  const head=`<tr><th class="srt" onclick="setSort('equipment')">Equipment${arrow('equipment')}</th><th class="srt" onclick="setSort('provider')">Provider${arrow('provider')}</th><th class="srt" onclick="setSort('type')">Type${arrow('type')}</th><th class="srt" onclick="setSort('resolution')">Status${arrow('resolution')}</th><th class="srt r" onclick="setSort('service')">Date${arrow('service')}</th></tr>`;
+  const body=rows.length?rows.map(e=>`<tr class="clk" onclick="drillOne('${jsId(e.id)}')"><td class="nm">${esc(e.equipment)}${needsFollowup(e)?' ⚠️':''}</td><td>${esc(e.provider)}</td><td>${typeTag(e)}</td><td>${statusPill(e)}</td><td class="r">${fmtDate(svcDate(e))}</td></tr>`).join('')
+    :`<tr><td style="color:var(--gray);padding:12px 0" colspan="5">No reports${SEARCH?' match your search':''}.</td></tr>`;
+  $('allTbl').innerHTML=head+body;
+  $('allCount').textContent=`${rows.length} ${rows.length===1?'report':'reports'}${SEARCH?' (filtered)':''} · sorted by ${SORTS.find(s=>s[0]===sortKey)[1]} ${sortDir<0?'↓':'↑'}`;
+}
+
+function drillOne(id){drill('Service report',[ALL.find(e=>e.id===id)]);}
+function linkLine(e){if(!e.link)return '';
+  return /^https?:/i.test(e.link)?`<div><b>Report / photos:</b> <a href="${esc(e.link)}" target="_blank" rel="noopener" style="color:var(--forest)">Open ↗</a></div>`:`<div><b>Report / photos:</b> ${esc(e.link)}</div>`;}
+function detailBlock(e){
+  const rows=[['Area',e.area!=='—'?e.area:''],['Equipment',e.equipment!=='—'?e.equipment:''],['Type',e.type],
+    ['Warranty',e.type==='Repair'?e.warranty:''],['Provider',e.provider!=='—'?e.provider:''],['Technician',e.technician],
+    ['Time',e.service_time],['Resolution',e.resolution],['Description',e.description],['Other details',e.other]].filter(x=>x[1]);
+  const h=rows.length?`<div class="detrows">${rows.map(([l,v])=>`<div><b>${l}:</b> ${esc(String(v))}</div>`).join('')}</div>`:'';
+  return h+(e.link?`<div class="detrows">${linkLine(e)}</div>`:'');}
+
+function drill(title,list){list=(list||[]).filter(Boolean);
+  $('mTitle').textContent=title;$('mCount').textContent=list.length+' '+(list.length===1?'report':'reports');
+  $('mBody').innerHTML=list.map(e=>{const c=cssId(e.id);
+    return `<div class="dentry">
+      <div class="dhead">${fmtDate(svcDate(e))} · ${esc(e.area)}${e.type?' · '+esc(e.type):''}</div>
+      <div class="dlabel">${esc(e.equipment)}</div>
+      ${detailBlock(e)}
+      <div class="dchips">${STATUSES.map(([k,l])=>`<button data-s="${k}" class="${e.status===k?'on':''}" onclick="setStatus('${jsId(e.id)}','${k}',this)">${l}</button>`).join('')}</div>
+      <div class="comments" id="cmts-${c}">${renderComments(e.comments)}</div>
+      <div class="addcmt"><input id="cin-${c}" placeholder="Add a note…" onkeydown="if(event.key==='Enter')addComment('${jsId(e.id)}')"><button onclick="addComment('${jsId(e.id)}')">Post</button></div>
+      <div class="nouser" id="nu-${c}">Enter your name (top right) to post.</div>
+      <div style="margin-top:8px"><a href="#" style="font-size:11px;color:var(--red)" onclick="setDeleted('${jsId(e.id)}',true);return false">Delete this entry</a></div>
+    </div>`;}).join('')||'<div style="color:var(--gray)">No reports.</div>';
+  $('modalBg').classList.add('open');
+}
+function closeDrill(){$('modalBg').classList.remove('open');}
+function renderComments(list){list=list||[];if(!list.length)return '<div style="font-size:12px;color:var(--gray)">No notes yet.</div>';
+  return list.map(x=>`<div class="cmt"><span class="by">${esc(x.by||'team')}</span><span class="at">${esc(x.at||'')}</span><span class="tx">${esc(x.text||'')}</span></div>`).join('');}
+
+async function persist(e){if(!sb)return;const {error}=await sb.from('service_reports').update({status:e.status,comments:e.comments}).eq('id',e.sid);if(error)console.warn('save',error.message);}
+async function setStatus(id,status,btn){const e=ALL.find(x=>x.id===id);if(!e)return;e.status=status;
+  btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.s===status));
+  await persist(e);renderAll();}
+async function addComment(id){const e=ALL.find(x=>x.id===id);if(!e)return;const c=cssId(id);const inp=$('cin-'+c);const text=(inp.value||'').trim();if(!text)return;
+  const user=getUser();if(!user){$('nu-'+c).style.display='block';$('who').focus();return;}
+  e.comments=(e.comments||[]).concat([{by:user,at:today(),text}]);inp.value='';$('cmts-'+c).innerHTML=renderComments(e.comments);await persist(e);}
+async function setDeleted(id,flag){const e=ALL.find(x=>x.id===id);if(!e||!sb){alert('Open the live dashboard to remove or restore.');return;}
+  if(flag&&!confirm('Remove this report? It moves to "Removed Entries" — restore anytime.'))return;
+  const {error}=await sb.from('service_reports').update({deleted_at:flag?new Date().toISOString():null}).eq('id',e.sid);
+  if(error){alert('Failed: '+error.message);return;}e.deleted=flag;if(flag)closeDrill();renderAll();}
+
+function setMeta(){$('updated').textContent='Updated '+today();
+  if(LIVE){const b=$('liveBadge');b.textContent='LIVE';b.classList.remove('snap');}
+  $('note').innerHTML=`Status &amp; notes save live for the whole team. New reports from the <a style="color:var(--gold)" href="service.html" target="_blank" rel="noopener">service report form ↗</a> appear on refresh.`;}
+
+async function boot(){
+  $('who').value=getUser();
+  if(sb){try{const {data,error}=await sb.from('service_reports').select('*').order('service_date',{ascending:false});
+    if(!error&&data){ALL=data.map(mapR);LIVE=true;setMeta();renderPeriodBar();renderAll();return;}
+  }catch(e){console.warn(e);}}
+  ALL=(BAKED.entries||[]).map(mapR);setMeta();renderPeriodBar();renderAll();
+}
+boot();
+</script>
+</body>
+</html>

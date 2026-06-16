@@ -45,11 +45,13 @@ PAGES = [
     ("partner_form.html",  "partner.html",          None),  # community partnership intake
     ("vendor_form.html",   "vendor.html",           None),  # market vendor onboarding intake
     ("music_form.html",    "music.html",            None),  # live music / artist booking intake
+    ("service_form.html",  "service.html",          None),  # staff: completed service/maintenance report
     # Review dashboards — live from Supabase, de-identified snapshot fallback.
     ("music_dashboard.html",   "artists-live-music.html",  "music_deid.json"),
     ("outreach_dashboard.html","community-outreach.html",  "outreach_deid.json"),
     ("guest_dashboard.html",   "guest-experience.html",    "guest_deid.json"),
     ("vendor_dashboard.html",  "vendor-review.html",       None),  # live-only from vendor_submissions
+    ("service_dashboard.html", "service-review.html",      None),  # live-only from service_reports (no PII)
     # Donation Fulfillment Board — self-contained (own inline CSS/logo), live-only
     # from the `donations` table, no PII. Fed by the outreach page's "Commitment made".
     ("donation_board.html",    "donations.html",           None),

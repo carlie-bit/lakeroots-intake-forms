@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Service / Maintenance Report — Lake Roots</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>__CSS__</style>
+<style>
+.formwrap{max-width:680px;margin:0 auto;padding:0 18px 60px}
+.fpanel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 22px 26px;margin-top:14px}
+.fpanel label{display:block;font-family:var(--disp);text-transform:uppercase;letter-spacing:.7px;font-size:13px;color:var(--forest);margin:14px 0 5px}
+.fpanel label .opt{color:var(--gray);text-transform:none;letter-spacing:0;font-size:12px}
+.fpanel input,.fpanel select,.fpanel textarea{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:16px;background:var(--cream)}
+.fpanel textarea{min-height:90px;resize:vertical}
+.fpanel input:focus,.fpanel select:focus,.fpanel textarea:focus{outline:none;border-color:var(--forest)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+@media(max-width:520px){.row2{grid-template-columns:1fr}}
+.submitbar{margin-top:24px;display:flex;align-items:center;gap:14px}
+.submitbar button{border:none;background:var(--forest);color:var(--cream);border-radius:999px;padding:13px 30px;font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;font-size:14px;cursor:pointer}
+.submitbar button:disabled{opacity:.5;cursor:default}
+.errline{color:var(--red);font-size:13px;margin-top:10px;display:none}
+.thanks{display:none;text-align:center;padding:50px 10px}
+.thanks .big{font-family:var(--disp);font-size:30px;color:var(--forest);text-transform:uppercase;letter-spacing:1px}
+.thanks p{color:var(--mid);font-size:15px;max-width:440px;margin:14px auto 0}
+.hint{font-size:12px;color:var(--gray);margin-top:14px;line-height:1.5}
+.hideme{display:none}
+</style>
+</head>
+<body>
+<header><div class="hd">
+  <div class="mono"><img src="data:image/png;base64,__LOGO__" alt="LR"></div>
+  <div class="wordmark"><div class="t1">LAKE ROOTS</div><div class="t2">Café · Market · Bar</div></div>
+  <div class="tag"><div class="tt">Service Report</div><div class="td">service &amp; maintenance log</div></div>
+</div></header>
+<div class="formwrap">
+  <div class="title" style="text-align:center;margin-top:26px">
+    <div class="g1">SERVICE / MAINTENANCE REPORT</div>
+    <div class="g2">log a completed service, repair, or maintenance visit — what was done, to what, and by whom</div>
+  </div>
+
+  <form class="fpanel" id="form" onsubmit="return submitForm(event)">
+    <div class="row2">
+      <div><label>Date of service</label><input id="f_date" type="date" required></div>
+      <div><label>Time <span class="opt">— optional</span></label><input id="f_time" type="time"></div>
+    </div>
+
+    <label>Area</label>
+    <select id="f_area" onchange="onArea()">
+      <option value="">Select an area…</option>
+      <option>Kitchen</option><option>Café</option><option>Bar</option>
+      <option>Market</option><option>Building</option><option>Other</option>
+    </select>
+
+    <div id="assetWrap" class="hideme">
+      <label>Equipment / asset</label>
+      <select id="f_asset" onchange="onAsset()"><option value="">Select an area first…</option></select>
+    </div>
+    <div id="equipOtherWrap" class="hideme">
+      <label>Equipment / asset <span class="opt">— describe it</span></label>
+      <input id="f_equip_other" maxlength="200" placeholder="e.g. patio heater, or an asset not on the list">
+    </div>
+
+    <div class="row2">
+      <div>
+        <label>Scheduled or repair?</label>
+        <select id="f_type" onchange="onType()">
+          <option>Scheduled</option><option>Repair</option>
+        </select>
+      </div>
+      <div id="warrantyWrap" class="hideme">
+        <label>Under warranty?</label>
+        <select id="f_warranty">
+          <option>Warranty repair</option>
+          <option>Not covered by warranty</option>
+          <option>Not applicable</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row2">
+      <div><label>Service provider <span class="opt">— company</span></label><input id="f_provider" required maxlength="200" placeholder="e.g. Althoff, Z-Chem, Atosa"></div>
+      <div><label>Technician name <span class="opt">— optional</span></label><input id="f_tech" maxlength="200"></div>
+    </div>
+
+    <label>Description of the work done</label>
+    <textarea id="f_desc" required maxlength="8000" placeholder="What was done, to what, and any findings"></textarea>
+
+    <label>Resolution</label>
+    <select id="f_resolution">
+      <option>This was a regular maintenance visit and maintenance complete without any follow up!</option>
+      <option>It was a problem and it was fixed!</option>
+      <option>Issues remain</option>
+      <option>Not exactly - nothing was fixed, so the problem may come up again?</option>
+      <option>Couldn't complete maintenance for some reason and they need to come back...</option>
+      <option>Other</option>
+    </select>
+
+    <label>Link to report / photos <span class="opt">— optional</span></label>
+    <input id="f_link" maxlength="600" placeholder="Drive folder, ServiceTrade, MarginEdge, etc.">
+
+    <label>Any other details <span class="opt">— optional</span></label>
+    <textarea id="f_other" maxlength="6000" placeholder="Follow-ups, who to bill, scheduling notes…"></textarea>
+
+    <div class="submitbar"><button id="sendBtn" type="submit">Save report</button></div>
+    <div class="errline" id="err"></div>
+    <div class="hint">Logged to the Service &amp; Maintenance review board. Managers are notified of each new report.</div>
+  </form>
+
+  <div class="thanks" id="thanks">
+    <div class="big">Logged — thank you!</div>
+    <p>The service report is saved to the review board and the team has been notified. You can close this page or log another visit.</p>
+    <p><a href="#" onclick="location.reload();return false" style="color:var(--gold)">Log another report</a></p>
+  </div>
+  <div class="foot" style="text-align:center">Lake Roots Café Market Bar · Crystal Lake</div>
+</div>
+
+<script>
+// Asset register grouped by area (mirrors the fixed-asset sheet). "Other / not
+// listed" lets staff log anything not yet on the register.
+const ASSETS = {
+ "Kitchen": ["10001 - Walk-In Cooler #1","10002 - Walk-In Cooler Evaporator #1","10003 - Walk-In Freezer #1","10004 - Walk-In Freezer Evaporator #1","10005 - Compartment Sink","10007 - Grease Trap","10008 - Prep Fridge Drawers - Chef Base","10009 - Work Table 30\" x 96\"","10010 - Work Table 24\" x 72\"","10011 - Wire Shelving","10012 - One Compartment Sink","10013 - Hand Sink by Bus Station","10014 - Hand Sink by Ice Maker","10017 - Three Compartment Sink","10018 - Pot Rack","10019 - Bun/Sheet Pan Rack","10020 - Clean Dishtable","10021 - Dish Machine","10022 - Soiled Dishtable","10023 - Ice Maker","10024 - Mop Sink","10025 - Convection Oven","10028 - Charbroiler","10029 - Gas Floor Fryer #1","10030 - Gas Floor Fryer #2","10031 - Kitchen Reach-In Freezer","10032 - Griddle Gas Countertop","10033 - Range","10034 - Prep Fridge Left","10035 - Prep Fridge Middle","10036 - Prep Fridge Right"],
+ "Café": ["20001 - Expo Fridge","20002 - Bar Drawer Freezer","20003 - Blender","20005 - Heat Lamp","20006 - Light Fixture","20007 - Rinser for Espresso Pitchers"],
+ "Bar": ["30001 - Bar Dishwasher","30004 - Right Bar Fridge","30005 - Fountain Beverage Lines","30006 - Beer Keg Lines"],
+ "Market": ["50001 - Grab & Go Fridge #1 Left","50002 - Grab & Go Fridge #2 Right","50003 - Market Double Door Fridge","50004 - Market Freezer"],
+ "Building": ["80001 - Rooftop Unit #1","80002 - Rooftop Unit #2","80003 - Rooftop Unit #3","80004 - Rooftop Unit #4","80005 - Roof","80007 - Pest Control","80008 - Sprinkler System","80009 - Fire Alarm System","80010 - Electrical Panel","80011 - Four Seasons Room Structure & Walls","80012 - Four Seasons Room Ceiling Heating","80013 - Camera System","80014 - Outdoor Water","80015 - Reverse Osmosis Filter System for Coffee","80016 - Reverse Osmosis Filter System for Bussing Station"]
+};
+const SUPA_URL="https://gqgjppxzdwzypxontmou.supabase.co";
+const SUPA_KEY="sb_publishable_DieuLBMaMTJwZD3SUfgvGA_9I2tMOhP";
+const sb=window.supabase?window.supabase.createClient(SUPA_URL,SUPA_KEY):null;
+const $=id=>document.getElementById(id);
+const v=id=>($(id).value||'').trim()||null;
+const show=(id,on)=>$(id).classList.toggle('hideme',!on);
+const OTHER="Other / not listed";
+
+function onArea(){
+  const area=$('f_area').value;
+  const list=ASSETS[area];
+  if(list){
+    const sel=$('f_asset');
+    sel.innerHTML='<option value="">Select equipment…</option>'+
+      list.map(a=>'<option>'+a.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</option>').join('')+
+      '<option>'+OTHER+'</option>';
+    show('assetWrap',true);
+    show('equipOtherWrap',false);
+  }else{
+    // "Other" area, or none chosen — free-text equipment
+    show('assetWrap',false);
+    show('equipOtherWrap', area==='Other');
+  }
+}
+function onAsset(){ show('equipOtherWrap', $('f_asset').value===OTHER); }
+function onType(){ show('warrantyWrap', $('f_type').value==='Repair'); }
+
+function fmtDate(iso){if(!iso)return null;const [y,m,d]=iso.split('-');return Number(m)+'/'+Number(d)+'/'+y;}
+function fmtTime(t){if(!t)return null;let [h,m]=t.split(':');h=Number(h);const ap=h>=12?'PM':'AM';h=h%12||12;return h+':'+m+':00 '+ap;}
+
+async function submitForm(ev){
+  ev.preventDefault();
+  const err=$('err');err.style.display='none';
+  if(!sb){err.textContent='Could not connect — please try again in a moment.';err.style.display='block';return false;}
+  // resolve the equipment value + asset number
+  let equipment=null;
+  if($('f_asset').value && $('f_asset').value!==OTHER) equipment=$('f_asset').value;
+  else if(v('f_equip_other')) equipment=v('f_equip_other');
+  const m=equipment&&equipment.match(/^(\d{4,6})\s*-\s*/);
+  const asset_no=m?m[1]:null;
+
+  $('sendBtn').disabled=true;
+  const sub={};
+  sub.service_date=$('f_date').value||null;   // yyyy-mm-dd — column is a date
+  sub.service_time=fmtTime($('f_time').value);
+  sub.area=$('f_area').value||null;
+  sub.equipment=equipment;
+  sub.asset_no=asset_no;
+  sub.visit_type=$('f_type').value;
+  sub.warranty=$('f_type').value==='Repair'?$('f_warranty').value:'Not applicable';
+  sub.provider=v('f_provider');
+  sub.technician=v('f_tech');
+  sub.report_link=v('f_link');
+  sub.description=v('f_desc');
+  sub.resolution=$('f_resolution').value;
+  sub.other_details=v('f_other');
+  sub.source='web';
+
+  const {error}=await sb.from('service_reports').insert(sub);
+  if(error){err.textContent='Something went wrong — please try again. ('+error.message+')';err.style.display='block';$('sendBtn').disabled=false;return false;}
+  $('form').style.display='none';$('thanks').style.display='block';window.scrollTo(0,0);
+  return false;
+}
+</script>
+</body>
+</html>
