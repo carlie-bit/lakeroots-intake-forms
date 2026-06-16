@@ -9,7 +9,13 @@ const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const FROM = "Lake Roots <hello@lakerootscl.com>";
 // Managers notified on each new service report. Edit this list to add/remove
 // recipients (kept in code, not the hello@ distro, per the maintenance owners).
-const MANAGERS = ["carlie@lakerootscl.com"];
+const MANAGERS = [
+  "rod@lakerootscl.com",
+  "andy@lakerootscl.com",
+  "mike@lakerootscl.com",
+  "jj@lakerootscl.com",
+  "cuahutli@lakerootscl.com",
+];
 const DASH = "https://lakeroots-intake-forms.netlify.app/service-review.html";
 const LOGO = "https://lakeroots-intake-forms.netlify.app/lr-email-logo.png";
 const H = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` };
