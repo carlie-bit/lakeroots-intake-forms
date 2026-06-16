@@ -149,6 +149,21 @@ header.sop .logout{position:absolute;right:16px;top:16px;font-family:var(--body)
 .edit textarea{min-height:60px;resize:vertical}
 .savebtn{margin-top:10px;border:1.5px solid var(--forest);background:var(--forest);color:var(--cream);border-radius:8px;padding:8px 16px;font-size:12px;font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;cursor:pointer}
 .saved{font-size:12px;color:var(--forest);margin-left:10px}
+/* larger, more legible type across the review surfaces */
+.dash-table th,.dash-table td{font-size:15px}
+.dash-table td{padding-top:10px;padding-bottom:10px}
+.panel h3{font-size:17px}
+.bars .bl,.bars .bv{font-size:14.5px}
+.kpi .kl{font-size:13.5px}.kpi .kv{font-size:34px}.kpi .ks{font-size:13px}
+.filterbar input{font-size:15px}
+.allcount{font-size:13px}
+.pill{font-size:12.5px}
+.injtag{font-size:11px}
+.detrows{font-size:14.5px}.detrows b{font-size:14.5px}
+.dentry .dlabel{font-size:18px}
+.modal .mt{font-size:21px}
+.dchips button{font-size:12.5px}
+.edit textarea,.edit input{font-size:15px}
 </style>
 </head>
 <body>
@@ -183,6 +198,7 @@ header.sop .logout{position:absolute;right:16px;top:16px;font-family:var(--body)
   </div>
   <div class="kpis" id="kpis"></div>
   <div class="panels">
+    <div class="panel"><h3>By Status <span class="hint">click to view</span></h3><div class="bars" id="statBars"></div></div>
     <div class="panel"><h3>By Nature <span class="hint">click to view</span></h3><div class="bars" id="natBars"></div></div>
     <div class="panel full"><h3>🔵 Open — needs attention <span class="hint">unresolved incidents · click a row</span></h3><table class="dash-table" id="openTbl"></table></div>
     <div class="panel full"><h3>📋 All Incidents <span class="hint">every report · click a column to sort, search above to filter · click a row</span></h3><table class="dash-table allt" id="allTbl"></table><div class="allcount" id="allCount"></div></div>
@@ -252,6 +268,9 @@ function renderAll(){
   $('kpis').innerHTML=kpis.map(([l,v,s,c],i)=>`<div class="kpi clk ${c}" onclick="KPI[${i}]()"><div class="kl">${l}</div><div class="kv">${v}</div><div class="ks">${s}</div></div>`).join('');
   window.KPI=kpis.map(x=>x[4]);
 
+  const statEntries=STATUSES.map(([k,l])=>[l,F.filter(e=>(e.status||'open')===k).length]).filter(x=>x[1]);
+  bars($('statBars'),statEntries,l=>SCOL[STATUSES.find(x=>x[1]===l)[0]],l=>{const k=STATUSES.find(x=>x[1]===l)[0];return `drill('${esc(l)} incidents',filtered().filter(e=>(e.status||'open')==='${k}'))`;});
+
   const nC={};F.forEach(e=>{const n=e.nature||'—';nC[n]=(nC[n]||0)+1;});
   bars($('natBars'),Object.entries(nC).sort((a,b)=>b[1]-a[1]),()=>'var(--brown)',l=>`drill('${esc(l)}',filtered().filter(e=>(e.nature||'—')==='${esc(l)}'))`);
 
@@ -264,7 +283,7 @@ function sortVal(e,k){if(k==='occurred')return new Date(occ(e)).getTime()||0;if(
 function setSort(k){if(sortKey===k)sortDir=-sortDir;else{sortKey=k;sortDir=(k==='occurred')?-1:1;}renderAll();}
 function renderAllTable(F){
   const rows=F.slice().sort((a,b)=>{const va=sortVal(a,sortKey),vb=sortVal(b,sortKey);if(va<vb)return -sortDir;if(va>vb)return sortDir;return (new Date(occ(b))-new Date(occ(a)));});
-  const arrow=k=>sortKey===k?`<span class="arr">${sortDir<0?'▼':'▲'}</span>`:'';
+  const arrow=k=>sortKey===k?`<span class="arr">${sortDir<0?'▼':'▲'}</span>`:'<span class="arr" style="opacity:.3">↕</span>';
   const head=`<tr><th class="srt" onclick="setSort('nature')">Incident${arrow('nature')}</th><th class="srt" onclick="setSort('reporter')">Reported by${arrow('reporter')}</th><th class="srt" onclick="setSort('status')">Status${arrow('status')}</th><th class="srt r" onclick="setSort('occurred')">Date${arrow('occurred')}</th></tr>`;
   const body=rows.length?rows.map(e=>`<tr class="clk" onclick="drillOne('${jsId(e.id)}')"><td class="nm">${esc(e.nature)}${isInjury(e)?' <span class="injtag">injury</span>':''} — ${esc(e.description.slice(0,55))}</td><td>${esc(e.reporter)||'—'}</td><td>${statusPill(e)}</td><td class="r">${fmtDate(occ(e))}</td></tr>`).join('')
     :`<tr><td style="color:var(--gray);padding:12px 0" colspan="4">No incidents${SEARCH?' match your search':''}.</td></tr>`;
