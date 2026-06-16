@@ -164,9 +164,10 @@ header.sop .logout{position:absolute;right:16px;top:16px;font-family:var(--body)
 <!-- LOGIN GATE -->
 <div class="gate" id="gate" style="display:none">
   <h2>Manager sign-in</h2>
-  <p>Incident reports are private. Enter your Lake Roots email and we'll send a one-time sign-in link.</p>
-  <input id="email" type="email" placeholder="you@lakerootscl.com" autocomplete="email">
-  <button id="sendBtn" onclick="sendLink()">Email me a sign-in link</button>
+  <p>Incident reports are private. Sign in with your Lake Roots email and password.</p>
+  <input id="email" type="email" placeholder="you@lakerootscl.com" autocomplete="email" onkeydown="if(event.key==='Enter')$('pw').focus()">
+  <input id="pw" type="password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')signIn()">
+  <button id="sendBtn" onclick="signIn()">Sign in</button>
   <div class="msg" id="gmsg"></div>
 </div>
 
@@ -330,13 +331,13 @@ function showDash(session){
   load();
 }
 function showGate(){$('dash').style.display='none';$('gate').style.display='';$('logoutBtn').style.display='none';$('updated').textContent='';}
-async function sendLink(){
-  const email=($('email').value||'').trim();const m=$('gmsg');
-  if(!email){m.className='msg bad';m.textContent='Enter your email.';return;}
-  $('sendBtn').disabled=true;m.className='msg';m.textContent='Sending…';
-  const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:location.origin+location.pathname}});
-  if(error){m.className='msg bad';m.textContent=/not allowed|signups|user/i.test(error.message)?'That email isn’t set up for access. Ask an admin to add you.':('Could not send: '+error.message);$('sendBtn').disabled=false;return;}
-  m.className='msg ok';m.textContent='Check your email for a sign-in link, then come back to this page.';
+async function signIn(){
+  const email=($('email').value||'').trim();const password=$('pw').value||'';const m=$('gmsg');
+  if(!email||!password){m.className='msg bad';m.textContent='Enter your email and password.';return;}
+  $('sendBtn').disabled=true;m.className='msg';m.textContent='Signing in…';
+  const {error}=await sb.auth.signInWithPassword({email,password});
+  if(error){m.className='msg bad';m.textContent=/invalid|credential/i.test(error.message)?'Wrong email or password.':('Could not sign in: '+error.message);$('sendBtn').disabled=false;return;}
+  // onAuthStateChange → showDash
 }
 async function logout(){await sb.auth.signOut();showGate();}
 
