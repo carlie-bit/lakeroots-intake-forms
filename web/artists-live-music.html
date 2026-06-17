@@ -153,6 +153,21 @@ header{background:var(--forest);color:var(--cream);padding:16px 20px}
 .addcmt button{border:1.5px solid var(--forest);background:var(--forest);color:var(--cream);border-radius:8px;padding:0 12px;font-size:12px;cursor:pointer}
 .nouser{font-size:11px;color:var(--red);margin-top:4px;display:none}
 .staleflag{font-size:11px;color:#9b6b00;background:#fff7e6;border:1px solid #f0d9a0;border-radius:8px;padding:8px 11px;margin:6px 0 0}
+/* larger, more legible type across the review surfaces */
+.dash-table th,.dash-table td{font-size:14.5px}
+.dash-table td{padding-top:9px;padding-bottom:9px}
+.panel h3{font-size:17px}
+.bars .bl,.bars .bv{font-size:14.5px}
+.kpi .kl{font-size:13px}.kpi .kv{font-size:33px}.kpi .ks{font-size:12.5px}
+.filterbar input{font-size:15px}
+.wfstep{font-size:12px}
+.allcount{font-size:12.5px}
+.detrows,.detrows b{font-size:14px}
+.dentry .dlabel{font-size:17px}
+.modal .mt{font-size:21px}
+.dchips button{font-size:12.5px}
+.cmt,.cmt .tx,.addcmt input{font-size:13.5px}
+.sdetail select,.sdetail textarea,.sdetail input{font-size:14px}
 </style>
 </head>
 <body>
@@ -196,6 +211,7 @@ header{background:var(--forest);color:var(--cream);padding:16px 20px}
     <div class="panel full" id="perfPanel" style="display:none"><h3>✅ Performed <span class="hint">played the room · kept for the record</span></h3><table class="dash-table seg" id="perfTbl"></table></div>
     <div class="panel full" id="npPanel"><h3>🚫 Not proceeding <span class="hint">declined or paused — kept for the record</span></h3><table class="dash-table seg" id="npTbl"></table></div>
     <div class="panel full" id="allPanel"><h3>📋 All submissions <span class="hint">every inquiry · click a column to sort, search above to filter</span></h3><table class="dash-table allt" id="allTbl"></table><div class="allcount" id="allCount"></div></div>
+    <div class="panel full" id="removedPanel" style="display:none"><h3>🗑️ Removed <span class="hint">kept out of the counts · restore anytime</span></h3><table class="dash-table" id="removedTbl"></table></div>
   </div>
   <div class="note" id="note"></div>
   <div class="foot">rooted in community</div>
@@ -344,6 +360,9 @@ function renderAll(){
   $('perfPanel').style.display=perf.length?'':'none';fill('perfTbl',perf,'No performances logged');
   $('npPanel').style.display=np.length?'':'none';fill('npTbl',np,'Nothing here');
   renderAllTable(F);
+  const del=ALL.filter(e=>e.deleted);
+  $('removedPanel').style.display=del.length?'':'none';
+  $('removedTbl').innerHTML=del.length?`<tr><th>Act</th><th>Type</th><th class="r"></th></tr>`+del.map(e=>`<tr><td class="nm" style="color:var(--gray)">${esc(e.act)}</td><td style="color:var(--gray)">${esc(e.describes||'—')}</td><td class="r"><a href="#" style="color:var(--forest);font-size:12px" onclick="setDeleted('${esc(e.id)}',false);return false">Restore</a></td></tr>`).join(''):'';
 }
 
 const STAGE_ORDER=Object.fromEntries(STATUSES.map(([k],i)=>[k,i]));
@@ -387,7 +406,7 @@ function drill(title,list){list=(list||[]).filter(Boolean);
       <div class="comments" id="cmts-${c}">${renderComments(a.comments)}</div>
       <div class="addcmt"><input id="cin-${c}" placeholder="Add a note…" onkeydown="if(event.key==='Enter')addComment('${esc(e.id)}')"><button onclick="addComment('${esc(e.id)}')">Post</button></div>
       <div class="nouser" id="nu-${c}">Enter your name (top right) to post.</div>
-      ${e.source==='manual'?`<div style="margin-top:6px"><a href="#" style="font-size:11px;color:var(--red)" onclick="deleteManual('${esc(e.id)}');return false">Delete this entry</a></div>`:''}
+      <div style="margin-top:8px"><a href="#" style="font-size:11px;color:var(--red)" onclick="setDeleted('${esc(e.id)}',true);return false">Delete this entry</a></div>
     </div>`;}).join('')||'<div style="color:var(--gray)">No inquiries.</div>';
   $('modalBg').classList.add('open');
 }
@@ -454,9 +473,10 @@ async function saveAdd(){const act=$('a_act').value.trim();const err=$('a_err');
   const e=mapLive(data);ALL.unshift(e);ACTIONS[e.id]={status:'new',comments:[]};await persist(e.id);
   ['a_act','a_type','a_name','a_contact','a_notes'].forEach(i=>$(i).value='');
   renderAll();closeAdd();drillOne(e.id);}
-async function deleteManual(id){if(!confirm('Remove this entry?'))return;const e=ALL.find(x=>x.id===id);if(!e||!sb)return;
-  const {error}=await sb.from('music_inquiries').update({deleted_at:new Date().toISOString()}).eq('id',e.sid);
-  if(error){console.warn(error.message);return;}e.deleted=true;closeDrill();renderAll();}
+async function setDeleted(id,flag){const e=ALL.find(x=>x.id===id);if(!e||!sb){alert('Open the live site to remove or restore.');return;}
+  if(flag&&!confirm('Remove this entry? It moves to “Removed” — you can restore it anytime.'))return;
+  const {error}=await sb.from('music_inquiries').update({deleted_at:flag?new Date().toISOString():null}).eq('id',e.sid);
+  if(error){alert('Failed: '+error.message);return;}e.deleted=flag;if(flag)closeDrill();renderAll();}
 function closeDrill(){$('modalBg').classList.remove('open');}
 
 function setMeta(generated){$('updated').textContent='Updated '+generated;
