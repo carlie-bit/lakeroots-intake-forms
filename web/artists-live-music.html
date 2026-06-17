@@ -168,6 +168,15 @@ header{background:var(--forest);color:var(--cream);padding:16px 20px}
 .dchips button{font-size:12.5px}
 .cmt,.cmt .tx,.addcmt input{font-size:13.5px}
 .sdetail select,.sdetail textarea,.sdetail input{font-size:14px}
+/* manager sign-in gate */
+.gate{max-width:420px;margin:60px auto;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(54,58,46,.10);padding:26px 24px;text-align:center}
+.gate h2{font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;color:var(--forest);font-size:20px;margin:0 0 6px}
+.gate p{color:var(--mid);font-size:14px;margin:0 0 16px;line-height:1.5}
+.gate input{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:9px;padding:11px 12px;font-family:inherit;font-size:16px;background:var(--cream);margin-bottom:12px}
+.gate button{width:100%;border:none;background:var(--forest);color:var(--cream);border-radius:999px;padding:12px;font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;font-size:14px;cursor:pointer}
+.gate button:disabled{opacity:.5;cursor:default}
+.gate .msg{font-size:13px;margin-top:12px;min-height:18px}.gate .ok{color:var(--forest)}.gate .bad{color:var(--red)}
+.logoutbtn{font-family:var(--disp);text-transform:uppercase;letter-spacing:.6px;font-size:10.5px;color:var(--mid);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -176,7 +185,18 @@ header{background:var(--forest);color:var(--cream);padding:16px 20px}
   <div class="wordmark"><div class="t1">LAKE ROOTS</div><div class="t2">Café · Market · Bar</div></div>
   <div class="tag"><div class="tt">Artists &amp; Live Music</div><div class="td" id="updated"></div></div>
 </div></header>
-<div class="wrap">
+
+<!-- MANAGER SIGN-IN GATE -->
+<div class="gate" id="gate" style="display:none">
+  <h2>Manager sign-in</h2>
+  <p>This board includes performers' contact details, so it's private. Sign in with your Lake Roots email and password.</p>
+  <input id="email" type="email" placeholder="you@lakerootscl.com" autocomplete="email" onkeydown="if(event.key==='Enter')$('pw').focus()">
+  <input id="pw" type="password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')signIn()">
+  <button id="sendBtn" onclick="signIn()">Sign in</button>
+  <div class="msg" id="gmsg"></div>
+</div>
+
+<div class="wrap" id="dash" style="display:none">
   <div class="title">
     <div class="g1">ARTISTS &amp; LIVE MUSIC <span class="live snap" id="liveBadge">SNAPSHOT</span></div>
     <div class="g2">musicians, DJs, artists &amp; authors who want to play Lake Roots</div>
@@ -185,6 +205,7 @@ header{background:var(--forest);color:var(--cream);padding:16px 20px}
     <div class="periodbar" id="periodbar"><span class="pl">Period</span></div>
     <button class="addbtn" onclick="openAdd()">+ Log an inquiry</button>
     <div class="whoami">You: <input id="who" placeholder="your name" oninput="setUser(this.value)"></div>
+    <button class="logoutbtn" id="logoutBtn" onclick="logout()">Log out</button>
   </div>
   <div class="filterbar">
     <input id="q" placeholder="🔍 Search acts, type, bios, notes…" oninput="renderAll()">
@@ -274,6 +295,11 @@ const BAKED={
 const SUPA_URL="https://gqgjppxzdwzypxontmou.supabase.co";
 const SUPA_KEY="sb_publishable_DieuLBMaMTJwZD3SUfgvGA_9I2tMOhP";
 const sb=window.supabase?window.supabase.createClient(SUPA_URL,SUPA_KEY):null;
+// Manager sign-in reuses the same accounts as the incident board (lakeroots-
+// production auth). Data still comes from the forms project (sb) above.
+const AUTH_URL="https://nocufjsinhbxqneinvcn.supabase.co";
+const AUTH_KEY="sb_publishable_ASEdCGk7BGuqh2w8BFib7A_4MBpAfF8";
+const mgr=window.supabase?window.supabase.createClient(AUTH_URL,AUTH_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:'lr-mgr-auth'}}):null;
 const $=id=>document.getElementById(id);
 const STATUSES=[['new','New'],['reviewing','Reviewing'],['contacted','Contacted'],['booked','Booked'],['performed','Performed'],['not_proceeding','Not proceeding']];
 const SLABEL=Object.fromEntries(STATUSES);
@@ -402,13 +428,14 @@ function drill(title,list){list=(list||[]).filter(Boolean);
       ${detailBlock(e)}
       <div class="dchips">${STATUSES.map(([k,l])=>`<button data-s="${k}" class="${st(e.id)===k?'on':''}" onclick="setStatus('${esc(e.id)}','${k}',this)">${l}</button>`).join('')}</div>
       <div id="sd-${c}">${renderDetail(e.id)}</div>
-      <div style="margin-top:6px;font-size:12px"><b style="color:var(--forest)">Contact:</b> <span id="ct-${c}" style="color:var(--mid)">${e.sid?'<a href="#" style="color:var(--forest)" onclick="showContact(\''+esc(e.id)+'\');return false">🔒 View contact info</a>':'—'}</span></div>
+      <div style="margin-top:6px;font-size:13px"><b style="color:var(--forest)">Contact:</b> <span id="ct-${c}" style="color:var(--mid)">${e.sid?'loading…':'—'}</span></div>
       <div class="comments" id="cmts-${c}">${renderComments(a.comments)}</div>
       <div class="addcmt"><input id="cin-${c}" placeholder="Add a note…" onkeydown="if(event.key==='Enter')addComment('${esc(e.id)}')"><button onclick="addComment('${esc(e.id)}')">Post</button></div>
       <div class="nouser" id="nu-${c}">Enter your name (top right) to post.</div>
       <div style="margin-top:8px"><a href="#" style="font-size:11px;color:var(--red)" onclick="setDeleted('${esc(e.id)}',true);return false">Delete this entry</a></div>
     </div>`;}).join('')||'<div style="color:var(--gray)">No inquiries.</div>';
   $('modalBg').classList.add('open');
+  list.forEach(e=>{if(e.sid)showContact(e.id);});  // board is sign-in gated — load contact inline
 }
 function detailBlock(e){
   const rows=[['Proposed date',e.date],['Date notes',e.date_notes],['Bio / about',e.bio],
@@ -481,9 +508,9 @@ function closeDrill(){$('modalBg').classList.remove('open');}
 
 function setMeta(generated){$('updated').textContent='Updated '+generated;
   if(LIVE){const b=$('liveBadge');b.textContent='LIVE';b.classList.remove('snap');}
-  $('note').innerHTML=`<b>Contact info on click.</b> Names, emails &amp; phone numbers are stored separately and load only when you click 🔒 View contact info. Stage &amp; notes you set are saved live for the whole team. ${LIVE?'Live — new form submissions appear on refresh once the responses sheet is synced to the database.':'Snapshot — refreshed when the sheet is re-imported.'}`;}
+  $('note').innerHTML=`<b>Manager-only.</b> Sign-in is required to open this board; performers' contact details show inline on each inquiry. Stage &amp; notes you set are saved live for the whole team. ${LIVE?'Live — new form submissions appear on refresh once the responses sheet is synced to the database.':'Snapshot — refreshed when the sheet is re-imported.'}`;}
 
-async function boot(){
+async function loadData(){
   $('who').value=getUser();
   if(sb){try{
     const {data,error}=await sb.from('music_inquiries').select('*').order('created_at',{ascending:false});
@@ -492,6 +519,27 @@ async function boot(){
   }catch(e){console.warn(e);}}
   ALL=(BAKED.entries||[]).map(mapBaked);loadBakedActions();
   setMeta(fmtDate((BAKED.meta||{}).generated)||'snapshot');renderPeriodBar();renderAll();
+}
+
+/* ---- manager sign-in gate ---- */
+let LOADED=false;
+function showDash(){$('gate').style.display='none';$('dash').style.display='';if(!LOADED){LOADED=true;loadData();}}
+function showGate(){$('dash').style.display='none';$('gate').style.display='';}
+async function signIn(){
+  const email=($('email').value||'').trim();const password=$('pw').value||'';const m=$('gmsg');
+  if(!email||!password){m.className='msg bad';m.textContent='Enter your email and password.';return;}
+  $('sendBtn').disabled=true;m.className='msg';m.textContent='Signing in…';
+  const {error}=await mgr.auth.signInWithPassword({email,password});
+  if(error){m.className='msg bad';m.textContent=/invalid|credential/i.test(error.message)?'Wrong email or password.':('Could not sign in: '+error.message);$('sendBtn').disabled=false;return;}
+  // onAuthStateChange → showDash
+}
+async function logout(){await mgr.auth.signOut();showGate();}
+
+async function boot(){
+  if(!mgr){showDash();return;}  // supabase lib unavailable (offline) — fall back to the de-identified snapshot
+  const {data:{session}}=await mgr.auth.getSession();
+  if(session)showDash();else showGate();
+  mgr.auth.onAuthStateChange((_e,s)=>{if(s)showDash();else showGate();});
 }
 boot();
 </script>
