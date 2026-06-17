@@ -173,6 +173,14 @@ a.addbtn{text-decoration:none;display:inline-flex;align-items:center;gap:5px}
 .addcmt{display:flex;gap:6px;margin-top:6px}.addcmt input{flex:1;border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px}
 .addcmt button{border:1.5px solid var(--forest);background:var(--forest);color:var(--cream);border-radius:8px;padding:0 12px;font-size:12px;cursor:pointer}
 .nouser{font-size:11px;color:var(--red);margin-top:4px;display:none}
+.gate{max-width:420px;margin:60px auto;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(54,58,46,.10);padding:26px 24px;text-align:center}
+.gate h2{font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;color:var(--forest);font-size:20px;margin:0 0 6px}
+.gate p{color:var(--mid);font-size:14px;margin:0 0 16px;line-height:1.5}
+.gate input{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:9px;padding:11px 12px;font-family:inherit;font-size:16px;background:var(--cream);margin-bottom:12px}
+.gate button{width:100%;border:none;background:var(--forest);color:var(--cream);border-radius:999px;padding:12px;font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;font-size:14px;cursor:pointer}
+.gate button:disabled{opacity:.5;cursor:default}
+.gate .msg{font-size:13px;margin-top:12px;min-height:18px}.gate .ok{color:var(--forest)}.gate .bad{color:var(--red)}
+.logoutbtn{font-family:var(--disp);text-transform:uppercase;letter-spacing:.6px;font-size:10.5px;color:var(--mid);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -181,7 +189,18 @@ a.addbtn{text-decoration:none;display:inline-flex;align-items:center;gap:5px}
   <div class="wordmark"><div class="t1">LAKE ROOTS</div><div class="t2">Café · Market · Bar</div></div>
   <div class="tag"><div class="tt">Community Outreach</div><div class="td" id="updated"></div></div>
 </div></header>
-<div class="wrap">
+
+<!-- MANAGER SIGN-IN GATE -->
+<div class="gate" id="gate" style="display:none">
+  <h2>Manager sign-in</h2>
+  <p>This board includes submitters' contact details, so it's private. Sign in with your Lake Roots email and password.</p>
+  <input id="email" type="email" placeholder="you@lakerootscl.com" autocomplete="email" onkeydown="if(event.key==='Enter')$('pw').focus()">
+  <input id="pw" type="password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')signIn()">
+  <button id="sendBtn" onclick="signIn()">Sign in</button>
+  <div class="msg" id="gmsg"></div>
+</div>
+
+<div class="wrap" id="dash" style="display:none">
   <div class="title">
     <div class="g1">COMMUNITY OUTREACH <span class="live snap" id="liveBadge">SNAPSHOT</span></div>
     <div class="g2">how we show up for our community</div>
@@ -191,6 +210,7 @@ a.addbtn{text-decoration:none;display:inline-flex;align-items:center;gap:5px}
     <button class="addbtn" onclick="openAdd()">+ Add opportunity</button>
     <a class="addbtn ghost" href="donations.html" title="Open the Donation Fulfillment Board">🎁 Donations →</a>
     <div class="whoami">You: <input id="who" placeholder="your name" oninput="setUser(this.value)"></div>
+    <button class="logoutbtn" id="logoutBtn" onclick="logout()">Log out</button>
   </div>
   <div class="filterbar">
     <input id="q" placeholder="🔍 Search organizations, types, details…" oninput="renderAll()">
@@ -870,6 +890,10 @@ const SUPA_URL="https://gqgjppxzdwzypxontmou.supabase.co";
 const SUPA_KEY="sb_publishable_DieuLBMaMTJwZD3SUfgvGA_9I2tMOhP";
 const ACTIONS_TABLE="outreach_actions";
 const sb=window.supabase?window.supabase.createClient(SUPA_URL,SUPA_KEY):null;
+// Manager sign-in reuses the incident board's lakeroots-production accounts.
+const AUTH_URL="https://nocufjsinhbxqneinvcn.supabase.co";
+const AUTH_KEY="sb_publishable_ASEdCGk7BGuqh2w8BFib7A_4MBpAfF8";
+const mgr=window.supabase?window.supabase.createClient(AUTH_URL,AUTH_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:'lr-mgr-auth'}}):null;
 const $=id=>document.getElementById(id);
 const SCOL={'New':'var(--sage)','In Review':'var(--gold)','Approved':'var(--mid)','On Hold':'var(--sand)','Completed':'var(--forest)','Declined':'var(--red)','Other':'var(--gray)'};
 const STATUSES_DON=[['new','New'],['in_review','In review'],['commitment','Commitment made'],['completed','Completed'],['paused','Paused'],['passed','Passed'],['decision_needed','Decision needed']];
@@ -1119,7 +1143,7 @@ async function loadActions(){if(!sb)return;const {data,error}=await sb.from(ACTI
 
 function setMeta(d){$('updated').textContent='Updated '+fmtDate(d.meta.generated);
   if(LIVE){const b=$('liveBadge');b.textContent='LIVE';b.classList.remove('snap');}
-  $('note').innerHTML=`<b>Contact info on click.</b> Submitter names, emails and phone numbers are stored separately — click 🔒 View contact info in any drill-in. Status &amp; comments you set are saved live for the whole team. ${LIVE?'Live — new inquiries from the <a style="color:var(--gold)" href="partner.html" target="_blank">partner form</a> appear on refresh.':'Snapshot — refreshed when the dashboard is rebuilt.'}`;}
+  $('note').innerHTML=`<b>Manager-only.</b> Sign-in is required to open this board; submitter contact details show inline on each entry. Status &amp; comments you set are saved live for the whole team. ${LIVE?'Live — new inquiries from the <a style="color:var(--gold)" href="partner.html" target="_blank">partner form</a> appear on refresh.':'Snapshot — refreshed when the dashboard is rebuilt.'}`;}
 
 function openAdd(){$('addBg').classList.add('open');}
 function closeAdd(){$('addBg').classList.remove('open');}
@@ -1212,7 +1236,7 @@ async function showContact(id){const e=ALL.find(x=>x.id===id);if(!e||!e.sid||!sb
   if(error){el.textContent='Lookup failed.';return;}
   if(!data||data._none){el.textContent='No contact on file for this one.';return;}
   el.textContent=[[data.first_name,data.last_name].filter(Boolean).join(' '),data.email,data.phone].filter(Boolean).join(' · ')||'(empty)';}
-async function boot(){
+async function loadData(){
   if(sb){try{
     const {data,error}=await sb.from('outreach_submissions').select('*').order('created_at');
     if(!error&&data&&data.length){
@@ -1222,6 +1246,23 @@ async function boot(){
   }catch(e){console.warn(e);}}
   let d=BAKED;if(PROXY){try{const r=await fetch(PROXY);if(r.ok){d=await r.json();LIVE=true;}}catch(e){}}
   ALL=(d.entries||[]).slice();setMeta(d);renderPeriodBar();$('who').value=getUser();await loadActions();await loadDonations();renderAll();}
+let LOADED=false;
+function showDash(){$('gate').style.display='none';$('dash').style.display='';if(!LOADED){LOADED=true;loadData();}}
+function showGate(){$('dash').style.display='none';$('gate').style.display='';}
+async function signIn(){
+  const email=($('email').value||'').trim();const password=$('pw').value||'';const m=$('gmsg');
+  if(!email||!password){m.className='msg bad';m.textContent='Enter your email and password.';return;}
+  $('sendBtn').disabled=true;m.className='msg';m.textContent='Signing in…';
+  const {error}=await mgr.auth.signInWithPassword({email,password});
+  if(error){m.className='msg bad';m.textContent=/invalid|credential/i.test(error.message)?'Wrong email or password.':('Could not sign in: '+error.message);$('sendBtn').disabled=false;return;}
+}
+async function logout(){await mgr.auth.signOut();showGate();}
+async function boot(){
+  if(!mgr){showDash();return;}
+  const {data:{session}}=await mgr.auth.getSession();
+  if(session)showDash();else showGate();
+  mgr.auth.onAuthStateChange((_e,s)=>{if(s)showDash();else showGate();});
+}
 boot();
 </script>
   <div style="position:fixed;right:14px;bottom:14px;z-index:99999;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end"><a href="/" aria-label="Lake Roots Forms home" style="display:inline-flex;align-items:center;gap:7px;text-decoration:none;font-family:'Oswald','Barlow Condensed',system-ui,sans-serif;text-transform:uppercase;letter-spacing:.6px;font-size:12px;line-height:1;padding:10px 15px;border-radius:999px;box-shadow:0 4px 14px rgba(43,48,38,.30);background:#fff;color:#363A2E;border:1.5px solid #363A2E">📝 Forms</a><a href="https://lrcommandcenter.netlify.app/" aria-label="Back to the Lake Roots Command Center" style="display:inline-flex;align-items:center;gap:7px;text-decoration:none;font-family:'Oswald','Barlow Condensed',system-ui,sans-serif;text-transform:uppercase;letter-spacing:.6px;font-size:12px;line-height:1;padding:10px 15px;border-radius:999px;box-shadow:0 4px 14px rgba(43,48,38,.30);background:#363A2E;color:#F4F1E4;border:1.5px solid #363A2E">⌂ Command Center</a></div>

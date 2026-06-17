@@ -68,6 +68,14 @@
 .sdetail .row{display:flex;gap:8px;margin-top:8px;align-items:center}
 .sdetail .row button{border:1.5px solid var(--forest);background:var(--forest);color:var(--cream);border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer}
 .editlink{font-size:11px;color:var(--gray);font-weight:400;text-decoration:underline;cursor:pointer}
+.gate{max-width:420px;margin:60px auto;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 10px rgba(54,58,46,.10);padding:26px 24px;text-align:center}
+.gate h2{font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;color:var(--forest);font-size:20px;margin:0 0 6px}
+.gate p{color:var(--mid);font-size:14px;margin:0 0 16px;line-height:1.5}
+.gate input{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:9px;padding:11px 12px;font-family:inherit;font-size:16px;background:var(--cream);margin-bottom:12px}
+.gate button{width:100%;border:none;background:var(--forest);color:var(--cream);border-radius:999px;padding:12px;font-family:var(--disp);text-transform:uppercase;letter-spacing:1px;font-size:14px;cursor:pointer}
+.gate button:disabled{opacity:.5;cursor:default}
+.gate .msg{font-size:13px;margin-top:12px;min-height:18px}.gate .ok{color:var(--forest)}.gate .bad{color:var(--red)}
+.logoutbtn{font-family:var(--disp);text-transform:uppercase;letter-spacing:.6px;font-size:10.5px;color:var(--mid);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -76,7 +84,18 @@
   <div class="wordmark"><div class="t1">LAKE ROOTS</div><div class="t2">Café · Market · Bar</div></div>
   <div class="tag"><div class="tt">Guest Experience</div><div class="td" id="updated"></div></div>
 </div></header>
-<div class="wrap">
+
+<!-- MANAGER SIGN-IN GATE -->
+<div class="gate" id="gate" style="display:none">
+  <h2>Manager sign-in</h2>
+  <p>This board includes guests' contact details, so it's private. Sign in with your Lake Roots email and password.</p>
+  <input id="email" type="email" placeholder="you@lakerootscl.com" autocomplete="email" onkeydown="if(event.key==='Enter')$('pw').focus()">
+  <input id="pw" type="password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')signIn()">
+  <button id="sendBtn" onclick="signIn()">Sign in</button>
+  <div class="msg" id="gmsg"></div>
+</div>
+
+<div class="wrap" id="dash" style="display:none">
   <div class="title">
     <div class="g1">GUEST EXPERIENCE <span class="live snap" id="liveBadge">SNAPSHOT</span></div>
     <div class="g2">what our guests are telling us</div>
@@ -84,6 +103,7 @@
   <div class="topbar" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
     <div class="periodbar" id="periodbar"><span class="pl">Period</span></div>
     <div class="whoami">You: <input id="who" placeholder="your name" oninput="setUser(this.value)"></div>
+    <button class="logoutbtn" id="logoutBtn" onclick="logout()">Log out</button>
   </div>
   <div class="filterbar">
     <input id="q" placeholder="🔍 Search feedback, type, notes…" oninput="SEARCH=this.value.toLowerCase().trim();renderAll()">
@@ -122,6 +142,10 @@ const SUPA_URL="https://gqgjppxzdwzypxontmou.supabase.co";
 const SUPA_KEY="sb_publishable_DieuLBMaMTJwZD3SUfgvGA_9I2tMOhP";
 const ACTIONS_TABLE="feedback_actions";
 const sb=window.supabase?window.supabase.createClient(SUPA_URL,SUPA_KEY):null;
+// Manager sign-in reuses the incident board's lakeroots-production accounts.
+const AUTH_URL="https://nocufjsinhbxqneinvcn.supabase.co";
+const AUTH_KEY="sb_publishable_ASEdCGk7BGuqh2w8BFib7A_4MBpAfF8";
+const mgr=window.supabase?window.supabase.createClient(AUTH_URL,AUTH_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:'lr-mgr-auth'}}):null;
 
 const $=id=>document.getElementById(id);
 const COL={'Negative':'var(--red)','Idea':'var(--gold)','Positive':'var(--sage)','Other':'var(--gray)','Other / Log':'var(--gray)'};
@@ -227,7 +251,7 @@ function drill(title,list){
       <div id="ed-${cssId(e.id)}"></div>
       ${e.feedback&&e.feedback!==e.label?`<div id="fb-${cssId(e.id)}" style="font-size:12.5px;color:var(--mid);margin:-2px 0 6px;white-space:pre-wrap">${esc(e.feedback)}</div>`:''}
       ${e.extra?`<div style="font-size:12px;color:var(--gray);margin:0 0 6px;white-space:pre-wrap">${esc(e.extra)}</div>`:''}
-      ${e.call&&e.sid?`<div style="margin:0 0 6px;font-size:12px"><a href="#" style="color:var(--forest)" onclick="showContact('${jsId(e.id)}');return false">🔒 View caller info</a> <span id="ct-${cssId(e.id)}" style="color:var(--mid)"></span></div>`:''}
+      ${e.call&&e.sid?`<div style="margin:0 0 6px;font-size:12px"><b style="color:var(--forest)">Caller:</b> <span id="ct-${cssId(e.id)}" style="color:var(--mid)">loading…</span></div>`:''}
       <div class="dchips">${STATUSES.map(([k,lbl])=>`<button data-s="${k}" class="${a.status===k?'on':''}" onclick="setStatus('${jsId(e.id)}','${k}',this)">${lbl}</button>`).join('')}</div>
       <div class="comments" id="cmts-${cssId(e.id)}">${renderComments(a.comments)}</div>
       <div class="addcmt"><input id="cin-${cssId(e.id)}" placeholder="Add a comment…" onkeydown="if(event.key==='Enter')addComment('${jsId(e.id)}')"><button onclick="addComment('${jsId(e.id)}')">Post</button></div>
@@ -236,6 +260,7 @@ function drill(title,list){
     </div>`;
   }).join('')||'<div style="color:var(--gray)">No entries.</div>';
   $('modalBg').classList.add('open');
+  list.forEach(e=>{if(e.call&&e.sid)showContact(e.id);});  // board is sign-in gated — load contact inline
 }
 function closeDrill(){$('modalBg').classList.remove('open');}
 function cssId(id){return id.replace(/[^a-zA-Z0-9]/g,'');}
@@ -310,7 +335,7 @@ async function saveEntry(id){const e=ALL.find(x=>x.id===id);if(!e||!e.sid||!sb)r
 function setMeta(d){
   $('updated').textContent='Updated '+fmtDate(d.meta.updated||d.meta.generated);
   if(LIVE){const b=$('liveBadge');b.textContent='LIVE';b.classList.remove('snap');}
-  $('note').innerHTML=`<b>Contact info on click.</b> Caller names and phone numbers are stored separately — click 🔒 View caller info on any call log. Status &amp; notes you set are saved live for the whole team. ${LIVE?'Live — new entries from the <a style="color:var(--gold)" href="feedback.html" target="_blank" rel="noopener">feedback form ↗</a> appear on refresh.':'Snapshot — refreshed when the dashboard is rebuilt.'}`;
+  $('note').innerHTML=`<b>Manager-only.</b> Sign-in is required to open this board; contact details show inline where provided. Status &amp; notes you set are saved live for the whole team. ${LIVE?'Live — new entries from the <a style="color:var(--gold)" href="feedback.html" target="_blank" rel="noopener">feedback form ↗</a> appear on refresh.':'Snapshot — refreshed when the dashboard is rebuilt.'}`;
 }
 
 function mapFb(r){
@@ -330,7 +355,7 @@ async function showContact(id){const e=ALL.find(x=>x.id===id);if(!e||!e.sid||!sb
   if(!data||data._none){el.textContent='No contact on file for this one.';return;}
   el.textContent=[data.caller_name,data.phone,data.email].filter(Boolean).join(' · ')||'(empty)';}
 
-async function boot(){
+async function loadData(){
   if(sb){try{
     const {data,error}=await sb.from('feedback_submissions').select('*').order('created_at');
     if(!error&&data&&data.length){
@@ -345,6 +370,25 @@ async function boot(){
   $('who').value=getUser();
   await loadActions();
   renderAll();
+}
+
+/* ---- manager sign-in gate ---- */
+let LOADED=false;
+function showDash(){$('gate').style.display='none';$('dash').style.display='';if(!LOADED){LOADED=true;loadData();}}
+function showGate(){$('dash').style.display='none';$('gate').style.display='';}
+async function signIn(){
+  const email=($('email').value||'').trim();const password=$('pw').value||'';const m=$('gmsg');
+  if(!email||!password){m.className='msg bad';m.textContent='Enter your email and password.';return;}
+  $('sendBtn').disabled=true;m.className='msg';m.textContent='Signing in…';
+  const {error}=await mgr.auth.signInWithPassword({email,password});
+  if(error){m.className='msg bad';m.textContent=/invalid|credential/i.test(error.message)?'Wrong email or password.':('Could not sign in: '+error.message);$('sendBtn').disabled=false;return;}
+}
+async function logout(){await mgr.auth.signOut();showGate();}
+async function boot(){
+  if(!mgr){showDash();return;}
+  const {data:{session}}=await mgr.auth.getSession();
+  if(session)showDash();else showGate();
+  mgr.auth.onAuthStateChange((_e,s)=>{if(s)showDash();else showGate();});
 }
 boot();
 </script>
