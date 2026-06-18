@@ -94,6 +94,30 @@ ul.items li{font-size:12px;color:var(--ink);}
 .empty{color:var(--muted);font-size:12px;font-style:italic;padding:8px 4px;}
 @media(max-width:900px){.board{grid-template-columns:1fr 1fr;}}
 @media(max-width:560px){.board{grid-template-columns:1fr;}}
+/* column $ total */
+.col h2 .cwrap{display:flex;gap:6px;align-items:center;}
+.ctot{font-family:var(--font-num);font-size:12px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:1px 8px;}
+/* giving reports */
+.reports{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:0 0 16px;box-shadow:var(--shadow);}
+.reports .rhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+.reports .rtitle{font-family:var(--font-display);font-size:18px;}
+.perbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-left:auto;}
+.perbar button{font-size:11.5px;padding:5px 10px;}
+.perbar button.on{background:var(--brand);color:#fff;border-color:var(--brand);}
+.perbar .dt{border:1px solid var(--line);border-radius:8px;padding:5px 7px;font-family:var(--font-body);font-size:12px;color:var(--ink);background:#fff;}
+.perbar .sep{color:var(--muted);font-size:12px;}
+.rgrid{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;}
+.rkpi{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 16px;min-width:116px;}
+.rkpi .k{font-family:var(--font-num);text-transform:uppercase;letter-spacing:.05em;font-size:11px;color:var(--muted);}
+.rkpi .v{font-family:var(--font-num);font-size:30px;color:var(--ink);line-height:1.15;}
+.rkpi .s{font-size:11px;color:var(--muted);}
+.rchart{display:flex;align-items:center;gap:12px;}
+.rchart .ct{font-family:var(--font-num);text-transform:uppercase;letter-spacing:.05em;font-size:11px;color:var(--muted);margin:0 0 6px;}
+.rlegend{font-size:12px;line-height:1.6;}
+.rlegend .li{display:flex;align-items:center;gap:6px;white-space:nowrap;}
+.rlegend i{width:9px;height:9px;border-radius:2px;display:inline-block;flex:0 0 auto;}
+.rlegend b{color:var(--ink);}
+.rempty{color:var(--muted);font-size:12px;font-style:italic;}
 </style>
 </head>
 <body>
@@ -126,6 +150,23 @@ ul.items li{font-size:12px;color:var(--ink);}
     <button class="primary" onclick="location.href='outreach.html'">+ Add via Community Outreach →</button>
     <button onclick="reload()" id="refreshBtn">⟳ Refresh</button>
     <span class="count" id="count">Connecting…</span>
+  </div>
+
+  <div class="reports" id="reports">
+    <div class="rhead">
+      <div class="rtitle">Giving Reports</div>
+      <div class="perbar" id="perbar">
+        <button data-p="all" class="on" onclick="setPer('all')">All time</button>
+        <button data-p="ytd" onclick="setPer('ytd')">This year</button>
+        <button data-p="90" onclick="setPer('90')">90 days</button>
+        <button data-p="30" onclick="setPer('30')">30 days</button>
+        <span class="sep">|</span>
+        <input type="date" class="dt" id="perFrom" onchange="setCustom()" title="From">
+        <span class="sep">&rarr;</span>
+        <input type="date" class="dt" id="perTo" onchange="setCustom()" title="To">
+      </div>
+    </div>
+    <div class="rgrid" id="rgrid"></div>
   </div>
 
   <div class="board" id="board"></div>
@@ -225,6 +266,81 @@ async function reload(){
   state=data||[]; render();
 }
 
+/* ---------- Giving reports (period-filterable) ---------- */
+const ORG_TYPES=[
+  ["school","School / Education",/school|elementary|middle|high\b|district|\bpto\b|\bpta\b|scholar|education|academy|university|college|elevate/i],
+  ["faith","Church / Faith",/church|catholic|parish|ministry|\bfaith\b|temple|synagogue|congregation|diocese/i],
+  ["animal","Animal Rescue",/animal|\bpet|rescue|humane|\bpaws\b|wildlife/i],
+  ["sports","Sports & Rec",/little league|athletic|sports|baseball|softball|soccer|football|hockey|golf|regatta|booster|park district|\bteam\b|\brec\b|gymnast/i],
+  ["health","Health & Special Needs",/special needs|ability|hospital|hospice|cancer|disab|autism|memory care|\bsenior|wellness|therapy/i],
+  ["arts","Arts & Culture",/\barts?\b|theat|museum|\braue\b|gallery|orchestra|choir|cultur|library/i],
+  ["human","Human Services / Charity",/sparrow|homeless|food (pantry|bank)|crisis|veteran|family service|charit|community service/i],
+  ["community","Community / Civic",/foundation|\bparks?\b|initiative|civic|village of|city of|chamber|rotary|lions|kiwanis|community|neighbor/i],
+];
+const EVENT_TYPES=[
+  ["auction","Auction / Raffle",/auction|raffle|silent|6x6/i],
+  ["golf","Golf outing",/golf|hole sponsor|scramble|outing/i],
+  ["teacher","Teacher / classroom",/teacher|staff appreciat|classroom|elevate|faculty|educator/i],
+  ["fundraiser","Fundraiser",/fundrais|fund rais|benefit|dine.{0,3}share|dine and share|gala/i],
+  ["sponsor","Sponsorship",/sponsor/i],
+  ["event","Event / participation",/\bevent\b|regatta|festival|participation|tournament/i],
+  ["giftcard","Gift cards / product",/gift ?card|gift basket|koozie|shirt|sticker|sweatshirt|merch/i],
+];
+function classify(text,table){const s=String(text||"");for(const row of table){if(row[2].test(s))return row[0];}return "other";}
+function orgType(c){return classify(c.org,ORG_TYPES);}
+function eventType(c){return classify((c.commitment||"")+" "+(c.org||"")+" "+(Array.isArray(c.items)?c.items.map(i=>i.desc).join(" "):""),EVENT_TYPES);}
+const TYPE_LABEL={};[...ORG_TYPES,...EVENT_TYPES].forEach(r=>TYPE_LABEL[r[0]]=r[1]);TYPE_LABEL.other="Other";
+const PIE=["var(--green)","var(--amber)","var(--teal)","var(--blue)","var(--brand)","var(--red)","#8a7b5c","#9b8467","#5f7d49","#6e7468"];
+
+let perFrom=null, perTo=null;
+function inPer(c){const d=c.created_at?new Date(c.created_at):null;if(!d||isNaN(d))return true;const t=d.getTime();if(perFrom!=null&&t<perFrom)return false;if(perTo!=null&&t>perTo)return false;return true;}
+function setPer(p){
+  document.querySelectorAll("#perbar button").forEach(b=>b.classList.toggle("on",b.dataset.p===p));
+  document.getElementById("perFrom").value="";document.getElementById("perTo").value="";
+  const now=new Date();
+  if(p==="all"){perFrom=null;perTo=null;}
+  else if(p==="ytd"){perFrom=new Date(now.getFullYear(),0,1).getTime();perTo=null;}
+  else{const f=new Date();f.setHours(0,0,0,0);f.setDate(f.getDate()-(+p));perFrom=f.getTime();perTo=null;}
+  renderReports();
+}
+function setCustom(){
+  const f=document.getElementById("perFrom").value,tv=document.getElementById("perTo").value;
+  if(!f&&!tv)return;
+  document.querySelectorAll("#perbar button").forEach(b=>b.classList.remove("on"));
+  perFrom=f?new Date(f+"T00:00:00").getTime():null;
+  perTo=tv?new Date(tv+"T23:59:59").getTime():null;
+  renderReports();
+}
+function donut(entries){
+  const tot=entries.reduce((s,e)=>s+e[1],0)||1;let a=-Math.PI/2;const R=46,r=27,cx=54,cy=54;let p="";
+  entries.forEach(e=>{const ang=e[1]/tot*2*Math.PI,b=a+ang;
+    const x1=cx+R*Math.cos(a),y1=cy+R*Math.sin(a),x2=cx+R*Math.cos(b),y2=cy+R*Math.sin(b);
+    const xx1=cx+r*Math.cos(b),yy1=cy+r*Math.sin(b),xx2=cx+r*Math.cos(a),yy2=cy+r*Math.sin(a);
+    const lg=ang>Math.PI?1:0;
+    if(e[1]>0)p+=`<path d="M${x1} ${y1} A${R} ${R} 0 ${lg} 1 ${x2} ${y2} L${xx1} ${yy1} A${r} ${r} 0 ${lg} 0 ${xx2} ${yy2} Z" fill="${e[2]}"></path>`;
+    a=b;});
+  return `<svg viewBox="0 0 108 108" width="92" height="92">${p}<text x="54" y="50" text-anchor="middle" font-family="var(--font-num)" font-size="20" fill="var(--ink)">${tot}</text><text x="54" y="66" text-anchor="middle" font-family="var(--font-num)" font-size="9" fill="var(--muted)">DONATIONS</text></svg>`;
+}
+function chartBlock(title,counts){
+  const entries=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]).map((k,i)=>[TYPE_LABEL[k]||k,counts[k],PIE[i%PIE.length]]);
+  if(!entries.length)return `<div class="rchart"><div><div class="ct">${title}</div><div class="rempty">No donations in range.</div></div></div>`;
+  const legend=entries.map(e=>`<div class="li"><i style="background:${e[2]}"></i>${esc(e[0])} &middot; <b>${e[1]}</b></div>`).join("");
+  return `<div class="rchart"><div>${donut(entries)}</div><div><div class="ct">${title}</div><div class="rlegend">${legend}</div></div></div>`;
+}
+function renderReports(){
+  const F=state.filter(inPer);
+  const completed=F.filter(c=>c.stage===3).length;
+  const totalGiving=Math.round(F.reduce((t,c)=>t+approxAmount(c),0));
+  const orgC={},evtC={};
+  F.forEach(c=>{const o=orgType(c);orgC[o]=(orgC[o]||0)+1;const e=eventType(c);evtC[e]=(evtC[e]||0)+1;});
+  const g=document.getElementById("rgrid");if(!g)return;
+  g.innerHTML=
+    `<div class="rkpi"><div class="k">Completed</div><div class="v">${completed}</div><div class="s">picked up</div></div>`+
+    `<div class="rkpi"><div class="k">Total giving</div><div class="v">~$${totalGiving.toLocaleString("en-US")}</div><div class="s">est. in range</div></div>`+
+    chartBlock("By organization",orgC)+
+    chartBlock("By donation type",evtC);
+}
+
 function render(){
   const board=document.getElementById("board");
   board.innerHTML="";
@@ -232,12 +348,14 @@ function render(){
     const cards=state.filter(c=>c.stage===s);
     const col=document.createElement("div");
     col.className="col s"+s;
-    col.innerHTML=`<h2>${(s+1)+" · "+STAGES[s]} <span class="c">${cards.length}</span></h2>`;
+    const colTot=cards.reduce((tt,c)=>tt+approxAmount(c),0);
+    col.innerHTML=`<h2><span>${(s+1)+" · "+STAGES[s]}</span> <span class="cwrap">${colTot>0?`<span class="ctot">~$${Math.round(colTot).toLocaleString("en-US")}</span>`:""}<span class="c">${cards.length}</span></span></h2>`;
     if(!cards.length) col.innerHTML+=`<div class="empty">—</div>`;
     cards.forEach(c=>col.appendChild(cardEl(c)));
     board.appendChild(col);
   }
   document.getElementById("count").textContent=state.length+" donation"+(state.length===1?"":"s")+" tracked";
+  renderReports();
 }
 
 function cardEl(c){

@@ -1029,6 +1029,7 @@ function renderAll(){
     ['Open Pipeline',inrev.length,'in motion','hl',()=>drill('Open pipeline',inrev)],
     ['New this week',freshWk.length,'since Monday','',()=>drill('New this week',freshWk)],
     ['Orgs Supported',orgs,'in period','',()=>drill('Giving — organizations',givingYr)],
+    ['Donations completed',givingYr.length,'picked up · in period','',()=>drill('Donations completed',givingYr)],
     ['Completed',done.length,'fulfilled','',()=>drill('Completed outreach',done)],
     ['Tracked',F.length,'opportunities','',()=>drill('All tracked opportunities',F)],
     ['Recorded Giving',money(val),'$ logged','gold',()=>drill('Recorded giving ($)',F.filter(e=>e._amt>0))],
