@@ -192,6 +192,7 @@ header{background:var(--forest);color:var(--cream);padding:16px 20px}
   </div>
   <div class="kpis" id="kpis"></div>
   <div class="panels">
+    <div class="panel full"><h3>🛠️ What to Fix <span class="hint">negative feedback grouped by issue · click a bar to see the entries</span></h3><div class="bars" id="fixBars"></div></div>
     <div class="panel"><h3>Sentiment Mix <span class="hint">click to view entries</span></h3><div class="donut"><div id="donut"></div><div class="legend" id="donutLegend"></div></div></div>
     <div class="panel"><h3>Feedback by Type <span class="hint" id="typeHint"></span></h3><div class="bars" id="typeBars"></div></div>
     <div class="panel full"><h3>Open Follow-ups <span class="hint">calls/voicemails not yet resolved · de-identified</span></h3><table class="dash-table" id="openTbl"></table></div>
@@ -651,6 +652,26 @@ function renderPeriodBar(){
 }
 function setPeriod(d){periodDays=d;renderPeriodBar();renderAll();}
 
+// "What to fix": auto-group negative feedback into actionable themes by keyword.
+// First matching theme wins (priority order, most specific first). Click a bar
+// to open the entries and verify — themes are a starting point, not gospel.
+const THEMES=[
+  ['temperature','Temperature & doneness',/\b(?:cold|warm|lukewarm|tepid|not hot|reheat|raw|under-?cook|over-?cook|burnt|burned)/i],
+  ['freshness','Freshness',/\b(?:fresh|stale|soggy|expired|best.?by|spoiled|mushy|wilted|day-?old|old\s)/i],
+  ['cleanliness','Cleanliness & smell',/\b(?:smell|odou?r|dirty|sticky|unclean|soap|hygien|sanitar)/i],
+  ['taste','Taste & recipe',/\b(?:dry|bland|salty|too sweet|flavou?r|tast(?:e|ed|es)|chemical|syrup|season|recipe|greasy|oily)/i],
+  ['packaging','Presentation & packaging',/\b(?:packag|container|wrapp|to-?go box|plastic|clamshell|plating|presentation)/i],
+  ['portion','Portion & balance',/\b(?:too many|too much|too few|too little|not enough|portion|skimpy|undersized|oversized)/i],
+  ['accuracy','Order accuracy',/\b(?:wrong|incorrect|missing|only one|menu lists|menu says|lists\b|not as described|repeat(?:ing)? orders)/i],
+  ['availability','Availability / out of stock',/\b(?:ran out|out of|no more|sold out|unavailable|discontinu|bring back|restock|in stock)/i],
+  ['lighting','Lighting',/\b(?:dark|dim|lighting|too bright|looks closed)/i],
+  ['comfort','Comfort & seating',/\b(?:chilly|drafty|draft|cold by|stuffy|seat|chair|cramped|loud|noisy)/i],
+  ['service','Service & attentiveness',/\b(?:service|ignored|rude|slow|long wait|attentive|discriminat|server|under-?staff|QR|ordering|check-?out)/i],
+];
+const TLABEL=Object.fromEntries(THEMES.map(([k,l])=>[k,l]));TLABEL.other='Other / uncategorized';
+function themeOf(e){const t=(e.label||'')+' '+(e.feedback||'')+' '+(e.extra||'');for(const th of THEMES){if(th[2].test(t))return th[0];}return 'other';}
+function drillTheme(key){drill((TLABEL[key]||'Issue')+' — to fix',filtered().filter(e=>e.sentiment==='Negative'&&themeOf(e)===key));}
+
 function renderAll(){
   const F=filtered();
   const _ws=weekStartMon();
@@ -676,6 +697,12 @@ function renderAll(){
   const types=Object.entries(tCounts).sort((a,b)=>b[1]-a[1]); const mx=Math.max(1,...types.map(t=>t[1]));
   $('typeHint').textContent=types.length+' categories';
   $('typeBars').innerHTML=types.slice(0,9).map(([t,n])=>`<div class="bar clk" onclick="drill('${jsId(t)} feedback',filtered().filter(e=>e.type==='${jsId(t)}'))"><div class="bl">${esc(t)}</div><div class="bt"><div class="bf" style="width:${100*n/mx}%;background:var(--mid)"></div></div><div class="bv">${n}</div></div>`).join('');
+
+  // What to Fix — negative feedback grouped into actionable themes
+  const negThemes={}; F.filter(e=>e.sentiment==='Negative').forEach(e=>{const k=themeOf(e);negThemes[k]=(negThemes[k]||0)+1;});
+  const torder=THEMES.map(x=>x[0]).concat('other').filter(k=>negThemes[k]).map(k=>[k,TLABEL[k],negThemes[k]]).sort((a,b)=>b[2]-a[2]);
+  const fmx=Math.max(1,...torder.map(r=>r[2]));
+  $('fixBars').innerHTML=torder.length?torder.map(([k,l,n])=>`<div class="bar clk" onclick="drillTheme('${k}')"><div class="bl">${esc(l)}</div><div class="bt"><div class="bf" style="width:${100*n/fmx}%;background:var(--red)"></div></div><div class="bv">${n}</div></div>`).join(''):`<div style="color:var(--gray);font-size:13px;padding:8px 4px">No negative feedback in this period. 🎉</div>`;
 
   const open=F.filter(e=>e.followup);
   $('openTbl').innerHTML=open.length?`<tr><th>Item</th><th>Type</th><th class="r">Logged</th></tr>`+open.map(o=>`<tr class="clk" onclick="drill('Follow-up',[ALL.find(e=>e.id==='${jsId(o.id)}')])"><td class="nm">${statusDot(o.id)}${esc(o.label)}</td><td>${esc(o.type)}</td><td class="r">${fmtDate(o.date)}</td></tr>`).join(''):`<tr><td style="color:var(--gray);padding:12px 0">Nothing open in this period — all caught up. 🎉</td></tr>`;
