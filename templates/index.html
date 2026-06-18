@@ -7,21 +7,36 @@
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>__CSS__</style>
 <style>
-.flist{max-width:680px;margin:22px auto 0;display:flex;flex-direction:column;gap:14px}
-.fcard{display:flex;align-items:center;gap:16px;background:#fff;border:1.5px solid var(--line,#dcd8be);border-radius:14px;padding:18px 20px;text-decoration:none;color:inherit}
-.fcard:hover{border-color:var(--forest,#363A2E)}
-.fcard .ic{font-size:30px;flex:0 0 auto}
-.fcard .ft{font-family:var(--disp,'Oswald',sans-serif);font-weight:600;letter-spacing:.5px;font-size:18px;color:var(--forest,#363A2E)}
-.fcard .fs{font-size:13.5px;color:var(--mid,#4F5854);margin-top:2px}
-.fcard .arw{margin-left:auto;color:var(--gold,#B68036);font-size:20px}
-.lead{max-width:680px;margin:6px auto 0;color:var(--mid,#4F5854);font-size:14px;text-align:center}
-.dsec{max-width:680px;margin:34px auto 0}
-.dsec .dh{font-family:var(--disp,'Oswald',sans-serif);font-weight:600;letter-spacing:.6px;text-transform:uppercase;font-size:14px;color:var(--forest,#363A2E)}
-.dsec .dd{color:var(--gray,#717F7F);font-size:12.5px;margin:1px 0 10px}
-.fcard.ext .arw{font-size:16px}
-.fcard.coming{opacity:.6;cursor:default}
-.fcard.coming:hover{border-color:var(--line,#dcd8be)}
-.badge{margin-left:auto;font-family:var(--disp,'Oswald',sans-serif);text-transform:uppercase;letter-spacing:.5px;font-size:10px;color:var(--gray,#717F7F);border:1.5px solid var(--line,#dcd8be);border-radius:6px;padding:2px 8px}
+.lead{max-width:940px;margin:26px auto 0;color:var(--mid,#4F5854);font-size:14px;text-align:center}
+/* Paired layout: the FORM (submit) on the left, WHERE IT LANDS (review) on the
+   right, an arrow showing the flow between them. Each row = one form + its board.
+   To add a pair: copy a <div class="prow"> with a left .pcard, a .conn arrow,
+   and a right .pcard.review. External links use class "ext" + arw "↗". */
+.pairsec{max-width:940px;margin:30px auto 0}
+.pairsec .dh{font-family:var(--disp,'Oswald',sans-serif);font-weight:600;letter-spacing:.6px;text-transform:uppercase;font-size:14px;color:var(--forest,#363A2E)}
+.pairsec .dd{color:var(--gray,#717F7F);font-size:12.5px;margin:1px 0 0}
+.colhead{display:grid;grid-template-columns:1fr 46px 1fr;gap:10px;margin:16px 0 8px}
+.colhead span{font-family:var(--disp,'Oswald',sans-serif);text-transform:uppercase;letter-spacing:1.2px;font-size:11px;color:var(--gray,#717F7F)}
+.prow{display:grid;grid-template-columns:1fr 46px 1fr;gap:10px;align-items:stretch;margin-bottom:12px}
+.pcard{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid var(--line,#dcd8be);border-radius:13px;padding:14px 16px;text-decoration:none;color:inherit}
+.pcard:hover{border-color:var(--forest,#363A2E)}
+.pcard .ic{font-size:24px;flex:0 0 auto}
+.pcard .ft{display:block;font-family:var(--disp,'Oswald',sans-serif);font-weight:600;letter-spacing:.4px;font-size:15px;color:var(--forest,#363A2E);line-height:1.15}
+.pcard .fs{display:block;font-size:12px;color:var(--mid,#4F5854);margin-top:3px;line-height:1.35}
+.pcard .arw{margin-left:auto;color:var(--gold,#B68036);font-size:18px;flex:0 0 auto}
+.pcard.review{background:#FBF8EC;border-color:#E7E0C4}
+.pcard.review .ft{color:#4a5340}
+.conn{display:flex;align-items:center;justify-content:center;color:var(--gold,#B68036);font-size:22px}
+.standalone{max-width:940px;margin:14px auto 0;display:flex;flex-direction:column;gap:12px}
+.scard{display:flex;align-items:center;gap:14px;background:#fff;border:1.5px solid var(--line,#dcd8be);border-radius:13px;padding:14px 18px;text-decoration:none;color:inherit}
+.scard:hover{border-color:var(--forest,#363A2E)}
+.scard .ic{font-size:24px}.scard .ft{display:block;font-family:var(--disp,'Oswald',sans-serif);font-weight:600;letter-spacing:.4px;font-size:15px;color:var(--forest,#363A2E)}
+.scard .fs{display:block;font-size:12.5px;color:var(--mid,#4F5854);margin-top:2px}.scard .arw{margin-left:auto;color:var(--gold,#B68036);font-size:18px}
+@media(max-width:720px){
+  .colhead{display:none}
+  .prow{grid-template-columns:1fr;gap:6px;margin-bottom:20px}
+  .conn{transform:rotate(90deg);font-size:18px;margin:-3px 0}
+}
 </style>
 </head>
 <body>
@@ -33,100 +48,116 @@
 <div class="wrap">
   <div class="title" style="text-align:center">
     <div class="g1" style="font-family:var(--disp);font-weight:700;letter-spacing:1px;font-size:30px;color:var(--forest)">LAKE ROOTS FORMS</div>
-    <div class="g2" style="color:var(--mid);font-size:14px">choose a form to get started</div>
+    <div class="g2" style="color:var(--mid);font-size:14px">each form, paired with where its submissions land</div>
   </div>
+
   <!-- ============================================================
-       GROUPED BY AUDIENCE.
-       Guest & Community = guest-facing / external (anyone can submit).
-       Staff = internal (the team; these live with the systems they serve).
-       To add a form: copy a <a class="fcard ..."> card. Hosted-in-hub pages
-       use href="page.html" with arw "→"; external/Google-Form or other-site
-       links use class "fcard ext", target/rel, and arw "↗".
+       PAIRED BY FLOW: form (submit, left) → its review board (right).
+       Left .pcard = the public/shareable form. Right .pcard.review = the
+       internal board where submissions land (manager sign-in). External
+       links use class "ext" + arw "↗"; in-site links use arw "→".
        ============================================================ -->
-  <div class="dsec" style="margin-top:22px">
+  <div class="pairsec" style="margin-top:24px">
     <div class="dh">Guest, Community &amp; Vendors</div>
-    <div class="dd">Open to everyone — guests, community partners, performers, and vendors.</div>
-    <div class="flist">
-      <a class="fcard" href="feedback.html">
+    <div class="dd">Open to everyone — guests, community partners, performers &amp; vendors. Submissions land on the team's review boards.</div>
+    <div class="colhead"><span>The form — open to share</span><span></span><span>Where it lands — manager sign-in</span></div>
+
+    <div class="prow">
+      <a class="pcard" href="feedback.html">
         <span class="ic">💬</span>
-        <span><span class="ft">Guest Experience Feedback</span><span class="fs">Share a compliment, concern, or idea about a recent visit.</span></span>
+        <span><span class="ft">Guest Experience Feedback</span><span class="fs">A compliment, concern, or idea about a visit.</span></span>
         <span class="arw">→</span>
       </a>
-      <a class="fcard" href="partner.html">
+      <div class="conn">→</div>
+      <a class="pcard review" href="guest-experience.html">
+        <span class="ic">💬</span>
+        <span><span class="ft">Guest Experience — Review</span><span class="fs">Sentiment, follow-ups &amp; notes.</span></span>
+        <span class="arw">→</span>
+      </a>
+    </div>
+
+    <div class="prow">
+      <a class="pcard" href="partner.html">
         <span class="ic">🤝</span>
-        <span><span class="ft">Community Partnership Inquiry</span><span class="fs">Donation requests, collaborations, and outreach opportunities.</span></span>
+        <span><span class="ft">Community Partnership Inquiry</span><span class="fs">Donations, collaborations &amp; outreach.</span></span>
         <span class="arw">→</span>
       </a>
-      <a class="fcard" href="music.html">
+      <div class="conn">→</div>
+      <a class="pcard review" href="community-outreach.html">
+        <span class="ic">🤝</span>
+        <span><span class="ft">Community &amp; Partnerships — Review</span><span class="fs">Pipeline, status &amp; giving.</span></span>
+        <span class="arw">→</span>
+      </a>
+    </div>
+
+    <div class="prow">
+      <a class="pcard" href="music.html">
         <span class="ic">🎶</span>
-        <span><span class="ft">Live Music Inquiry</span><span class="fs">Musicians, DJs, artists &amp; authors who want to play Lake Roots.</span></span>
+        <span><span class="ft">Live Music Inquiry</span><span class="fs">Musicians, DJs, artists &amp; authors.</span></span>
         <span class="arw">→</span>
       </a>
-      <a class="fcard" href="vendor.html">
+      <div class="conn">→</div>
+      <a class="pcard review" href="artists-live-music.html">
+        <span class="ic">🎶</span>
+        <span><span class="ft">Artists &amp; Live Music — Review</span><span class="fs">Booking pipeline &amp; notes.</span></span>
+        <span class="arw">→</span>
+      </a>
+    </div>
+
+    <div class="prow">
+      <a class="pcard" href="vendor.html">
         <span class="ic">📦</span>
-        <span><span class="ft">Vendor Inquiry</span><span class="fs">Market vendors &amp; suppliers interested in selling in our market.</span></span>
+        <span><span class="ft">Vendor Inquiry</span><span class="fs">Makers &amp; suppliers for our market.</span></span>
+        <span class="arw">→</span>
+      </a>
+      <div class="conn">→</div>
+      <a class="pcard review" href="vendor-review.html">
+        <span class="ic">📦</span>
+        <span><span class="ft">Vendor Inquiries — Review</span><span class="fs">Pipeline, docs &amp; notes.</span></span>
         <span class="arw">→</span>
       </a>
     </div>
   </div>
 
-  <div class="dsec">
+  <div class="pairsec">
     <div class="dh">Staff &amp; Operations</div>
     <div class="dd">For the team — these live with the systems they serve.</div>
-    <div class="flist">
-      <a class="fcard ext" href="https://lakerootsplaybook.netlify.app/incident-report.html" target="_blank" rel="noopener">
+    <div class="colhead"><span>The form — log it</span><span></span><span>Where it lands — manager sign-in</span></div>
+
+    <div class="prow">
+      <a class="pcard ext" href="https://lakerootsplaybook.netlify.app/incident-report.html" target="_blank" rel="noopener">
         <span class="ic">⚠️</span>
-        <span><span class="ft">Incident / Equipment Report</span><span class="fs">Report damage, injuries, equipment issues, or safety concerns. Lives in the SOP Playbook.</span></span>
+        <span><span class="ft">Incident / Equipment Report</span><span class="fs">Damage, injuries, equipment &amp; safety. SOP Playbook.</span></span>
         <span class="arw">↗</span>
       </a>
-      <a class="fcard" href="service.html">
-        <span class="ic">🧰</span>
-        <span><span class="ft">Service / Maintenance Report</span><span class="fs">Log a completed service, repair, or maintenance visit — what was done, to what, and by whom.</span></span>
+      <div class="conn">→</div>
+      <a class="pcard review" href="incident-review.html">
+        <span class="ic">⚠️</span>
+        <span><span class="ft">Incident / Equipment — Review</span><span class="fs">Status, notes &amp; resolution.</span></span>
         <span class="arw">→</span>
       </a>
     </div>
-  </div>
 
-  <!-- ============================================================
-       TEAM — REVIEW & SUBMISSIONS.
-       Internal: each card opens where a form's submissions land for
-       review. Icons mirror the form cards above so the pairing is obvious.
-       Hosted review dashboards (this site) use href="page.html" + arw "→";
-       dashboards on the hub and Google Sheets use class "fcard ext",
-       target/rel, and arw "↗". Access controls are TODO (tracked separately).
-       ============================================================ -->
-  <div class="dsec">
-    <div class="dh">Team — Review &amp; Submissions</div>
-    <div class="dd">For the team — where each form's submissions land. Internal; access controls coming later.</div>
-    <div class="flist">
-      <a class="fcard" href="artists-live-music.html">
-        <span class="ic">🎶</span>
-        <span><span class="ft">Artists &amp; Live Music — Review</span><span class="fs">Performer, DJ &amp; artist inquiries — booking pipeline &amp; notes.</span></span>
-        <span class="arw">→</span>
-      </a>
-      <a class="fcard" href="guest-experience.html">
-        <span class="ic">💬</span>
-        <span><span class="ft">Guest Experience — Review</span><span class="fs">Guest compliments, concerns &amp; ideas — sentiment, follow-ups &amp; notes.</span></span>
-        <span class="arw">→</span>
-      </a>
-      <a class="fcard" href="community-outreach.html">
-        <span class="ic">🤝</span>
-        <span><span class="ft">Community &amp; Partnerships — Review</span><span class="fs">Donation requests &amp; partnership inquiries — pipeline, status &amp; giving.</span></span>
-        <span class="arw">→</span>
-      </a>
-      <a class="fcard" href="vendor-review.html">
-        <span class="ic">📦</span>
-        <span><span class="ft">Vendor Inquiries — Review</span><span class="fs">Market vendor &amp; supplier submissions — pipeline, docs &amp; notes.</span></span>
-        <span class="arw">→</span>
-      </a>
-      <a class="fcard" href="incident-review.html">
-        <span class="ic">⚠️</span>
-        <span><span class="ft">Incident / Equipment — Review</span><span class="fs">Reported damage, injuries &amp; equipment issues — status, notes &amp; resolution. Manager sign-in.</span></span>
-        <span class="arw">→</span>
-      </a>
-      <a class="fcard" href="service-review.html">
+    <div class="prow">
+      <a class="pcard" href="service.html">
         <span class="ic">🧰</span>
-        <span><span class="ft">Service &amp; Maintenance — Review</span><span class="fs">Completed service, repair &amp; maintenance visits — by area &amp; provider, follow-ups &amp; notes.</span></span>
+        <span><span class="ft">Service / Maintenance Report</span><span class="fs">A completed service, repair or maintenance visit.</span></span>
+        <span class="arw">→</span>
+      </a>
+      <div class="conn">→</div>
+      <a class="pcard review" href="service-review.html">
+        <span class="ic">🧰</span>
+        <span><span class="ft">Service &amp; Maintenance — Review</span><span class="fs">By area &amp; provider, follow-ups &amp; notes.</span></span>
+        <span class="arw">→</span>
+      </a>
+    </div>
+
+    <!-- Standalone board — no public form of its own; fed by approved
+         Community Partnership commitments. -->
+    <div class="standalone">
+      <a class="scard review" href="donations.html">
+        <span class="ic">🎁</span>
+        <span><span class="ft">Donation Fulfillment Board</span><span class="fs">Approved donations to prep &amp; deliver — fed by the Community Partnership review.</span></span>
         <span class="arw">→</span>
       </a>
     </div>
