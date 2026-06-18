@@ -614,6 +614,8 @@ function jsId(s){return String(s==null?'':s)
   .replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/[\r\n]/g,' ');}
 function parseD(s){const m=(s||'').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);return m?new Date(m[3],m[1]-1,m[2]):null;}
 function fmtDate(s){const d=parseD(s);return d?d.toLocaleDateString('en-US',{month:'short',day:'numeric'}):(s||'—');}
+function weekStartMon(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d.getTime();}
+function toDate(s){if(!s)return null;if(/^\d{4}-\d{2}-\d{2}$/.test(s))return new Date(s+'T00:00:00');const m=String(s).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);if(m)return new Date(+m[3],+m[1]-1,+m[2]);const d=new Date(s);return isNaN(d)?null:d;}
 function inPeriod(e){if(!periodDays)return true;const d=parseD(e.date);if(!d)return true;return (Date.now()-d.getTime())/86400000<=periodDays;}
 function matchSearch(e){if(!SEARCH)return true;return ((e.label||'')+' '+(e.feedback||'')+' '+(e.extra||'')+' '+(e.type||'')+' '+(e.sentiment||'')).toLowerCase().includes(SEARCH);}
 function filtered(){return ALL.filter(e=>!e.deleted&&inPeriod(e)&&matchSearch(e));}
@@ -651,9 +653,12 @@ function setPeriod(d){periodDays=d;renderPeriodBar();renderAll();}
 
 function renderAll(){
   const F=filtered();
+  const _ws=weekStartMon();
+  const freshWk=F.filter(e=>{const d=toDate(e.date);return d&&d.getTime()>=_ws&&d.getTime()<_ws+6048e5;});
   const cnt=s=>F.filter(e=>e.sentiment===s).length;
   const kpis=[
     ['Total Feedback',F.length,(periodDays?'in period':'all time'),'hl',()=>drill('All feedback',F)],
+    ['New this week',freshWk.length,'since Monday','',()=>drill('New this week',freshWk)],
     ['Negative',cnt('Negative'),'to address','',()=>drill('Negative feedback',F.filter(e=>e.sentiment==='Negative'))],
     ['Ideas',cnt('Idea'),'suggestions','',()=>drill('Ideas & suggestions',F.filter(e=>e.sentiment==='Idea'))],
     ['Positive',cnt('Positive'),'shout-outs','',()=>drill('Positive feedback',F.filter(e=>e.sentiment==='Positive'))],

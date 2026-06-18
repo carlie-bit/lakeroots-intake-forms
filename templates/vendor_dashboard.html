@@ -137,6 +137,7 @@ function getUser(){return (localStorage.getItem('lr_user')||'').trim();}
 function setUser(v){localStorage.setItem('lr_user',(v||'').trim());}
 function today(){return new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 function fmtDate(s){const d=s?new Date(s):null;return d&&!isNaN(d)?d.toLocaleDateString('en-US',{month:'short',day:'numeric'}):'—';}
+function weekStartMon(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d.getTime();}
 function inPeriod(e){if(!periodDays)return true;const d=new Date(e.created_at);if(isNaN(d))return true;return (Date.now()-d.getTime())/86400000<=periodDays;}
 function clearSearch(){SEARCH='';const q=$('q');if(q)q.value='';renderAll();}
 
@@ -161,11 +162,15 @@ function bars(el,entries,colf,clickf){const mx=Math.max(1,...entries.map(e=>e[1]
 
 function renderAll(){
   const F=filtered();
+  const _ws=weekStartMon();
+  // exclude migrated rows: their created_at is the import time, not a real submit date
+  const freshWk=F.filter(e=>e.source!=='legacy'&&e.source!=='sheet').filter(e=>{const d=e.created_at?new Date(e.created_at):null;return d&&!isNaN(d)&&d.getTime()>=_ws&&d.getTime()<_ws+6048e5;});
   const news=F.filter(e=>['new','reviewing'].includes(e.status));
   const appr=F.filter(e=>['approved','onboarded'].includes(e.status));
   const food=F.filter(e=>e.food);
   const kpis=[
     ['New to review',news.length,'fresh + reviewing','hl',()=>drill('New — needs review',news)],
+    ['New this week',freshWk.length,'since Monday','',()=>drill('New this week',freshWk)],
     ['Approved',appr.length,'approved + onboarded','gold',()=>drill('Approved vendors',appr)],
     ['Food vendors',food.length,'need compliance docs','',()=>drill('Food vendors',food)],
     ['Total',F.length,'vendor inquiries','',()=>drill('All vendors',F)],

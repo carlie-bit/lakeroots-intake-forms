@@ -315,6 +315,8 @@ function st(id){return (ACTIONS[id]||{}).status||'new';}
 function stLabel(s){return SLABEL[s]||'New';}
 function parseD(s){const m=(s||'').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);return m?new Date(m[3],m[1]-1,m[2]):null;}
 function fmtDate(s){const d=parseD(s);return d?d.toLocaleDateString('en-US',{month:'short',day:'numeric'}):(s||'—');}
+function weekStartMon(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d.getTime();}
+function toDate(s){if(!s)return null;if(/^\d{4}-\d{2}-\d{2}$/.test(s))return new Date(s+'T00:00:00');const m=String(s).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);if(m)return new Date(+m[3],+m[1]-1,+m[2]);const d=new Date(s);return isNaN(d)?null:d;}
 function today(){return new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 function inPeriod(e){if(!periodDays)return true;const d=parseD(e.submitted);if(!d)return true;return (Date.now()-d.getTime())/86400000<=periodDays;}
 const PERIODS=[['All time',0],['12 mo',365],['6 mo',183],['3 mo',92],['30 days',30]];
@@ -354,12 +356,15 @@ function statusDot(id){const s=st(id);return `<span class="sdot ${s}"></span>`;}
 
 function renderAll(){
   const F=filtered();
+  const _ws=weekStartMon();
+  const freshWk=F.filter(e=>{const d=toDate(e.submitted);return d&&d.getTime()>=_ws&&d.getTime()<_ws+6048e5;});
   const bucket=s=>F.filter(e=>st(e.id)===s);
   const isNew=e=>st(e.id)==='new', isConv=e=>['reviewing','contacted'].includes(st(e.id));
   const news=F.filter(isNew), conv=F.filter(isConv), booked=bucket('booked'), perf=bucket('performed'), np=bucket('not_proceeding');
   const acts=new Set(F.map(e=>(e.act||'').toLowerCase())).size;
   const kpis=[
     ['New to review',news.length,'fresh inquiries','hl',()=>drill('New — needs review',news)],
+    ['New this week',freshWk.length,'since Monday','',()=>drill('New this week',freshWk)],
     ['In conversation',conv.length,'reviewing + contacted','',()=>drill('In conversation',conv)],
     ['Booked',booked.length,'confirmed','gold',()=>drill('Booked',booked)],
     ['Performed',perf.length,'played the room','',()=>drill('Performed',perf)],

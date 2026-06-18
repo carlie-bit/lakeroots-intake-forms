@@ -258,6 +258,8 @@ async function loadDonations(){if(!sb)return;const {data,error}=await sb.from('d
   (data||[]).forEach(r=>{if(!r.submission_id)return;DON[r.submission_id]={stage:r.stage,items:r.items,commitment:r.commitment};if(Number(r.stage)===3)DON_DONE.add(r.submission_id);});}
 function parseD(s){const m=(s||'').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);return m?new Date(m[3],m[1]-1,m[2]):null;}
 function fmtDate(s){const d=parseD(s);return d?d.toLocaleDateString('en-US',{month:'short',day:'numeric'}):(s||'—');}
+function weekStartMon(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d.getTime();}
+function toDate(s){if(!s)return null;if(/^\d{4}-\d{2}-\d{2}$/.test(s))return new Date(s+'T00:00:00');const m=String(s).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);if(m)return new Date(+m[3],+m[1]-1,+m[2]);const d=new Date(s);return isNaN(d)?null:d;}
 function today(){return new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 function inPeriod(e){if(!periodDays)return true;const d=parseD(e.date);if(!d)return true;return (Date.now()-d.getTime())/86400000<=periodDays;}
 let COLF={org:'',type:new Set(),status:new Set()};
@@ -329,6 +331,8 @@ function setPeriod(d){periodDays=d;renderPeriodBar();renderAll();}
 function renderAll(){
   syncBuckets();
   const F=filtered();
+  const _ws=weekStartMon();
+  const freshWk=F.filter(e=>{const d=toDate(e.submitted);return d&&d.getTime()>=_ws&&d.getTime()<_ws+6048e5;});
   const inrev=F.filter(e=>['In Review','Approved','On Hold'].includes(e.bucket));
   const done=F.filter(e=>e.bucket==='Completed');
   const givingYr=done.filter(e=>isDonationType(e.type));   // donations + sponsorships + fundraisers
@@ -337,6 +341,7 @@ function renderAll(){
   const val=givingYr.reduce((s,e)=>s+(e._amt||0),0);
   const kpis=[
     ['Open Pipeline',inrev.length,'in motion','hl',()=>drill('Open pipeline',inrev)],
+    ['New this week',freshWk.length,'since Monday','',()=>drill('New this week',freshWk)],
     ['Orgs Supported',orgs,'in period','',()=>drill('Giving — organizations',givingYr)],
     ['Completed',done.length,'fulfilled','',()=>drill('Completed outreach',done)],
     ['Tracked',F.length,'opportunities','',()=>drill('All tracked opportunities',F)],

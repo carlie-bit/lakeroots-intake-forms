@@ -235,6 +235,8 @@ function cssId(id){return (id||'').replace(/[^a-zA-Z0-9]/g,'');}
 function today(){return new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 function occ(e){return e.occurred_date||e.created_at;}
 function fmtDate(s){const d=s?new Date(s+(/^\d{4}-\d{2}-\d{2}$/.test(s)?'T00:00:00':'')):null;return d&&!isNaN(d)?d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';}
+function weekStartMon(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d.getTime();}
+function toDate(s){if(!s)return null;if(/^\d{4}-\d{2}-\d{2}$/.test(s))return new Date(s+'T00:00:00');const d=new Date(s);return isNaN(d)?null:d;}
 function inPeriod(e){if(!periodDays)return true;const d=new Date(occ(e));if(isNaN(d))return true;return (Date.now()-d.getTime())/86400000<=periodDays;}
 function clearSearch(){SEARCH='';const q=$('q');if(q)q.value='';renderAll();}
 function isInjury(e){return INJURY.test(e.nature||'')||INJURY.test(e.description||'');}
@@ -255,11 +257,14 @@ function bars(el,entries,colf,clickf){const mx=Math.max(1,...entries.map(e=>e[1]
 
 function renderAll(){
   const F=filtered();
+  const _ws=weekStartMon();
+  const freshWk=F.filter(e=>{const d=toDate(occ(e));return d&&d.getTime()>=_ws&&d.getTime()<_ws+6048e5;});
   const open=F.filter(e=>e.status!=='resolved');
   const resolved=F.filter(e=>e.status==='resolved');
   const inj=F.filter(isInjury);
   const kpis=[
     ['Open',open.length,'need attention','hl',()=>drill('Open incidents',open)],
+    ['New this week',freshWk.length,'since Monday','',()=>drill('New this week',freshWk)],
     ['Resolved',resolved.length,'closed out','',()=>drill('Resolved incidents',resolved)],
     ['Injuries',inj.length,'people involved','gold',()=>drill('Injuries',inj)],
     ['Total',F.length,'incidents','',()=>drill('All incidents',F)],

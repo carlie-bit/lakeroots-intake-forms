@@ -121,6 +121,8 @@ function getUser(){return (localStorage.getItem('lr_user')||'').trim();}
 function setUser(v){localStorage.setItem('lr_user',(v||'').trim());}
 function today(){return new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
 function svcDate(e){return e.service_date||e.created_at;}
+function weekStartMon(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d.getTime();}
+function toDate(s){if(!s)return null;if(/^\d{4}-\d{2}-\d{2}$/.test(s))return new Date(s+'T00:00:00');const d=new Date(s);return isNaN(d)?null:d;}
 function fmtDate(s){const d=s?new Date(s+(/^\d{4}-\d{2}-\d{2}$/.test(s)?'T00:00:00':'')):null;return d&&!isNaN(d)?d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';}
 function inPeriod(e){if(!periodDays)return true;const d=new Date(svcDate(e));if(isNaN(d))return true;return (Date.now()-d.getTime())/86400000<=periodDays;}
 function clearSearch(){SEARCH='';const q=$('q');if(q)q.value='';renderAll();}
@@ -144,11 +146,14 @@ function bars(el,entries,colf,clickf){const mx=Math.max(1,...entries.map(e=>e[1]
 
 function renderAll(){
   const F=filtered();
+  const _ws=weekStartMon();
+  const freshWk=F.filter(e=>{const d=toDate(svcDate(e));return d&&d.getTime()>=_ws&&d.getTime()<_ws+6048e5;});
   const repairs=F.filter(e=>e.type==='Repair');
   const open=F.filter(needsFollowup);
   const month=F.filter(e=>{const d=new Date(svcDate(e));return !isNaN(d)&&(Date.now()-d.getTime())/86400000<=30;});
   const kpis=[
     ['Needs follow-up',open.length,'unresolved visits','hl',()=>drill('Needs follow-up',open)],
+    ['New this week',freshWk.length,'since Monday','',()=>drill('New this week',freshWk)],
     ['Repairs',repairs.length,'vs. scheduled','gold',()=>drill('Repairs',repairs)],
     ['Last 30 days',month.length,'recent visits','',()=>drill('Last 30 days',month)],
     ['Total',F.length,'service reports','',()=>drill('All reports',F)],
