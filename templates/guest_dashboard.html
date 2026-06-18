@@ -90,6 +90,8 @@
 .dchips button{font-size:12.5px}
 .cmt,.cmt .tx,.addcmt input{font-size:13.5px}
 .sdetail input,.sdetail select,.sdetail textarea{font-size:14px}
+.addbtn{border:1.5px solid var(--forest);background:var(--forest);color:var(--cream);border-radius:999px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:var(--disp);text-transform:uppercase;letter-spacing:.5px}
+.srctag{font-size:10px;font-family:var(--disp);text-transform:uppercase;letter-spacing:.5px;color:var(--forest);border:1px solid var(--line);border-radius:6px;padding:1px 6px;margin-left:5px}
 </style>
 </head>
 <body>
@@ -116,6 +118,7 @@
   </div>
   <div class="topbar" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
     <div class="periodbar" id="periodbar"><span class="pl">Period</span></div>
+    <button class="addbtn" onclick="openReview()">+ Log a review</button>
     <div class="whoami">You: <input id="who" placeholder="your name" oninput="setUser(this.value)"></div>
     <button class="logoutbtn" id="logoutBtn" onclick="logout()">Log out</button>
   </div>
@@ -148,6 +151,26 @@
     <div class="mh"><div class="mt" id="mTitle">Entries</div><button class="mx" onclick="closeDrill()">×</button></div>
     <div class="mc" id="mCount"></div>
     <div id="mBody"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="reviewBg" onclick="if(event.target===this)closeReview()">
+  <div class="modal">
+    <div class="mh"><div class="mt">Log a review</div><button class="mx" onclick="closeReview()">×</button></div>
+    <div class="mc">Paste a review from Google, Yelp, Facebook, etc. It flows into the sentiment mix &amp; What-to-Fix themes like any feedback.</div>
+    <div class="sdetail" style="margin-top:8px">
+      <div class="two">
+        <div><label>Source</label><select id="rv_src"><option>Google</option><option>Yelp</option><option>Facebook</option><option>TripAdvisor</option><option>Other</option></select></div>
+        <div><label>Rating</label><select id="rv_rating"><option value="5">★★★★★ (5)</option><option value="4">★★★★ (4)</option><option value="3">★★★ (3)</option><option value="2">★★ (2)</option><option value="1">★ (1)</option></select></div>
+      </div>
+      <div class="two">
+        <div><label>Reviewer <span style="text-transform:none;letter-spacing:0;color:var(--gray)">— optional</span></label><input id="rv_name" placeholder="Name or handle"></div>
+        <div><label>Date (M/D/YYYY)</label><input id="rv_date" placeholder="e.g. 6/17/2026"></div>
+      </div>
+      <label>Review text</label><textarea id="rv_text" placeholder="Paste the review…"></textarea>
+      <div class="row"><button onclick="saveReview()">Add review</button></div>
+      <div class="nouser" id="rv_err"></div>
+    </div>
   </div>
 </div>
 
@@ -292,7 +315,7 @@ function drill(title,list){
   $('mBody').innerHTML=list.map(e=>{
     const a=ACTIONS[e.id]||{};
     return `<div class="dentry" data-id="${esc(e.id)}">
-      <div class="dhead">${fmtDate(e.date)} · ${esc(e.type)} · ${e.guests||0} guest${e.guests===1?'':'s'} · ${esc(e.sentiment)}</div>
+      <div class="dhead">${fmtDate(e.date)} · ${esc(e.type)} · ${e.guests||0} guest${e.guests===1?'':'s'} · ${esc(e.sentiment)}${REVIEW_SOURCES.includes(e.source)?`<span class="srctag">${esc(srcLabel(e.source))}</span>`:''}</div>
       <div class="dlabel">${esc(e.label)} ${e.sid?`<a class="editlink" onclick="editEntry('${jsId(e.id)}');return false">✎ edit details</a>`:''}</div>
       <div id="ed-${cssId(e.id)}"></div>
       ${e.feedback&&e.feedback!==e.label?`<div id="fb-${cssId(e.id)}" style="font-size:12.5px;color:var(--mid);margin:-2px 0 6px;white-space:pre-wrap">${esc(e.feedback)}</div>`:''}
@@ -391,8 +414,32 @@ function mapFb(r){
   return {id:r.legacy_key||r.id, sid:r.id, date, month,
     sentiment:r.sentiment||'Other', type:r.type||'Other', guests:r.guests||0,
     label:r.label||(r.feedback||'').slice(0,90),
-    feedback:r.feedback||'', extra:r.extra||'',
+    feedback:r.feedback||'', extra:r.extra||'', source:r.source||'web',
     followup:!!(r.followup||(r.is_call&&r.resolved!=='Yes')), call:!!r.is_call, deleted:!!r.deleted_at};
+}
+
+/* ---- log an external review (Google / Yelp / Facebook / …) ---- */
+const REVIEW_SOURCES=['google','yelp','facebook','tripadvisor'];
+function srcLabel(s){return ({google:'Google',yelp:'Yelp',facebook:'Facebook',tripadvisor:'TripAdvisor'})[s]||(s?s[0].toUpperCase()+s.slice(1):'');}
+function todayMD(){const d=new Date();return (d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear();}
+function sentFromRating(r){r=+r;return r>=4?'Positive':(r<=2?'Negative':'Other');}
+function openReview(){$('rv_date').value=todayMD();$('rv_err').style.display='none';$('reviewBg').classList.add('open');}
+function closeReview(){$('reviewBg').classList.remove('open');}
+async function saveReview(){
+  const text=($('rv_text').value||'').trim();const err=$('rv_err');
+  if(!text){err.textContent='Paste the review text first.';err.style.display='block';return;}
+  if(!sb){err.textContent='Open the live dashboard to add reviews.';err.style.display='block';return;}
+  err.style.display='none';
+  const src=$('rv_src').value;const rating=$('rv_rating').value;const name=($('rv_name').value||'').trim();
+  const oneLine=text.replace(/\s+/g,' ');
+  const row={fb_date:($('rv_date').value||'').trim()||todayMD(), sentiment:sentFromRating(rating),
+    type:'Review', guests:1, label:(name?name+': ':'')+oneLine.slice(0,80)+(oneLine.length>80?'…':''),
+    feedback:text, extra:[srcLabel(src.toLowerCase())+' review',rating+'★',name&&('by '+name)].filter(Boolean).join(' · '),
+    source:src.toLowerCase()};
+  const {data,error}=await sb.from('feedback_submissions').insert(row).select().single();
+  if(error){err.textContent='Could not save: '+error.message;err.style.display='block';return;}
+  ALL.unshift(mapFb(data));['rv_text','rv_name'].forEach(i=>$(i).value='');
+  renderAll();closeReview();drill('Feedback',[ALL[0]]);
 }
 async function showContact(id){const e=ALL.find(x=>x.id===id);if(!e||!e.sid||!sb)return;
   const el=$('ct-'+cssId(id));
