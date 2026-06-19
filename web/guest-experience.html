@@ -101,6 +101,7 @@ header{background:var(--forest);color:var(--cream);padding:16px 20px}
 .dash-table tr.clk:hover td{background:var(--sand)}
 .sdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
 .sdot.watching{background:var(--gray)} .sdot.planned{background:var(--gold)} .sdot.in_progress{background:#4a6b7c} .sdot.resolved{background:var(--sage)} .sdot.declined{background:#9b8467}
+.sdot.replied{background:var(--sage)} .sdot.shared{background:#4a6b7c} .sdot.featured{background:var(--gold)} .sdot.need_reply{background:var(--red)} .sdot.no_action{background:var(--gray)}
 .modal-bg{position:fixed;inset:0;background:rgba(43,48,38,.5);display:none;align-items:center;justify-content:center;padding:18px;z-index:100}
 .modal-bg.open{display:flex}
 .modal{background:#fff;border-radius:14px;max-width:560px;width:100%;max-height:88vh;overflow:auto;padding:18px 20px}
@@ -116,6 +117,7 @@ header{background:var(--forest);color:var(--cream);padding:16px 20px}
 .dchips button.on{color:#fff;border-color:transparent}
 .dchips button.on[data-s=watching]{background:var(--gray)} .dchips button.on[data-s=planned]{background:var(--gold)}
 .dchips button.on[data-s=in_progress]{background:#4a6b7c} .dchips button.on[data-s=resolved]{background:var(--sage)} .dchips button.on[data-s=declined]{background:#9b8467}
+.dchips button.on[data-s=replied]{background:var(--sage)} .dchips button.on[data-s=shared]{background:#4a6b7c} .dchips button.on[data-s=featured]{background:var(--gold)} .dchips button.on[data-s=need_reply]{background:var(--red)} .dchips button.on[data-s=no_action]{background:var(--gray)}
 .whoami{margin-left:auto;font-family:var(--disp);text-transform:uppercase;letter-spacing:.6px;font-size:10.5px;color:var(--gray);display:flex;align-items:center;gap:6px}
 .whoami input{font-family:var(--body,inherit);text-transform:none;letter-spacing:0;font-size:12px;border:1.5px solid var(--line);border-radius:8px;padding:5px 9px;width:130px}
 .comments{margin:4px 0 8px}
@@ -638,6 +640,10 @@ const mgr=window.supabase?window.supabase.createClient(AUTH_URL,AUTH_KEY,{auth:{
 const $=id=>document.getElementById(id);
 const COL={'Negative':'var(--red)','Idea':'var(--gold)','Positive':'var(--sage)','Other':'var(--gray)','Other / Log':'var(--gray)'};
 const STATUSES=[['watching','Watching'],['planned','Action planned'],['in_progress','In progress'],['resolved','Resolved'],['declined','Decided not to pursue']];
+// Reviews have a different lifecycle than internal feedback — give them their own actions.
+const REVIEW_STATUSES=[['replied','Reply sent'],['shared','Shared with team'],['featured','Featured'],['need_reply','Needs reply'],['no_action','No action needed']];
+function statusesFor(e){return (e&&REVIEW_SOURCES.includes(e.source))?REVIEW_STATUSES:STATUSES;}
+function statusLabel(k){const m=[...STATUSES,...REVIEW_STATUSES].find(x=>x[0]===k);return m?m[1]:'';}
 const PERIODS=[['All time',0],['12 mo',365],['6 mo',183],['3 mo',92],['30 days',30]];
 let ALL=[], ACTIONS={}, periodDays=0, LIVE=false;
 let SEARCH='', sortKey='date', sortDir=-1; // All Feedback table: date desc by default
@@ -771,7 +777,7 @@ function drill(title,list){
       ${e.feedback&&e.feedback!==e.label?`<div id="fb-${cssId(e.id)}" style="font-size:12.5px;color:var(--mid);margin:-2px 0 6px;white-space:pre-wrap">${esc(e.feedback)}</div>`:''}
       ${e.extra?`<div style="font-size:12px;color:var(--gray);margin:0 0 6px;white-space:pre-wrap">${esc(e.extra)}</div>`:''}
       ${e.call&&e.sid?`<div style="margin:0 0 6px;font-size:12px"><b style="color:var(--forest)">Caller:</b> <span id="ct-${cssId(e.id)}" style="color:var(--mid)">loading…</span></div>`:''}
-      <div class="dchips">${STATUSES.map(([k,lbl])=>`<button data-s="${k}" class="${a.status===k?'on':''}" onclick="setStatus('${jsId(e.id)}','${k}',this)">${lbl}</button>`).join('')}</div>
+      <div class="dchips">${statusesFor(e).map(([k,lbl])=>`<button data-s="${k}" class="${a.status===k?'on':''}" onclick="setStatus('${jsId(e.id)}','${k}',this)">${lbl}</button>`).join('')}</div>
       <div class="comments" id="cmts-${cssId(e.id)}">${renderComments(a.comments)}</div>
       <div class="addcmt"><input id="cin-${cssId(e.id)}" placeholder="Add a comment…" onkeydown="if(event.key==='Enter')addComment('${jsId(e.id)}')"><button onclick="addComment('${jsId(e.id)}')">Post</button></div>
       <div class="nouser" id="nu-${cssId(e.id)}">Enter your name (top right) to comment.</div>
