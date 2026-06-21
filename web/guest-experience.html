@@ -131,7 +131,6 @@ header{background:var(--forest);color:var(--cream);padding:16px 20px}
 .nouser{font-size:11px;color:var(--red);margin-top:4px;display:none}
 .filterbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 2px}
 .filterbar input{border:1.5px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;background:#fff;color:var(--ink);flex:1;min-width:200px}
-.filterbar select{border:1.5px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;background:#fff;color:var(--ink);cursor:pointer}
 .filterbar .clearf{font-size:11px;color:var(--gray);cursor:pointer;text-decoration:underline}
 .dash-table th.srt{cursor:pointer;user-select:none;white-space:nowrap}
 .dash-table th.srt:hover{color:var(--forest)}
@@ -206,9 +205,9 @@ header{background:var(--forest);color:var(--cream);padding:16px 20px}
     <div class="whoami">You: <input id="who" placeholder="your name" oninput="setUser(this.value)"></div>
     <button class="logoutbtn" id="logoutBtn" onclick="logout()">Log out</button>
   </div>
+  <div class="periodbar" id="srcbar"><span class="pl">Source</span></div>
   <div class="filterbar">
     <input id="q" placeholder="🔍 Search feedback, type, notes…" oninput="SEARCH=this.value.toLowerCase().trim();renderAll()">
-    <select id="srcFilter" onchange="SRCFILTER=this.value;renderAll()"><option value="">All sources</option></select>
     <span class="clearf" onclick="clearSearch()">clear search</span>
   </div>
   <div class="kpis" id="kpis"></div>
@@ -666,12 +665,17 @@ function inPeriod(e){if(!periodDays)return true;const d=parseD(e.date);if(!d)ret
 function matchSearch(e){if(!SEARCH)return true;return ((e.label||'')+' '+(e.feedback||'')+' '+(e.extra||'')+' '+(e.type||'')+' '+(e.sentiment||'')).toLowerCase().includes(SEARCH);}
 function matchSource(e){return !SRCFILTER||(e.source||'web')===SRCFILTER;}
 function filtered(){return ALL.filter(e=>!e.deleted&&inPeriod(e)&&matchSearch(e)&&matchSource(e));}
-function clearSearch(){SEARCH='';SRCFILTER='';var q=$('q');if(q)q.value='';var sf=$('srcFilter');if(sf)sf.value='';renderAll();}
-function renderSourceFilter(){const sel=$('srcFilter');if(!sel)return;
+function clearSearch(){SEARCH='';SRCFILTER='';var q=$('q');if(q)q.value='';renderAll();}
+function setSrc(s){SRCFILTER=s;renderAll();}
+function renderSourceBar(){const bar=$('srcbar');if(!bar)return;
   const counts={};ALL.filter(e=>!e.deleted).forEach(e=>{const s=e.source||'web';counts[s]=(counts[s]||0)+1;});
-  const keys=Object.keys(counts).sort();
-  sel.innerHTML='<option value="">All sources</option>'+keys.map(s=>`<option value="${esc(s)}"${s===SRCFILTER?' selected':''}>${esc(srcLabel(s))} (${counts[s]})</option>`).join('');
-  if(SRCFILTER&&!counts[SRCFILTER]){SRCFILTER='';sel.value='';}}
+  const keys=Object.keys(counts).sort(), total=keys.reduce((n,k)=>n+counts[k],0);
+  if(SRCFILTER&&!counts[SRCFILTER])SRCFILTER='';
+  if(keys.length<2){bar.style.display='none';bar.innerHTML='';return;} // only one source → nothing to filter
+  bar.style.display='';
+  bar.innerHTML='<span class="pl">Source</span>'
+    +`<button class="${SRCFILTER===''?'on':''}" onclick="setSrc('')">All (${total})</button>`
+    +keys.map(s=>`<button class="${SRCFILTER===s?'on':''}" onclick="setSrc('${jsId(s)}')">${esc(srcLabel(s))} (${counts[s]})</button>`).join('');}
 function sortVal(e,key){if(key==='date'){const d=parseD(e.date);return d?d.getTime():0;}if(key==='guests')return e.guests||0;return (e[key]||'').toString().toLowerCase();}
 function setSort(key){if(sortKey===key){sortDir=-sortDir;}else{sortKey=key;sortDir=(key==='date'||key==='guests')?-1:1;}renderAll();}
 function renderAllTable(F){
@@ -724,7 +728,7 @@ function themeOf(e){const t=(e.label||'')+' '+(e.feedback||'')+' '+(e.extra||'')
 function drillTheme(key){drill((TLABEL[key]||'Issue')+' — to fix',filtered().filter(e=>e.sentiment==='Negative'&&themeOf(e)===key));}
 
 function renderAll(){
-  renderSourceFilter();
+  renderSourceBar();
   const F=filtered();
   const _ws=weekStartMon();
   const freshWk=F.filter(e=>{const d=toDate(e.date);return d&&d.getTime()>=_ws&&d.getTime()<_ws+6048e5;});
