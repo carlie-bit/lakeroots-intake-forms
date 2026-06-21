@@ -84,8 +84,33 @@ header.sop .subtitle{font-style:italic;color:var(--sage);font-size:15px;margin-t
         </div>
       </div>
       <div class="row2">
-        <div><label>Service provider <span class="opt">— company</span></label><input id="f_provider" required maxlength="200" placeholder="e.g. Althoff, Z-Chem, Atosa"></div>
+        <div><label>Service provider <span class="opt">— company</span></label>
+          <select id="f_provider_sel" required onchange="onProvider()">
+            <option value="">Select a provider…</option>
+            <option>Althoff</option>
+            <option>Atosa (Manufacturer)</option>
+            <option>Bug Man</option>
+            <option>Burns Plumbing</option>
+            <option>C&amp;A Commercial Awnings</option>
+            <option>Coke Service</option>
+            <option>Edge Electric</option>
+            <option>Fox Valley Fire &amp; Safety</option>
+            <option>Hopkins Grease Solutions</option>
+            <option>JM Irrigation</option>
+            <option>KNV</option>
+            <option>Morrisroe</option>
+            <option>Tritz Beverage Systems</option>
+            <option>Up 'N Adam</option>
+            <option>Z-Chem</option>
+            <option>Zepole</option>
+            <option>Other / not listed</option>
+          </select>
+        </div>
         <div><label>Technician name <span class="opt">— optional</span></label><input id="f_tech" maxlength="200"></div>
+      </div>
+      <div id="provOtherWrap" class="hideme">
+        <label>Service provider <span class="opt">— new / not listed</span></label>
+        <input id="f_provider_other" maxlength="200" placeholder="Type the company name">
       </div>
     </div></div>
 
@@ -154,6 +179,7 @@ function onArea(){
   }
 }
 function onAsset(){ show('equipOtherWrap', $('f_asset').value===OTHER); }
+function onProvider(){ show('provOtherWrap', $('f_provider_sel').value===OTHER); }
 function onType(){ show('warrantyWrap', $('f_type').value==='Repair'); }
 
 function fmtDate(iso){if(!iso)return null;const [y,m,d]=iso.split('-');return Number(m)+'/'+Number(d)+'/'+y;}
@@ -178,7 +204,9 @@ async function submitForm(ev){
   sub.asset_no=asset_no;
   sub.visit_type=$('f_type').value;
   sub.warranty=$('f_type').value==='Repair'?$('f_warranty').value:'Not applicable';
-  sub.provider=v('f_provider');
+  const provSel=$('f_provider_sel').value;
+  sub.provider=(provSel && provSel!==OTHER)?provSel:v('f_provider_other');
+  if(!sub.provider){err.textContent='Please choose or enter a service provider.';err.style.display='block';return false;}
   sub.technician=v('f_tech');
   sub.report_link=v('f_link');
   sub.description=v('f_desc');
