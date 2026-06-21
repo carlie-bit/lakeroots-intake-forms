@@ -50,6 +50,7 @@
 .nouser{font-size:11px;color:var(--red);margin-top:4px;display:none}
 .filterbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 2px}
 .filterbar input{border:1.5px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;background:#fff;color:var(--ink);flex:1;min-width:200px}
+.filterbar select{border:1.5px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;background:#fff;color:var(--ink);cursor:pointer}
 .filterbar .clearf{font-size:11px;color:var(--gray);cursor:pointer;text-decoration:underline}
 .dash-table th.srt{cursor:pointer;user-select:none;white-space:nowrap}
 .dash-table th.srt:hover{color:var(--forest)}
@@ -126,6 +127,7 @@
   </div>
   <div class="filterbar">
     <input id="q" placeholder="🔍 Search feedback, type, notes…" oninput="SEARCH=this.value.toLowerCase().trim();renderAll()">
+    <select id="srcFilter" onchange="SRCFILTER=this.value;renderAll()"><option value="">All sources</option></select>
     <span class="clearf" onclick="clearSearch()">clear search</span>
   </div>
   <div class="kpis" id="kpis"></div>
@@ -196,7 +198,7 @@ function statusesFor(e){return (e&&REVIEW_SOURCES.includes(e.source))?REVIEW_STA
 function statusLabel(k){const m=[...STATUSES,...REVIEW_STATUSES].find(x=>x[0]===k);return m?m[1]:'';}
 const PERIODS=[['All time',0],['12 mo',365],['6 mo',183],['3 mo',92],['30 days',30]];
 let ALL=[], ACTIONS={}, periodDays=0, LIVE=false;
-let SEARCH='', sortKey='date', sortDir=-1; // All Feedback table: date desc by default
+let SEARCH='', SRCFILTER='', sortKey='date', sortDir=-1; // All Feedback table: date desc by default
 const SORTS=[['date','Date'],['type','Type'],['sentiment','Sentiment'],['guests','Guests']];
 
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
@@ -212,8 +214,14 @@ function weekStartMon(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDa
 function toDate(s){if(!s)return null;if(/^\d{4}-\d{2}-\d{2}$/.test(s))return new Date(s+'T00:00:00');const m=String(s).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);if(m)return new Date(+m[3],+m[1]-1,+m[2]);const d=new Date(s);return isNaN(d)?null:d;}
 function inPeriod(e){if(!periodDays)return true;const d=parseD(e.date);if(!d)return true;return (Date.now()-d.getTime())/86400000<=periodDays;}
 function matchSearch(e){if(!SEARCH)return true;return ((e.label||'')+' '+(e.feedback||'')+' '+(e.extra||'')+' '+(e.type||'')+' '+(e.sentiment||'')).toLowerCase().includes(SEARCH);}
-function filtered(){return ALL.filter(e=>!e.deleted&&inPeriod(e)&&matchSearch(e));}
-function clearSearch(){SEARCH='';var q=$('q');if(q)q.value='';renderAll();}
+function matchSource(e){return !SRCFILTER||(e.source||'web')===SRCFILTER;}
+function filtered(){return ALL.filter(e=>!e.deleted&&inPeriod(e)&&matchSearch(e)&&matchSource(e));}
+function clearSearch(){SEARCH='';SRCFILTER='';var q=$('q');if(q)q.value='';var sf=$('srcFilter');if(sf)sf.value='';renderAll();}
+function renderSourceFilter(){const sel=$('srcFilter');if(!sel)return;
+  const counts={};ALL.filter(e=>!e.deleted).forEach(e=>{const s=e.source||'web';counts[s]=(counts[s]||0)+1;});
+  const keys=Object.keys(counts).sort();
+  sel.innerHTML='<option value="">All sources</option>'+keys.map(s=>`<option value="${esc(s)}"${s===SRCFILTER?' selected':''}>${esc(srcLabel(s))} (${counts[s]})</option>`).join('');
+  if(SRCFILTER&&!counts[SRCFILTER]){SRCFILTER='';sel.value='';}}
 function sortVal(e,key){if(key==='date'){const d=parseD(e.date);return d?d.getTime():0;}if(key==='guests')return e.guests||0;return (e[key]||'').toString().toLowerCase();}
 function setSort(key){if(sortKey===key){sortDir=-sortDir;}else{sortKey=key;sortDir=(key==='date'||key==='guests')?-1:1;}renderAll();}
 function renderAllTable(F){
@@ -266,6 +274,7 @@ function themeOf(e){const t=(e.label||'')+' '+(e.feedback||'')+' '+(e.extra||'')
 function drillTheme(key){drill((TLABEL[key]||'Issue')+' — to fix',filtered().filter(e=>e.sentiment==='Negative'&&themeOf(e)===key));}
 
 function renderAll(){
+  renderSourceFilter();
   const F=filtered();
   const _ws=weekStartMon();
   const freshWk=F.filter(e=>{const d=toDate(e.date);return d&&d.getTime()>=_ws&&d.getTime()<_ws+6048e5;});
@@ -426,7 +435,7 @@ function mapFb(r){
 
 /* ---- log an external review (Google / Yelp / Facebook / …) ---- */
 const REVIEW_SOURCES=['google','yelp','facebook','tripadvisor'];
-function srcLabel(s){return ({google:'Google',yelp:'Yelp',facebook:'Facebook',tripadvisor:'TripAdvisor'})[s]||(s?s[0].toUpperCase()+s.slice(1):'');}
+function srcLabel(s){return ({google:'Google',yelp:'Yelp',facebook:'Facebook',tripadvisor:'TripAdvisor',web:'Web form',legacy:'Legacy',manual:'Manual',other:'Other'})[s]||(s?s[0].toUpperCase()+s.slice(1):'');}
 function todayMD(){const d=new Date();return (d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear();}
 function sentFromRating(r){r=+r;return r>=4?'Positive':(r<=2?'Negative':'Other');}
 function openReview(){$('rv_date').value=todayMD();$('rv_err').style.display='none';$('reviewBg').classList.add('open');}
