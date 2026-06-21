@@ -94,6 +94,7 @@
 .sdetail input,.sdetail select,.sdetail textarea{font-size:14px}
 .addbtn{border:1.5px solid var(--forest);background:var(--forest);color:var(--cream);border-radius:999px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:var(--disp);text-transform:uppercase;letter-spacing:.5px}
 .srctag{font-size:10px;font-family:var(--disp);text-transform:uppercase;letter-spacing:.5px;color:var(--forest);border:1px solid var(--line);border-radius:6px;padding:1px 6px;margin-left:5px}
+.srclink{font-size:11px;color:var(--forest);text-decoration:underline;margin-left:6px;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -334,7 +335,7 @@ function drill(title,list){
   $('mBody').innerHTML=list.map(e=>{
     const a=ACTIONS[e.id]||{};
     return `<div class="dentry" data-id="${esc(e.id)}">
-      <div class="dhead">${fmtDate(e.date)} · ${esc(e.type)} · ${e.guests||0} guest${e.guests===1?'':'s'} · ${esc(e.sentiment)}${REVIEW_SOURCES.includes(e.source)?`<span class="srctag">${esc(srcLabel(e.source))}</span>`:''}</div>
+      <div class="dhead">${fmtDate(e.date)} · ${esc(e.type)} · ${e.guests||0} guest${e.guests===1?'':'s'} · ${esc(e.sentiment)}${REVIEW_SOURCES.includes(e.source)?`<span class="srctag">${esc(srcLabel(e.source))}</span>`:''}${srcUrl(e.source)?` <a class="srclink" href="${srcUrl(e.source)}" target="_blank" rel="noopener">Read on ${esc(srcLabel(e.source))} ↗</a>`:''}</div>
       <div class="dlabel">${esc(e.label)} ${e.sid?`<a class="editlink" onclick="editEntry('${jsId(e.id)}');return false">✎ edit details</a>`:''}</div>
       <div id="ed-${cssId(e.id)}"></div>
       ${e.feedback&&e.feedback!==e.label?`<div id="fb-${cssId(e.id)}" style="font-size:12.5px;color:var(--mid);margin:-2px 0 6px;white-space:pre-wrap">${esc(e.feedback)}</div>`:''}
@@ -440,6 +441,11 @@ function mapFb(r){
 /* ---- log an external review (Google / Yelp / Facebook / …) ---- */
 const REVIEW_SOURCES=['google','yelp','facebook','tripadvisor'];
 function srcLabel(s){return ({google:'Google',yelp:'Yelp',facebook:'Facebook',tripadvisor:'TripAdvisor',web:'Web form',legacy:'Legacy',manual:'Manual',other:'Other'})[s]||(s?s[0].toUpperCase()+s.slice(1):'');}
+// Where to read the full review for each external source (Lake Roots' public listings).
+// Email notifications truncate long reviews, so link out to the live source until the
+// Google API sync backfills full text. Google = the business listing (4.8★, Crystal Lake IL).
+const SRC_REVIEW_URL={google:'https://www.google.com/maps/search/?api=1&query=Lake%20Roots%20Caf%C3%A9%20Market%20%26%20Bar%2C%20475%20W%20Virginia%20St%2C%20Crystal%20Lake%2C%20IL%2060014',yelp:'https://www.yelp.com/biz/lake-roots-crystal-lake',facebook:'https://www.facebook.com/lakeroots/'};
+function srcUrl(s){return SRC_REVIEW_URL[s]||'';}
 function todayMD(){const d=new Date();return (d.getMonth()+1)+'/'+d.getDate()+'/'+d.getFullYear();}
 function sentFromRating(r){r=+r;return r>=4?'Positive':(r<=2?'Negative':'Other');}
 function openReview(){$('rv_date').value=todayMD();$('rv_err').style.display='none';$('reviewBg').classList.add('open');}
