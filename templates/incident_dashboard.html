@@ -60,6 +60,8 @@ header.sop .logout{position:absolute;right:16px;top:16px;font-family:var(--body)
 .detrows{margin:2px 0 8px;font-size:12.5px;color:var(--mid);line-height:1.55}.detrows b{color:var(--forest)}
 .photos{margin:6px 0;font-size:12.5px;line-height:1.7}.photos b{color:var(--forest)}
 .attach{margin:6px 0 2px}.attach label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--gray);margin-bottom:3px}.attach input[type=file]{font-size:12px;max-width:100%}
+.attach select{font-size:12.5px;padding:5px 8px;border:1px solid var(--line,#ccc);border-radius:8px;max-width:62%;background:#fff}
+.slist{margin:4px 0 0;padding-left:18px;font-size:12.5px;line-height:1.7}
 .dchips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
 .dchips button{font-size:11px;padding:4px 9px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--mid);cursor:pointer}
 .dchips button.on[data-s=open]{background:var(--gold);color:#fff;border-color:transparent}
@@ -141,6 +143,11 @@ header.sop .logout{position:absolute;right:16px;top:16px;font-family:var(--body)
 const SUPA_URL="https://nocufjsinhbxqneinvcn.supabase.co";
 const SUPA_KEY="sb_publishable_ASEdCGk7BGuqh2w8BFib7A_4MBpAfF8";
 const sb=window.supabase?window.supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
+// Read-only client for the service-reports backend (lakeroots-tools), used to pick a service call to link.
+// Isolated auth (no persisted session / distinct storageKey) so it never touches this dashboard's login.
+const TOOLS_URL="https://gqgjppxzdwzypxontmou.supabase.co";
+const TOOLS_KEY="sb_publishable_DieuLBMaMTJwZD3SUfgvGA_9I2tMOhP";
+const sbTools=window.supabase?window.supabase.createClient(TOOLS_URL,TOOLS_KEY,{auth:{persistSession:false,autoRefreshToken:false,storageKey:"sb-tools"}}):null;
 const $=id=>document.getElementById(id);
 const STATUSES=[['open','Open'],['resolved','Resolved']];
 const SLABEL=Object.fromEntries(STATUSES);
@@ -164,7 +171,8 @@ function isInjury(e){return INJURY.test(e.nature||'')||INJURY.test(e.description
 function mapI(r){return {id:r.id,occurred_date:r.occurred_date||'',occurred_time:r.occurred_time||'',created_at:r.created_at,
   nature:r.nature||'—',description:r.description||'',photos:Array.isArray(r.photo_urls)?r.photo_urls:[],
   repair_needed:r.repair_needed||'',reporter:r.reported_by||'',mgmt_notes:r.management_notes||'',
-  resolution:r.resolution||'',resolution_date:r.resolution_date||'',status:r.status||'open',source:r.source||''};}
+  resolution:r.resolution||'',resolution_date:r.resolution_date||'',status:r.status||'open',source:r.source||'',
+  links:Array.isArray(r.service_links)?r.service_links:[]};}
 
 function matchSearch(e){if(!SEARCH)return true;return ((e.nature+' '+e.description+' '+e.reporter+' '+e.mgmt_notes+' '+e.resolution).toLowerCase()).includes(SEARCH);}
 function filtered(){return ALL.filter(e=>inPeriod(e)&&matchSearch(e));}
@@ -228,6 +236,41 @@ async function openFile(path){
   const {data,error}=await sb.storage.from('incident-photos').createSignedUrl(path,3600);
   if(error||!data){alert('Could not open file: '+((error&&error.message)||'unknown error'));return;}
   window.open(data.signedUrl,'_blank','noopener');}
+
+/* ---- link service calls (from the lakeroots-tools service_reports table) ---- */
+const SERVICE_DASH="https://lakeroots-intake-forms.netlify.app/service-review.html";
+function srDate(d){const m=String(d||'').match(/^(\d{4})-(\d{2})-(\d{2})/);return m?`${+m[2]}/${+m[3]}/${m[1]}`:(d||'');}
+function srText(l){return [srDate(l.date),l.equipment,l.provider].filter(Boolean).join(' · ')||'service call';}
+function serviceLinks(e){const ls=e.links||[];
+  if(!ls.length)return '<div class="photos" style="color:var(--gray)">No linked service calls.</div>';
+  return `<div class="photos"><b>Linked service calls:</b> <a href="${SERVICE_DASH}" target="_blank" rel="noopener" style="font-size:11px;color:var(--forest)">open board ↗</a><ul class="slist">`+
+    ls.map(l=>`<li>${esc(srText(l))} <a href="#" onclick="unlinkService('${jsId(e.id)}','${jsId(l.id)}');return false" style="color:var(--red);font-size:11px">remove</a></li>`).join('')+`</ul></div>`;}
+let SR_LIST=null;
+async function ensureServiceList(){
+  if(SR_LIST)return SR_LIST;
+  try{const {data,error}=await sbTools.from('service_reports')
+      .select('id,service_date,equipment,provider').is('deleted_at',null)
+      .order('service_date',{ascending:false,nullsFirst:false}).limit(400);
+    SR_LIST=error?[]:(data||[]);}catch(_){SR_LIST=[];}
+  return SR_LIST;}
+function srOpt(s){const eq=(s.equipment||'').slice(0,42);return `${srDate(s.service_date)} · ${eq}${s.provider?' · '+s.provider:''}`;}
+function fillServicePickers(){
+  if(!SR_LIST)return;
+  const opts='<option value="">'+(SR_LIST.length?'Choose a service call…':'No service calls found')+'</option>'+
+    SR_LIST.map(s=>`<option value="${esc(s.id)}" data-date="${esc(s.service_date||'')}" data-eq="${esc(s.equipment||'')}" data-prov="${esc(s.provider||'')}">${esc(srOpt(s))}</option>`).join('');
+  document.querySelectorAll('select[id^="sp-"]').forEach(sel=>{if(sel.dataset.filled)return;sel.innerHTML=opts;sel.dataset.filled='1';});}
+async function linkService(id){const e=ALL.find(x=>x.id===id);if(!e)return;const c=cssId(id);
+  const sel=$('sp-'+c),o=sel&&sel.selectedOptions[0];const st=$('ls-'+c);
+  if(!o||!o.value){if(st)st.textContent='Pick one first';return;}
+  const link={id:o.value,date:o.dataset.date||'',equipment:o.dataset.eq||'',provider:o.dataset.prov||''};
+  const links=(e.links||[]).filter(l=>l.id!==link.id).concat([link]);
+  if(!await update(id,{service_links:links}))return;
+  e.links=links;sel.value='';const box=$('sl-'+c);if(box)box.innerHTML=serviceLinks(e);
+  if(st){st.textContent='Linked ✓';setTimeout(()=>{const s=$('ls-'+c);if(s)s.textContent='';},2000);}}
+async function unlinkService(id,srId){const e=ALL.find(x=>x.id===id);if(!e)return;const c=cssId(id);
+  const links=(e.links||[]).filter(l=>String(l.id)!==String(srId));
+  if(!await update(id,{service_links:links}))return;
+  e.links=links;const box=$('sl-'+c);if(box)box.innerHTML=serviceLinks(e);}
 function detailBlock(e){
   const rows=[['When',fmtDate(occ(e))+(e.occurred_time?' · '+e.occurred_time:'')],['Nature',e.nature!=='—'?e.nature:''],
     ['Description',e.description],['Repair needed',e.repair_needed],['Reported by',e.reporter]].filter(x=>x[1]);
@@ -244,6 +287,11 @@ function drill(title,list){list=(list||[]).filter(Boolean);
       <div class="attach"><label>Add photos / files</label>
         <input id="up-${c}" type="file" multiple onchange="uploadFiles('${jsId(e.id)}',this)">
         <span class="saved" id="us-${c}"></span></div>
+      <div id="sl-${c}">${serviceLinks(e)}</div>
+      <div class="attach"><label>Link a service call</label>
+        <select id="sp-${c}"><option value="">Loading service calls…</option></select>
+        <button class="savebtn" onclick="linkService('${jsId(e.id)}')">Link</button>
+        <span class="saved" id="ls-${c}"></span></div>
       <div class="dchips">${STATUSES.map(([k,l])=>`<button data-s="${k}" class="${e.status===k?'on':''}" onclick="setStatus('${jsId(e.id)}','${k}',this)">${l}</button>`).join('')}</div>
       <div class="edit">
         <label>Management notes</label><textarea id="mn-${c}">${esc(e.mgmt_notes)}</textarea>
@@ -253,6 +301,7 @@ function drill(title,list){list=(list||[]).filter(Boolean);
       </div>
     </div>`;}).join('')||'<div style="color:var(--gray)">No incidents.</div>';
   $('modalBg').classList.add('open');
+  ensureServiceList().then(fillServicePickers);
 }
 function closeDrill(){$('modalBg').classList.remove('open');}
 
