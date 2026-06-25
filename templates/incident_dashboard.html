@@ -59,6 +59,7 @@ header.sop .logout{position:absolute;right:16px;top:16px;font-family:var(--body)
 .dentry .dlabel{font-size:16px;margin:3px 0 8px;color:var(--ink);font-weight:600}
 .detrows{margin:2px 0 8px;font-size:12.5px;color:var(--mid);line-height:1.55}.detrows b{color:var(--forest)}
 .photos{margin:6px 0;font-size:12.5px;line-height:1.7}.photos b{color:var(--forest)}
+.attach{margin:6px 0 2px}.attach label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--gray);margin-bottom:3px}.attach input[type=file]{font-size:12px;max-width:100%}
 .dchips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
 .dchips button{font-size:11px;padding:4px 9px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--mid);cursor:pointer}
 .dchips button.on[data-s=open]{background:var(--gold);color:#fff;border-color:transparent}
@@ -215,9 +216,18 @@ function renderAllTable(F){
 }
 
 function drillOne(id){drill('Incident',[ALL.find(e=>e.id===id)]);}
-function photoLine(e){if(!e.photos.length)return '';
-  const links=e.photos.map((p,i)=>`<a href="${esc(p)}" target="_blank" rel="noopener" style="color:var(--forest)">Photo ${i+1} ↗</a>`).join(' · ');
-  return `<div class="photos"><b>Photos:</b> ${links}</div>`;}
+function isUrl(s){return /^https?:\/\//i.test(String(s));}
+function fileName(p){return (String(p).split('/').pop()||'file').replace(/^\d+_/,'');}
+function photoLine(e){if(!e.photos.length)return '<div class="photos" style="color:var(--gray)">No photos or files yet.</div>';
+  const links=e.photos.map((p,i)=> isUrl(p)
+    ? `<a href="${esc(p)}" target="_blank" rel="noopener" style="color:var(--forest)">Photo ${i+1} ↗</a>`
+    : `<a href="#" onclick="openFile('${jsId(p)}');return false" style="color:var(--forest)">${esc(fileName(p))} ↗</a>`).join(' · ');
+  return `<div class="photos"><b>Photos &amp; files:</b> ${links}</div>`;}
+// Bucket files are private; mint a short-lived signed URL on demand (dashboard user is authenticated).
+async function openFile(path){
+  const {data,error}=await sb.storage.from('incident-photos').createSignedUrl(path,3600);
+  if(error||!data){alert('Could not open file: '+((error&&error.message)||'unknown error'));return;}
+  window.open(data.signedUrl,'_blank','noopener');}
 function detailBlock(e){
   const rows=[['When',fmtDate(occ(e))+(e.occurred_time?' · '+e.occurred_time:'')],['Nature',e.nature!=='—'?e.nature:''],
     ['Description',e.description],['Repair needed',e.repair_needed],['Reported by',e.reporter]].filter(x=>x[1]);
@@ -230,7 +240,10 @@ function drill(title,list){list=(list||[]).filter(Boolean);
       <div class="dhead">${fmtDate(occ(e))}${e.source?' · '+esc(e.source):''}</div>
       <div class="dlabel">${esc(e.nature)}${isInjury(e)?' <span class="injtag">injury</span>':''}</div>
       ${detailBlock(e)}
-      ${photoLine(e)}
+      <div id="ph-${c}">${photoLine(e)}</div>
+      <div class="attach"><label>Add photos / files</label>
+        <input id="up-${c}" type="file" multiple onchange="uploadFiles('${jsId(e.id)}',this)">
+        <span class="saved" id="us-${c}"></span></div>
       <div class="dchips">${STATUSES.map(([k,l])=>`<button data-s="${k}" class="${e.status===k?'on':''}" onclick="setStatus('${jsId(e.id)}','${k}',this)">${l}</button>`).join('')}</div>
       <div class="edit">
         <label>Management notes</label><textarea id="mn-${c}">${esc(e.mgmt_notes)}</textarea>
@@ -245,6 +258,25 @@ function closeDrill(){$('modalBg').classList.remove('open');}
 
 async function update(id,patch){const {error}=await sb.from('incidents').update(patch).eq('id',id);
   if(error){alert('Save failed: '+error.message);return false;}return true;}
+// Upload photos/files to the private incident-photos bucket and append their paths to photo_urls.
+async function uploadFiles(id,inp){
+  const files=[...(inp.files||[])]; if(!files.length)return;
+  const e=ALL.find(x=>x.id===id); if(!e)return; const c=cssId(id); const st=$('us-'+c);
+  if(st)st.textContent='Uploading…';
+  const added=[];
+  for(const f of files){
+    const safe=f.name.replace(/[^A-Za-z0-9._-]+/g,'_').slice(-80);
+    const path=`${id}/${Date.now()}_${safe}`;
+    const {error}=await sb.storage.from('incident-photos').upload(path,f,{upsert:false,contentType:f.type||undefined});
+    if(error){if(st)st.textContent='Upload failed: '+error.message;return;}
+    added.push(path);
+  }
+  const next=(e.photos||[]).concat(added);
+  if(!await update(id,{photo_urls:next})){if(st)st.textContent='Saved file but record update failed';return;}
+  e.photos=next; inp.value='';
+  const ph=$('ph-'+c); if(ph)ph.innerHTML=photoLine(e);
+  if(st){st.textContent=added.length+(added.length===1?' file':' files')+' added ✓';setTimeout(()=>{const s=$('us-'+c);if(s)s.textContent='';},2500);}
+}
 async function setStatus(id,status,btn){const e=ALL.find(x=>x.id===id);if(!e)return;
   const patch={status};if(status==='resolved'&&!e.resolution_date){patch.resolution_date=new Date().toISOString().slice(0,10);}
   if(!await update(id,patch))return;
