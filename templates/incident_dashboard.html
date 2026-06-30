@@ -283,7 +283,11 @@ async function openFile(path){
 const SERVICE_DASH="https://lakeroots-intake-forms.netlify.app/service-review.html";
 function srDate(d){const m=String(d||'').match(/^(\d{4})-(\d{2})-(\d{2})/);return m?`${+m[2]}/${+m[3]}/${m[1]}`:(d||'');}
 function srText(l){return [srDate(l.date),l.equipment,l.provider].filter(Boolean).join(' · ')||'service call';}
-function serviceLinks(e){const ls=e.links||[];
+function serviceLinks(e){
+  // Only real linked service calls (have a service_report id). Inspection rows also
+  // live in service_links as {label,url} markers — exclude those; the tracker deep-link
+  // is already shown via "Open in Inspections Tracker →".
+  const ls=(e.links||[]).filter(l=>l&&l.id);
   if(!ls.length)return '<div class="photos" style="color:var(--gray)">No linked service calls.</div>';
   return `<div class="photos"><b>Linked service calls:</b> <a href="${SERVICE_DASH}" target="_blank" rel="noopener" style="font-size:11px;color:var(--forest)">open board ↗</a><ul class="slist">`+
     ls.map(l=>`<li>${esc(srText(l))} <a href="#" onclick="unlinkService('${jsId(e.id)}','${jsId(l.id)}');return false" style="color:var(--red);font-size:11px">remove</a></li>`).join('')+`</ul></div>`;}
