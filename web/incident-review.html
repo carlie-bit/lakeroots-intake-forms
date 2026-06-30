@@ -143,6 +143,26 @@ header.sop .logout{position:absolute;right:16px;top:16px;font-family:var(--body)
 .attach{margin:6px 0 2px}.attach label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--gray);margin-bottom:3px}.attach input[type=file]{font-size:12px;max-width:100%}
 .attach select{font-size:12.5px;padding:5px 8px;border:1px solid var(--line,#ccc);border-radius:8px;max-width:62%;background:#fff}
 .slist{margin:4px 0 0;padding-left:18px;font-size:12.5px;line-height:1.7}
+/* inspection findings dropdown */
+.insp{border:1px solid var(--line);border-radius:10px;margin:8px 0;overflow:hidden}
+.insphead{background:var(--sand);color:var(--forest);font-family:var(--disp);text-transform:uppercase;letter-spacing:.6px;font-size:12px;padding:8px 12px;cursor:pointer;user-select:none}
+.insphead .caret{display:inline-block;width:12px;color:var(--gold)}
+.inspbody{padding:10px 12px;background:#fff}
+.inspsum{font-size:12.5px;color:var(--forest);margin-bottom:8px}
+.vlist{display:flex;flex-direction:column;gap:7px}
+.vrow{border-left:3px solid var(--line);padding:2px 0 2px 9px}
+.vmeta{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-bottom:2px}
+.vpill{font-size:10.5px;font-weight:700;color:var(--forest);border:1px solid var(--line);border-radius:6px;padding:1px 6px;white-space:nowrap}
+.vpill.code{font-weight:500;color:var(--gray)}
+.sev{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;border-radius:6px;padding:1px 6px;color:#fff}
+.sev.s1,.sev.s2{background:var(--gray)}.sev.s3{background:var(--gold)}.sev.s4,.sev.s5{background:var(--red)}.sev.s0{background:var(--gray)}
+.vdesc{font-size:12.5px;color:var(--ink);line-height:1.5}
+.alabel{font-family:var(--disp);text-transform:uppercase;letter-spacing:.6px;font-size:11px;color:var(--gray);margin:12px 0 4px}
+.alist{list-style:none;margin:0;padding:0;font-size:12.5px;line-height:1.6}
+.alist li{padding:2px 0}.alist li.done .atxt{color:var(--gray);text-decoration:line-through}
+.alist .mk{font-weight:700}.alist li.done .mk{color:var(--forest)}.alist li.open .mk{color:var(--gold)}
+.alist .due{font-size:11px;color:var(--gray)}.alist .by{font-size:11px;color:var(--gray)}
+.insplink{display:inline-block;margin-top:10px;font-family:var(--disp);text-transform:uppercase;letter-spacing:.6px;font-size:11px;color:var(--cream);background:var(--forest);border-radius:999px;padding:7px 14px;text-decoration:none}
 .dchips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
 .dchips button{font-size:11px;padding:4px 9px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--mid);cursor:pointer}
 .dchips button.on[data-s=open]{background:var(--gold);color:#fff;border-color:transparent}
@@ -236,8 +256,12 @@ const SCOL={open:'var(--gold)',resolved:'var(--forest)'};
 const PERIODS=[['All time',0],['12 mo',365],['6 mo',183],['3 mo',92],['30 days',30]];
 const INJURY=/inj|fall|cut|hurt|burn|slip/i;
 let ALL=[], periodDays=0, SEARCH='', sortKey='occurred', sortDir=-1;
+// Inspections (Command Center's inspections.html) link into incidents via inspections.incident_id.
+// We read findings LIVE from the inspections table (open anon SELECT) — never duplicated here.
+const INSPECTIONS_BASE='https://lrcommandcenter.netlify.app/';
+let INSP_BY_INCIDENT={};
 const SORTS=[['occurred','Date'],['nature','Nature'],['status','Status'],['reporter','Reported by']];
-function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function jsId(s){return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/[\r\n]/g,' ');}
 function cssId(id){return (id||'').replace(/[^a-zA-Z0-9]/g,'');}
 function today(){return new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
@@ -352,6 +376,34 @@ async function unlinkService(id,srId){const e=ALL.find(x=>x.id===id);if(!e)retur
   const links=(e.links||[]).filter(l=>String(l.id)!==String(srId));
   if(!await update(id,{service_links:links}))return;
   e.links=links;const box=$('sl-'+c);if(box)box.innerHTML=serviceLinks(e);}
+// Inspection findings — read live from INSP_BY_INCIDENT, collapsible, read-only.
+function isoDate(d){const m=String(d||'').match(/^(\d{4})-(\d{2})-(\d{2})/);return m?`${+m[2]}/${+m[3]}/${m[1]}`:(d||'');}
+function inspectionBlock(e){
+  const insp=INSP_BY_INCIDENT[e.id]; if(!insp)return ''; const c=cssId(e.id);
+  const vios=Array.isArray(insp.violations)?insp.violations:[];
+  const acts=Array.isArray(insp.corrective_actions)?insp.corrective_actions:[];
+  const done=acts.filter(a=>a&&a.done).length;
+  const link=INSPECTIONS_BASE+'inspections.html?id='+encodeURIComponent(insp.id);
+  const sum=[insp.result,insp.status,insp.score].filter(Boolean).map(esc).join(' · ');
+  const vrows=vios.length?vios.map((v,i)=>{const sev=Math.max(1,Math.min(5,+v.severity||0))||0;
+    return `<div class="vrow"><div class="vmeta"><span class="vpill">Item ${esc(v.item||(i+1))}</span>`+
+      (v.code?`<span class="vpill code">${esc(v.code)}</span>`:'')+
+      (v.severity?`<span class="sev s${sev}">sev ${esc(v.severity)}</span>`:'')+
+      `</div><div class="vdesc">${esc(v.description||'')}</div></div>`;}).join('')
+    :'<div style="color:var(--gray);font-size:12.5px">No findings listed.</div>';
+  const arows=acts.map(a=>{const dn=!!(a&&a.done);
+    return `<li class="${dn?'done':'open'}"><span class="mk">${dn?'✓':'○'}</span> <span class="atxt">${esc((a&&a.action)||'')}</span>`+
+      ((a&&a.due)?` <span class="due">due ${esc(isoDate(a.due))}</span>`:'')+
+      ((a&&a.by)?` <span class="by">— ${esc(a.by)}${a.at?' '+esc(isoDate(a.at)):''}</span>`:'')+`</li>`;}).join('');
+  return `<div class="insp">
+    <div class="insphead" onclick="toggleInsp('${c}')"><span class="caret" id="ic-${c}">▸</span> Inspection findings (${vios.length})</div>
+    <div class="inspbody" id="ib-${c}" style="display:none">
+      <div class="inspsum">${sum}${acts.length?` · <b>${done} of ${acts.length}</b> corrective actions complete`:''}</div>
+      <div class="vlist">${vrows}</div>
+      ${acts.length?`<div class="alabel">Corrective actions</div><ul class="alist">${arows}</ul>`:''}
+      <a class="insplink" href="${esc(link)}" target="_blank" rel="noopener">Open in Inspections Tracker →</a>
+    </div></div>`;}
+function toggleInsp(c){const b=$('ib-'+c),car=$('ic-'+c);if(!b)return;const op=b.style.display==='none';b.style.display=op?'':'none';if(car)car.textContent=op?'▾':'▸';}
 function detailBlock(e){
   const rows=[['When',fmtDate(occ(e))+(e.occurred_time?' · '+e.occurred_time:'')],['Nature',e.nature!=='—'?e.nature:''],
     ['Description',e.description],['Repair needed',e.repair_needed],['Reported by',e.reporter]].filter(x=>x[1]);
@@ -364,6 +416,7 @@ function drill(title,list){list=(list||[]).filter(Boolean);
       <div class="dhead">${fmtDate(occ(e))}${e.source?' · '+esc(e.source):''}</div>
       <div class="dlabel">${esc(e.nature)}${isInjury(e)?' <span class="injtag">injury</span>':''}</div>
       ${detailBlock(e)}
+      ${inspectionBlock(e)}
       <div id="ph-${c}">${photoLine(e)}</div>
       <div class="attach"><label>Add photos / files</label>
         <input id="up-${c}" type="file" multiple onchange="uploadFiles('${jsId(e.id)}',this)">
@@ -422,6 +475,11 @@ async function load(){
   const {data,error}=await sb.from('incidents').select('*').order('occurred_date',{ascending:false,nullsFirst:false});
   if(error){$('note').innerHTML='<b style="color:var(--red)">Could not load incidents.</b> '+esc(error.message);return;}
   ALL=(data||[]).map(mapI);
+  INSP_BY_INCIDENT={};
+  try{const {data:insp}=await sb.from('inspections')
+      .select('id,incident_id,type,agency,inspector_name,inspection_date,result,score,status,follow_up_due,drive_folder_url,violations,corrective_actions')
+      .order('inspection_date',{ascending:false});
+    (insp||[]).forEach(i=>{if(i.incident_id)INSP_BY_INCIDENT[i.incident_id]=i;});}catch(_){}
   $('updated').textContent='Updated '+today();
   $('note').innerHTML='Status, notes &amp; resolution save live to the incident log. New reports from the <a style="color:var(--gold)" href="https://lakerootsplaybook.netlify.app/incident-report.html" target="_blank" rel="noopener">incident form ↗</a> appear on refresh.';
   renderPeriodBar();renderAll();
