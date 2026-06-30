@@ -141,7 +141,7 @@ header.sop .logout{position:absolute;right:16px;top:16px;font-family:var(--body)
   <div class="kpis" id="kpis"></div>
   <div class="panels">
     <div class="panel"><h3>By Status <span class="hint">click to view</span></h3><div class="bars" id="statBars"></div></div>
-    <div class="panel"><h3>By Nature <span class="hint">click to view</span></h3><div class="bars" id="natBars"></div></div>
+    <div class="panel"><h3>By Category <span class="hint">click to view</span></h3><div class="bars" id="catBars"></div></div>
     <div class="panel full"><h3>🔵 Open — needs attention <span class="hint">unresolved incidents · click a row</span></h3><table class="dash-table" id="openTbl"></table></div>
     <div class="panel full"><h3>📋 All Incidents <span class="hint">every report · click a column to sort, search above to filter · click a row</span></h3><table class="dash-table allt" id="allTbl"></table><div class="allcount" id="allCount"></div></div>
   </div>
@@ -191,6 +191,23 @@ function toDate(s){if(!s)return null;if(/^\d{4}-\d{2}-\d{2}$/.test(s))return new
 function inPeriod(e){if(!periodDays)return true;const d=new Date(occ(e));if(isNaN(d))return true;return (Date.now()-d.getTime())/86400000<=periodDays;}
 function clearSearch(){SEARCH='';const q=$('q');if(q)q.value='';renderAll();}
 function isInjury(e){return INJURY.test(e.nature||'')||INJURY.test(e.description||'');}
+// Roll the fragmented free-text "nature" values up into clean, fixed categories.
+const CATEGORIES=[
+  ['Safety & Injury', /\binjur|\binj\b|fall|hurt|\bcut\b|burn|scald|slip|trip|\bgas\b|hazard|\bfire\b|smoke/i],
+  ['Equipment', /equip|appliance|machine|dishwash|cooler|freezer|fridge|\bhvac\b|rooftop|compressor|\boven|\bhood\b|dish machine/i],
+  ['Building & Facility', /building|facilit|plumb|\broof|ceiling|electric|\blight|\bdoor|window|restroom|bathroom|\bwall|\bfloor|water heater|exhaust/i],
+  ['Damage / Property', /damage|broke|broken|\bdent|crack|vandal|shatter/i],
+  ['Security', /camera|security|surveillance|alarm|break.?in|theft|stolen|robbery/i],
+  ['Sanitation & Pests', /pest|rodent|mouse|mice|\brat\b|insect|\bfly\b|flies|roach|animal|sanitation|\bmold\b/i],
+  ['Guest', /guest|customer|patron/i],
+];
+const CATS=['Safety & Injury','Equipment','Building & Facility','Damage / Property','Inspection & Compliance','Security','Sanitation & Pests','Guest','Other'];
+function categoryOf(e){
+  if((e.source||'').toLowerCase()==='inspection'||/^inspection/i.test(e.nature||'')) return 'Inspection & Compliance';
+  const hay=(e.nature||'')+' '+(e.description||'');
+  for(const [label,rx] of CATEGORIES){ if(rx.test(hay)) return label; }
+  return 'Other';
+}
 
 function mapI(r){return {id:r.id,occurred_date:r.occurred_date||'',occurred_time:r.occurred_time||'',created_at:r.created_at,
   nature:r.nature||'—',description:r.description||'',photos:Array.isArray(r.photo_urls)?r.photo_urls:[],
@@ -227,8 +244,8 @@ function renderAll(){
   const statEntries=STATUSES.map(([k,l])=>[l,F.filter(e=>(e.status||'open')===k).length]).filter(x=>x[1]);
   bars($('statBars'),statEntries,l=>SCOL[STATUSES.find(x=>x[1]===l)[0]],l=>{const k=STATUSES.find(x=>x[1]===l)[0];return `drill('${esc(l)} incidents',filtered().filter(e=>(e.status||'open')==='${k}'))`;});
 
-  const nC={};F.forEach(e=>{const n=e.nature||'—';nC[n]=(nC[n]||0)+1;});
-  bars($('natBars'),Object.entries(nC).sort((a,b)=>b[1]-a[1]),()=>'var(--brown)',l=>`drill('${esc(l)}',filtered().filter(e=>(e.nature||'—')==='${esc(l)}'))`);
+  const cC={};F.forEach(e=>{const c=categoryOf(e);cC[c]=(cC[c]||0)+1;});
+  bars($('catBars'),CATS.filter(l=>cC[l]).map(l=>[l,cC[l]]),()=>'var(--brown)',l=>`drill('${esc(l)}',filtered().filter(e=>categoryOf(e)==='${esc(l)}'))`);
 
   const row=e=>`<tr class="clk" onclick="drillOne('${jsId(e.id)}')"><td class="nm">${esc(e.nature)}${isInjury(e)?' <span class="injtag">injury</span>':''} — ${esc(e.description.slice(0,60))}</td><td>${esc(e.reporter)||'—'}</td><td class="r">${fmtDate(occ(e))}</td></tr>`;
   $('openTbl').innerHTML=open.length?`<tr><th>Incident</th><th>Reported by</th><th class="r">Date</th></tr>`+open.map(row).join(''):`<tr><td style="color:var(--gray);padding:12px 0">No open incidents${SEARCH?' in this search':''}. 🎉</td></tr>`;
