@@ -15,7 +15,7 @@ const MANAGERS = [
   "andy@lakerootscl.com",
   "mike@lakerootscl.com",
   "jj@lakerootscl.com",
-  "cuahutli@lakerootscl.com",
+  "alina@lakerootscl.com",
 ];
 const DASH = "https://lakeroots-intake-forms.netlify.app/service-review.html";
 const LOGO = "https://lakeroots-intake-forms.netlify.app/lr-email-logo.png";
