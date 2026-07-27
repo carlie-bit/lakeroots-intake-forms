@@ -94,6 +94,7 @@ header{background:var(--forest);color:var(--cream);padding:16px 20px}
 .fpanel label .opt{color:var(--gray);text-transform:none;letter-spacing:0;font-size:12px}
 .fpanel input,.fpanel select,.fpanel textarea{width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:16px;background:var(--cream)}
 .fpanel textarea{min-height:80px;resize:vertical}
+.fpanel input[type=file]{padding:8px;font-size:13px;background:#fff}
 .fpanel input:focus,.fpanel select:focus,.fpanel textarea:focus{outline:none;border-color:var(--forest)}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
 @media(max-width:520px){.row2{grid-template-columns:1fr}}
@@ -196,6 +197,10 @@ header{background:var(--forest);color:var(--cream);padding:16px 20px}
     <label>Anything else we should know? <span class="opt">— optional</span></label>
     <textarea id="f_other"></textarea>
 
+    <label>Attach materials <span class="opt">— optional (flyers, logos, one-pagers, decks)</span></label>
+    <input id="f_materials" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.heic,.doc,.docx,.ppt,.pptx">
+    <div class="privnote" style="margin-top:6px">You can add more than one. PDFs, images, Word or slides — up to ~10&nbsp;MB each.</div>
+
     <div class="hp"><label>Company</label><input id="f_company" tabindex="-1" autocomplete="off"></div>
 
     <div class="submitbar"><button id="sendBtn" type="submit">Send inquiry</button></div>
@@ -230,6 +235,16 @@ sections();
 
 function fmtDate(iso){if(!iso)return null;const [y,m,d]=iso.split('-');return Number(m)+'/'+Number(d)+'/'+y;}
 
+// Upload one attachment to the private outreach-docs bucket; return its path.
+async function up(file,id,key){
+  if(!file)return null;
+  const safe=(file.name||'file').replace(/[^\w.\-]+/g,'_');
+  const path=id+'/'+key+'-'+safe;
+  const {error}=await sb.storage.from('outreach-docs').upload(path,file,{upsert:false,contentType:file.type||undefined});
+  if(error){console.warn('upload failed',error.message);return null;}
+  return path;
+}
+
 async function submitForm(ev){
   ev.preventDefault();
   if(v('f_company')){$('form').style.display='none';$('thanks').style.display='block';return false;}
@@ -246,6 +261,11 @@ async function submitForm(ev){
   };
   const {data,error}=await sb.from('outreach_submissions').insert(sub).select('id').single();
   if(error){err.textContent='Something went wrong — please try again. ('+error.message+')';err.style.display='block';$('sendBtn').disabled=false;return false;}
+  try{
+    const mats=[];const mf=$('f_materials').files;
+    for(let i=0;i<mf.length;i++){const p=await up(mf[i],data.id,'material'+i);if(p)mats.push(p);}
+    if(mats.length)await sb.from('outreach_submissions').update({materials_paths:mats.join(', ')}).eq('id',data.id);
+  }catch(e){console.warn('upload step',e);}
   await sb.from('outreach_contacts').insert({submission_id:data.id,
     first_name:v('f_first'),last_name:v('f_last'),phone:v('f_phone'),email:v('f_email')});
   $('form').style.display='none';$('thanks').style.display='block';window.scrollTo(0,0);
