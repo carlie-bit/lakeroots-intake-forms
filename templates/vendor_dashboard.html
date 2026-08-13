@@ -33,21 +33,21 @@
 @media(max-width:680px){.allt th:nth-child(2),.allt td:nth-child(2),.allt th:nth-child(3),.allt td:nth-child(3){display:none}}
 .modal-bg{position:fixed;inset:0;background:rgba(43,48,38,.5);display:none;align-items:center;justify-content:center;padding:18px;z-index:100}
 .modal-bg.open{display:flex}
-.modal{background:#fff;border-radius:14px;max-width:600px;width:100%;max-height:88vh;overflow:auto;padding:18px 20px}
+.modal{background:#fff;border-radius:14px;max-width:720px;width:100%;max-height:90vh;overflow:auto;padding:20px 24px}
 .modal .mh{display:flex;justify-content:space-between;align-items:center}
 .modal .mt{font-family:var(--disp);font-weight:600;font-size:19px;color:var(--forest);text-transform:uppercase;letter-spacing:.5px}
 .modal .mx{border:none;background:none;font-size:22px;cursor:pointer;color:var(--gray)}
 .modal .mc{font-size:12px;color:var(--gray);margin-bottom:12px}
-.dentry{border:1px solid var(--line);border-radius:11px;padding:11px 12px;margin-bottom:10px}
-.dentry .dhead{font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px}
-.dentry .dlabel{font-size:16px;margin:3px 0 8px;color:var(--ink);font-weight:600}
-.detrows{margin:2px 0 8px;font-size:12.5px;color:var(--mid);line-height:1.55}.detrows b{color:var(--forest)}
-.docs{margin:6px 0;font-size:12.5px;color:var(--mid);line-height:1.7}.docs b{color:var(--forest)}
+.dentry{border:1px solid var(--line);border-radius:11px;padding:15px 18px;margin-bottom:10px}
+.dentry .dhead{font-size:12px;color:var(--gray);text-transform:uppercase;letter-spacing:.5px}
+.dentry .dlabel{font-size:21px;margin:4px 0 10px;color:var(--ink);font-weight:600}
+.detrows{margin:2px 0 10px;font-size:14.5px;color:var(--mid);line-height:1.75}.detrows b{color:var(--forest)}
+.docs{margin:8px 0;font-size:14.5px;color:var(--mid);line-height:1.85}.docs b{color:var(--forest)}
 .dchips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
 .dchips button{font-size:11px;padding:4px 9px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--mid);cursor:pointer}
 .dchips button.on{color:#fff;border-color:transparent}
 .dchips button.on[data-s=new]{background:var(--sage)}.dchips button.on[data-s=reviewing]{background:var(--gold)}.dchips button.on[data-s=contacted]{background:#4a6b7c}.dchips button.on[data-s=approved]{background:var(--forest)}.dchips button.on[data-s=onboarded]{background:#2f6f4e}.dchips button.on[data-s=paused]{background:#9b8467}.dchips button.on[data-s=declined]{background:var(--red)}
-.comments{margin:4px 0 8px}.cmt{font-size:12.5px;padding:6px 0;border-top:1px dashed var(--line)}
+.comments{margin:4px 0 8px}.cmt{font-size:13.5px;padding:7px 0;border-top:1px dashed var(--line)}
 .cmt .by{font-weight:600;color:var(--forest)}.cmt .at{color:var(--gray);font-size:11px;margin-left:5px}.cmt .tx{display:block;margin-top:1px;color:var(--ink)}
 .addcmt{display:flex;gap:6px;margin-top:6px}.addcmt input{flex:1;border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px}
 .addcmt button{border:1.5px solid var(--forest);background:var(--forest);color:var(--cream);border-radius:8px;padding:0 12px;font-size:12px;cursor:pointer}
@@ -206,6 +206,13 @@ function renderAllTable(F){
 }
 
 function drillOne(id){drill('Vendor',[ALL.find(e=>e.id===id)]);}
+// Turn raw URLs in freeform text (notes / comments) into clickable links.
+// Google Drive folders get a tidy label instead of a long ugly URL.
+function linkify(s){return String(s==null?'':s).split(/(https?:\/\/[^\s]+)/g).map(p=>{
+  if(!/^https?:\/\//i.test(p))return esc(p);
+  const label=/drive\.google\.com/i.test(p)?'📁 Drive folder ↗':(p.length>52?p.slice(0,50)+'…':p)+' ↗';
+  return `<a href="${esc(p)}" target="_blank" rel="noopener" style="color:var(--forest);font-weight:600;word-break:break-word">${esc(label)}</a>`;
+}).join('');}
 function docLine(label,val){if(!val)return '';
   const parts=val.split(',').map(s=>s.trim()).filter(Boolean);
   const links=parts.map((p,i)=>{const lbl=parts.length>1?'File '+(i+1):'Open';
@@ -221,7 +228,7 @@ function detailBlock(e){
     ['Where else they sell',e.where_sell],['Address',e.addr],['Title',e.title],
     ['Food products',e.food?'Yes':''],['Commercial kitchen',e.kitchen_name],['Kitchen address',e.kitchen_address],['Co-packer',e.copacker],
     ['Labels confirmed',e.food?(e.labels?'Yes':'No'):''],['Barcodes',e.barcodes==null?'':(e.barcodes?'Yes':'No')],['Notes',e.notes]].filter(x=>x[1]);
-  let h=rows.length?`<div class="detrows">${rows.map(([l,v])=>`<div><b>${l}:</b> ${esc(String(v))}</div>`).join('')}</div>`:'';
+  let h=rows.length?`<div class="detrows">${rows.map(([l,v])=>`<div><b>${l}:</b> ${l==='Notes'?linkify(String(v)):esc(String(v))}</div>`).join('')}</div>`:'';
   const w=e.website?`<div><b>Website:</b> <a href="${esc(/^https?:/i.test(e.website)?e.website:'https://'+e.website)}" target="_blank" rel="noopener" style="color:var(--forest)">${esc(e.website)}</a></div>`:'';
   const s=e.social?`<div><b>Social:</b> ${esc(e.social)}</div>`:'';
   const docs=(docLine('Insurance',e.insurance)+docLine('Health inspection',e.health)+docLine('Marketing materials',e.materials));
@@ -246,7 +253,7 @@ function drill(title,list){list=(list||[]).filter(Boolean);
 }
 function closeDrill(){$('modalBg').classList.remove('open');}
 function renderComments(list){list=list||[];if(!list.length)return '<div style="font-size:12px;color:var(--gray)">No notes yet.</div>';
-  return list.map(x=>`<div class="cmt"><span class="by">${esc(x.by||'team')}</span><span class="at">${esc(x.at||'')}</span><span class="tx">${esc(x.text||'')}</span></div>`).join('');}
+  return list.map(x=>`<div class="cmt"><span class="by">${esc(x.by||'team')}</span><span class="at">${esc(x.at||'')}</span><span class="tx">${linkify(x.text||'')}</span></div>`).join('');}
 
 async function persist(e){if(!sb)return;const {error}=await sb.from('vendor_submissions').update({status:e.status,comments:e.comments}).eq('id',e.sid);if(error)console.warn('save',error.message);}
 async function setStatus(id,status,btn){const e=ALL.find(x=>x.id===id);if(!e)return;e.status=status;
