@@ -181,6 +181,21 @@ a.addbtn{text-decoration:none;display:inline-flex;align-items:center;gap:5px}
 .gate button:disabled{opacity:.5;cursor:default}
 .gate .msg{font-size:13px;margin-top:12px;min-height:18px}.gate .ok{color:var(--forest)}.gate .bad{color:var(--red)}
 .logoutbtn{font-family:var(--disp);text-transform:uppercase;letter-spacing:.6px;font-size:10.5px;color:var(--mid);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer}
+/* Roomier, more readable board — take up more of the screen */
+.wrap{max-width:1280px}
+.kpi .kv{font-size:34px}.kpi .kl{font-size:11px}.kpi .ks{font-size:12.5px}
+.panels{gap:20px}
+.panel h3{font-size:15px}
+.dash-table{font-size:14.5px}.dash-table th{font-size:11px}.dash-table td{padding:11px 0}
+.modal{max-width:720px;padding:22px 26px}
+.dentry{padding:14px 16px}.dentry .dlabel{font-size:19px}
+/* Pipeline segmented toggle — default view is what's actually open */
+.segtabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.segtab{font-family:var(--disp);text-transform:uppercase;letter-spacing:.6px;font-size:12px;padding:8px 14px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--mid);cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.segtab:hover{border-color:var(--forest)}
+.segtab.on{background:var(--forest);color:var(--cream);border-color:var(--forest)}
+.segtab .segn{font-size:11px;background:rgba(90,90,70,.16);border-radius:999px;padding:1px 8px;font-weight:600}
+.segtab.on .segn{background:rgba(255,255,255,.24)}
 </style>
 </head>
 <body>
@@ -235,10 +250,9 @@ a.addbtn{text-decoration:none;display:inline-flex;align-items:center;gap:5px}
     </div>
     <div class="panel"><h3>Pipeline by Status <span class="hint">click to view</span></h3><div class="bars" id="statusBars"></div></div>
     <div class="panel"><h3>Requests by Type <span class="hint" id="typeHint"></span></h3><div class="bars" id="typeBars"></div></div>
-    <div class="panel full"><h3>Open Pipeline <span class="hint">new, in review, or needs a decision · click a row</span></h3><table class="dash-table seg" id="pipeTbl"></table></div>
-    <div class="panel full" id="fwdPanel"><h3>Moving Forward <span class="hint">commitments made &amp; proceeding</span></h3><table class="dash-table seg" id="fwdTbl"></table></div>
-    <div class="panel full" id="holdPanel"><h3>Paused <span class="hint">revisit later</span></h3><table class="dash-table seg" id="holdTbl"></table></div>
-    <div class="panel full" id="passPanel"><h3>Passed <span class="hint">declined or not pursued — kept for the record</span></h3><table class="dash-table seg" id="passTbl"></table></div>
+    <div class="panel full"><h3>Pipeline <span class="hint">Open is the default · tap a tab to see parked ones · click a row to open</span></h3>
+      <div class="segtabs" id="segtabs"></div>
+      <table class="dash-table seg" id="pipeTbl"></table></div>
     <div class="panel full"><h3>Giving This Year <span class="hint">completed donations, sponsorships &amp; fundraisers · recorded $ where available · click a row</span></h3><table class="dash-table" id="giveTbl"></table></div>
     <div class="panel full" id="otherPanel" style="display:none"><h3>Completed Collaborations &amp; Projects <span class="hint">wrapped-up collaborations, events &amp; partnerships · click a row</span></h3><table class="dash-table" id="otherTbl"></table></div>
     <div class="panel full" id="deletedPanel" style="display:none"><h3>Removed Entries <span class="hint">kept for the record · restore anytime</span></h3><table class="dash-table" id="delTbl"></table></div>
@@ -907,7 +921,7 @@ function statusPill(e){const s=(ACTIONS[e.id]||{}).status;
   if(s)return `<span class="pill" style="background:${TCOL[s]};color:#fff">${stLabel(s)}</span>`;
   return `<span class="pill" style="background:${SCOL[e.bucket]||'var(--gray)'};color:#fff">${esc(e.bucket)}</span>`;}
 const PERIODS=[['All time',0],['12 mo',365],['6 mo',183],['3 mo',92],['30 days',30]];
-let ALL=[], ACTIONS={}, periodDays=0, LIVE=false;
+let ALL=[], ACTIONS={}, periodDays=0, LIVE=false, PIPE_TAB='open';
 let DON={}, DON_DONE=new Set();   // from donations table: submission_id -> {stage,items,commitment}; DON_DONE = picked-up (stage 3)
 const money=n=>n==null?'—':(n>0?'$'+Number(n).toLocaleString('en-US'):'—');
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
@@ -1019,14 +1033,14 @@ function renderAll(){
   const F=filtered();
   const _ws=weekStartMon();
   const freshWk=F.filter(e=>{const d=toDate(e.submitted);return d&&d.getTime()>=_ws&&d.getTime()<_ws+6048e5;});
-  const inrev=F.filter(e=>['In Review','Approved','On Hold'].includes(e.bucket));
+  const openList=F.filter(e=>e.bucket==='In Review');  // truly open: new / in review / needs a decision (excludes moving-forward, paused, passed)
   const done=F.filter(e=>e.bucket==='Completed');
   const givingYr=done.filter(e=>isDonationType(e.type));   // donations + sponsorships + fundraisers
   const otherDone=done.filter(e=>!isDonationType(e.type));  // collaborations, events, artists, etc.
   const orgs=new Set(givingYr.map(e=>e.org.toLowerCase())).size;
   const val=givingYr.reduce((s,e)=>s+(e._amt||0),0);
   const kpis=[
-    ['Open Pipeline',inrev.length,'in motion','hl',()=>drill('Open pipeline',inrev)],
+    ['Open Pipeline',openList.length,'awaiting action','hl',()=>drill('Open pipeline',openList)],
     ['New this week',freshWk.length,'since Monday','',()=>drill('New this week',freshWk)],
     ['Orgs Supported',orgs,'in period','',()=>drill('Giving — organizations',givingYr)],
     ['Donations completed',givingYr.length,'picked up · in period','',()=>drill('Donations completed',givingYr)],
@@ -1044,15 +1058,17 @@ function renderAll(){
   bars($('typeBars'),types.slice(0,8),()=>'var(--brown)',l=>`drillType('${esc(l)}')`);
 
   const segRow=p=>`<tr class="clk" onclick="drillOne('${jsId(p.id)}')"><td class="nm">${statusDot(p.id)}${esc(p.org)}</td><td class="ty" title="${esc(p.type)}">${esc(shortType(p.type))}</td><td class="st">${statusPill(p)}</td><td class="r">${fmtDate(p.submitted)}</td><td class="r">${fmtDate(p.date)}</td><td class="r">${amtCell(p)}</td><td class="sp"></td></tr>`;
-  const SEGS=[
-    ['pipe','pipeTbl',null,e=>e.bucket==='In Review','Pipeline clear in this period'],
-    ['fwd','fwdTbl','fwdPanel',e=>e.bucket==='Approved',''],
-    ['hold','holdTbl','holdPanel',e=>e.bucket==='On Hold',''],
-    ['pass','passTbl','passPanel',e=>e.bucket==='Declined','']];
-  SEGS.forEach(([t,tid,pid,pred,emptyMsg])=>{
-    const list=F.filter(pred);
-    if(pid)$(pid).style.display=list.length?'':'none';
-    $(tid).innerHTML=list.length?`<tr>${hd(t,'org','Organization')}${hd(t,'type','Type')}${hd(t,'status','Status')}${hd(t,'submitted','Submitted','r')}${hd(t,'date','Proposed','r')}${hd(t,'value','$','r')}<th class="sp"></th></tr>`+sortBy(list,t).map(segRow).join(''):`<tr><td style="color:var(--gray);padding:12px 0">${emptyMsg||'Nothing here'}${($('q')&&$('q').value)?' (try clearing the search/filters)':''}.</td></tr>`;});
+  // One pipeline table with toggle tabs — default shows what's actually Open.
+  const PIPE_TABS=[
+    ['open','Open',e=>e.bucket==='In Review'],
+    ['fwd','Moving forward',e=>e.bucket==='Approved'],
+    ['paused','Paused',e=>e.bucket==='On Hold'],
+    ['passed','Passed',e=>e.bucket==='Declined']];
+  if(!PIPE_TABS.some(t=>t[0]===PIPE_TAB))PIPE_TAB='open';
+  $('segtabs').innerHTML=PIPE_TABS.map(([k,l,pred])=>`<button class="segtab ${PIPE_TAB===k?'on':''}" onclick="setPipeTab('${k}')">${l}<span class="segn">${F.filter(pred).length}</span></button>`).join('');
+  const curTab=PIPE_TABS.find(t=>t[0]===PIPE_TAB);
+  const plist=F.filter(curTab[2]);
+  $('pipeTbl').innerHTML=plist.length?`<tr>${hd('pipe','org','Organization')}${hd('pipe','type','Type')}${hd('pipe','status','Status')}${hd('pipe','submitted','Submitted','r')}${hd('pipe','date','Proposed','r')}${hd('pipe','value','$','r')}<th class="sp"></th></tr>`+sortBy(plist,'pipe').map(segRow).join(''):`<tr><td style="color:var(--gray);padding:12px 0">Nothing ${esc(curTab[1].toLowerCase())} right now${($('q')&&$('q').value)?' (try clearing the search/filters)':''}.</td></tr>`;
   const give=givingYr;
   $('giveTbl').innerHTML=give.length?`<tr>${hd('give','org','Organization')}${hd('give','type','Type')}${hd('give','value','$ Recorded','r')}${hd('give','date','Date','r')}<th class="sp"></th></tr>`+sortBy(give,'give').map(g=>`<tr class="clk" onclick="drillOne('${jsId(g.id)}')"><td class="nm">${statusDot(g.id)}${esc(g.org)}</td><td class="ty" title="${esc(g.type)}">${esc(shortType(g.type))}</td><td class="r">${amtCell(g)}</td><td class="r">${fmtDate(g.date)}</td><td class="sp"></td></tr>`).join(''):`<tr><td style="color:var(--gray);padding:12px 0">No completed giving in this period.</td></tr>`;
   $('otherPanel').style.display=otherDone.length?'':'none';
@@ -1062,6 +1078,7 @@ function renderAll(){
 function statusDot(id){const a=ACTIONS[id];return a&&a.status?`<span class="sdot ${a.status}"></span>`:'';}
 function drillType(t){drill(t+' requests',filtered().filter(e=>(e.type.length>34?e.type.slice(0,32)+'…':e.type)===t));}
 function drillOne(id){drill('Opportunity',[ALL.find(e=>e.id===id)]);}
+function setPipeTab(k){PIPE_TAB=k;renderAll();}
 
 function drill(title,list){
   list=(list||[]).filter(Boolean);
@@ -1072,7 +1089,7 @@ function drill(title,list){
       <div class="dhead">${fmtDate(e.date)} · ${esc(e.type)} · <span id="ts-${cssId(e.id)}">${esc(stLabel(a.status)||e.bucket)}</span>${e._amt>0?' · '+(e._amtApprox?'~':'')+money(e._amt):''}</div>
       <div class="dlabel">${esc(e.org)} <a href="#" style="font-size:11px;color:var(--gray);font-weight:400;text-decoration:underline" onclick="editEntry('${jsId(e.id)}');return false">✎ edit details</a></div>
       <div id="ed-${cssId(e.id)}"></div>
-      ${detailBlock(e)}
+      ${detailBlock(e)}${materialsLine(e)}
       <div class="dchips">${statusesFor(e).map(([k,lbl])=>`<button data-s="${k}" class="${a.status===k?'on':''}" onclick="setStatus('${jsId(e.id)}','${k}',this)">${lbl}</button>`).join('')}</div>
       <div id="sd-${cssId(e.id)}">${renderDetail(e.id)}</div>
       <div class="comments" id="cmts-${cssId(e.id)}">${renderComments(a.comments)}</div>
@@ -1092,7 +1109,17 @@ function detailBlock(e){const r=e.raw||{};
     ['Attendees',r.attendees],['Brand',r.brand_name],['Website',r.website],['Instagram',r.instagram],
     ['Notes',r.other_notes]].filter(x=>x[1]);
   if(!rows.length)return e.notes?`<div style="font-size:12.5px;color:var(--mid);margin:-2px 0 6px">${esc(e.notes)}</div>`:'';
-  return `<div style="margin:2px 0 8px;font-size:12.5px;color:var(--mid);line-height:1.55">${rows.map(([l,v])=>`<div><b style="color:var(--forest)">${l}:</b> ${esc(String(v))}</div>`).join('')}</div>`;}
+  return `<div style="margin:2px 0 8px;font-size:13.5px;color:var(--mid);line-height:1.6">${rows.map(([l,v])=>`<div><b style="color:var(--forest)">${l}:</b> ${esc(String(v))}</div>`).join('')}</div>`;}
+// Attachments the partner uploaded on the form (private outreach-docs bucket) — secure, expiring links.
+function materialsLine(e){const raw=(e.raw||{}).materials_paths;if(!raw)return '';
+  const parts=String(raw).split(',').map(s=>s.trim()).filter(Boolean);if(!parts.length)return '';
+  const links=parts.map((p,i)=>{const nm=(p.split('/').pop()||('File '+(i+1))).replace(/^material\d+-/,'');
+    return /^https?:/i.test(p)?`<a href="${esc(p)}" target="_blank" rel="noopener" style="color:var(--forest);font-weight:600">${esc(nm)} ↗</a>`
+      :`<a href="#" style="color:var(--forest);font-weight:600" onclick="outreachDoc('${jsId(p)}');return false">📎 ${esc(nm)}</a>`;}).join(' · ');
+  return `<div style="margin:4px 0 8px;font-size:13.5px"><b style="color:var(--forest)">Attachments:</b> ${links}</div>`;}
+function outreachDoc(path){if(!sb){alert('Open the live dashboard to view attachments.');return;}
+  sb.storage.from('outreach-docs').createSignedUrl(path,3600).then(({data,error})=>{
+    if(error||!data){alert('Could not open this file.');return;}window.open(data.signedUrl,'_blank','noopener');});}
 function closeDrill(){$('modalBg').classList.remove('open');}
 function renderComments(list){list=list||[];if(!list.length)return '<div style="font-size:12px;color:var(--gray)">No comments yet.</div>';
   return list.map(c=>`<div class="cmt"><span class="by">${esc(c.by||'team')}</span><span class="at">${esc(c.at||'')}</span><span class="tx">${esc(c.text||'')}</span></div>`).join('');}
