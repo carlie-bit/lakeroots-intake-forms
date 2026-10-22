@@ -67,6 +67,7 @@ button.ghost{box-shadow:none;background:transparent;}
 .iconbtn[disabled]{opacity:.3;cursor:default;}
 .spacer{flex:1;}
 a.reclink{color:var(--blue);font-size:12px;text-decoration:none;}
+a.iconbtn{text-decoration:none;color:var(--ink);display:inline-flex;align-items:center;gap:3px;}
 a.reclink:hover{text-decoration:underline;}
 ul.items{margin:3px 0 0;padding-left:18px;}
 ul.items li{font-size:12px;color:var(--ink);}
@@ -389,6 +390,7 @@ function cardEl(c){
       <button class="iconbtn" title="Back a stage" onclick="move('${c.id}',-1)" ${c.stage===0?"disabled":""}>◀</button>
       <button class="iconbtn" title="Forward a stage" onclick="move('${c.id}',1)" ${c.stage===3?"disabled":""}>▶</button>
       <span class="spacer"></span>
+      ${c.submission_id?`<a class="iconbtn" title="Open the full inquiry (purpose, attachments, contact) on the Community Outreach board" href="community-outreach.html?open=${encodeURIComponent(c.submission_id)}" target="_blank" rel="noopener">↗ Inquiry</a>`:""}
       <button class="iconbtn" title="Edit" onclick="openModal('${c.id}')">Edit</button>
     </div>`;
   return d;

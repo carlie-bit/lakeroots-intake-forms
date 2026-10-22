@@ -392,6 +392,11 @@ function renderAll(){
 function statusDot(id){const a=ACTIONS[id];return a&&a.status?`<span class="sdot ${a.status}"></span>`:'';}
 function drillType(t){drill(t+' requests',filtered().filter(e=>(e.type.length>34?e.type.slice(0,32)+'…':e.type)===t));}
 function drillOne(id){drill('Opportunity',[ALL.find(e=>e.id===id)]);}
+// Deep-link: the Donation Board links here with ?open=<submission_id> to open that inquiry.
+function openDeepLink(){try{
+  const p=new URLSearchParams(location.search).get('open');if(!p)return;
+  const e=ALL.find(x=>String(x.id)===p||String(x.sid)===p);if(e)drillOne(e.id);
+}catch(_){}}
 function setPipeTab(k){PIPE_TAB=k;renderAll();}
 
 function drill(title,list){
@@ -589,10 +594,10 @@ async function loadData(){
     if(!error&&data&&data.length){
       ALL=data.map(mapSub);LIVE=true;
       setMeta({meta:{generated:new Date().toLocaleDateString('en-US')}});
-      renderPeriodBar();$('who').value=getUser();await loadActions();await loadDonations();renderAll();return;}
+      renderPeriodBar();$('who').value=getUser();await loadActions();await loadDonations();renderAll();openDeepLink();return;}
   }catch(e){console.warn(e);}}
   let d=BAKED;if(PROXY){try{const r=await fetch(PROXY);if(r.ok){d=await r.json();LIVE=true;}}catch(e){}}
-  ALL=(d.entries||[]).slice();setMeta(d);renderPeriodBar();$('who').value=getUser();await loadActions();await loadDonations();renderAll();}
+  ALL=(d.entries||[]).slice();setMeta(d);renderPeriodBar();$('who').value=getUser();await loadActions();await loadDonations();renderAll();openDeepLink();}
 let LOADED=false;
 function showDash(){$('gate').style.display='none';$('dash').style.display='';if(!LOADED){LOADED=true;loadData();}}
 function showGate(){$('dash').style.display='none';$('gate').style.display='';}
