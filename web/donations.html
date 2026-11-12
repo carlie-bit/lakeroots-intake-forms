@@ -38,6 +38,9 @@ button:hover{border-color:var(--brand);}
 button.primary{background:var(--brand);color:#fff;border-color:var(--brand);}
 button.ghost{box-shadow:none;background:transparent;}
 .count{color:var(--muted);font-size:12.5px;margin-left:auto;}
+.searchbox{flex:1;min-width:180px;max-width:360px;border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-family:var(--font-body);font-size:13.5px;background:#fff;color:var(--ink);box-shadow:var(--shadow);}
+.searchbox:focus{outline:none;border-color:var(--brand);}
+.cardx .dates{font-size:11.5px;color:var(--muted);margin-top:6px;letter-spacing:.2px;}
 .banner{font-size:12.5px;border-radius:8px;padding:8px 12px;margin-bottom:14px;display:none;}
 .banner.err{display:block;background:var(--red-soft);color:var(--red);border:1px solid #e0b5aa;}
 .banner.ok{display:block;background:var(--green-soft);color:var(--green);border:1px solid #c2d6b2;}
@@ -152,6 +155,7 @@ ul.items li{font-size:12px;color:var(--ink);}
   <div class="toolbar">
     <button class="primary" onclick="location.href='outreach.html'">+ Add via Community Outreach →</button>
     <button onclick="reload()" id="refreshBtn">⟳ Refresh</button>
+    <input type="search" id="q" class="searchbox" placeholder="🔍 Search org, item, note…" oninput="SEARCH=this.value.toLowerCase().trim();render()">
     <span class="count" id="count">Connecting…</span>
   </div>
 
@@ -227,6 +231,7 @@ const STAGES=["Commitment made","Prepped &amp; on shelf","Waiting for pickup","P
 const sb=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 
 let state=[];
+let SEARCH="";
 let draftReceipt=null;   // {file} pending upload
 let draftComped=null;
 
@@ -257,6 +262,23 @@ function approxAmount(c){
 function fmtApprox(n){ return "~$" + (Number.isInteger(n) ? n : n.toFixed(2)); }
 function compKey(v){ return (v==="lr"||v==="other"||v==="no")?v:null; }
 function today(){ return new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}); }
+function fmtTS(ts){ if(!ts) return ""; const d=new Date(ts); return isNaN(d)?"":d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}); }
+// Card date line: when it was committed, plus the date it reached its current stage.
+const STAGE_SHORT=["Committed","Prepped","Ready","Picked up"];
+function cardDates(c){
+  const made=fmtTS(c.created_at);
+  const sd=c.stage_dates||{};
+  const cur=(c.stage>0 && sd[c.stage])?sd[c.stage]:"";
+  let s=made?("Committed "+made):"";
+  if(cur) s+=(s?" · ":"")+STAGE_SHORT[c.stage]+" "+cur;
+  return s;
+}
+// Live search across org, commitment, items, notes, donor.
+function matchSearch(c){
+  if(!SEARCH) return true;
+  const items=(Array.isArray(c.items)?c.items:[]).map(i=>(i.desc||"")+" "+(i.qty||"")).join(" ");
+  return ((c.org||"")+" "+(c.commitment||"")+" "+items+" "+(c.notes||"")+" "+(c.comped_by||"")).toLowerCase().includes(SEARCH);
+}
 function uid(){ return (crypto.randomUUID?crypto.randomUUID():(Date.now()+""+Math.random())); }
 function banner(msg,kind){ const b=document.getElementById("banner"); b.textContent=msg; b.className="banner "+(kind||"ok"); if(kind!=="err") setTimeout(()=>{b.className="banner";},2500); }
 function receiptUrl(path){ return path? sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl : null; }
@@ -348,7 +370,7 @@ function render(){
   const board=document.getElementById("board");
   board.innerHTML="";
   for(let s=0;s<4;s++){
-    const cards=state.filter(c=>c.stage===s);
+    const cards=state.filter(c=>c.stage===s && matchSearch(c));
     const col=document.createElement("div");
     col.className="col s"+s;
     const colTot=cards.reduce((tt,c)=>tt+approxAmount(c),0);
@@ -357,7 +379,10 @@ function render(){
     cards.forEach(c=>col.appendChild(cardEl(c)));
     board.appendChild(col);
   }
-  document.getElementById("count").textContent=state.length+" donation"+(state.length===1?"":"s")+" tracked";
+  const shown=state.filter(matchSearch).length;
+  document.getElementById("count").textContent=SEARCH
+    ? (shown+" of "+state.length+" shown")
+    : (state.length+" donation"+(state.length===1?"":"s")+" tracked");
   renderReports();
 }
 
@@ -386,6 +411,7 @@ function cardEl(c){
     ${items.length?`<div class="meta"><b>Items:</b><ul class="items">${items.map(i=>`<li>${esc(i.desc)}${i.qty?` ×${esc(i.qty)}`:""}</li>`).join("")}</ul></div>`:""}
     ${rec?`<div class="meta">${rec}</div>`:""}
     ${c.notes?`<div class="meta">${esc(c.notes)}</div>`:""}
+    ${cardDates(c)?`<div class="dates">📅 ${esc(cardDates(c))}</div>`:""}
     <div class="row">
       <button class="iconbtn" title="Back a stage" onclick="move('${c.id}',-1)" ${c.stage===0?"disabled":""}>◀</button>
       <button class="iconbtn" title="Forward a stage" onclick="move('${c.id}',1)" ${c.stage===3?"disabled":""}>▶</button>
