@@ -51,12 +51,17 @@ button.ghost{box-shadow:none;background:transparent;}
 .col h2 .c{font-family:var(--font-num);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:12px;color:var(--muted);}
 .col.s0 h2{color:var(--blue);} .col.s1 h2{color:var(--amber);} .col.s2 h2{color:var(--teal);} .col.s3 h2{color:var(--green);}
 
-.cardx{position:relative;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--muted);border-radius:9px;padding:10px 10px 8px;margin-bottom:9px;box-shadow:var(--shadow);}
+.cardx{position:relative;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--muted);border-radius:9px;padding:10px 10px 8px;margin-bottom:9px;box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:104px;transition:box-shadow .18s ease,border-color .18s ease;}
+.cardx:hover{box-shadow:0 5px 16px rgba(0,0,0,.12);}
+.cardx .detail{max-height:0;opacity:0;overflow:hidden;transition:max-height .28s ease,opacity .2s ease,margin-top .2s ease;}
+.cardx:hover .detail,.cardx:focus-within .detail{max-height:640px;opacity:1;margin-top:3px;}
+@media (hover:none){.cardx .detail{max-height:none;opacity:1;margin-top:3px;}.cardx{min-height:0;}}
 .cardx .moneychip{position:absolute;top:8px;right:8px;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--brand-soft);color:var(--brand);white-space:nowrap;}
 .cardx .org{padding-right:54px;}
 .col.s0 .cardx{border-left-color:var(--blue);} .col.s1 .cardx{border-left-color:var(--amber);}
 .col.s2 .cardx{border-left-color:var(--teal);} .col.s3 .cardx{border-left-color:var(--green);}
-.cardx .org{font-weight:700;font-size:14px;margin-bottom:3px;}
+.cardx .org{font-weight:700;font-size:14px;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.6em;line-height:1.3;}
+.cardx .badges{margin-bottom:2px;min-height:19px;white-space:nowrap;overflow:hidden;}
 .cardx .meta{font-size:12px;color:var(--muted);margin:2px 0;}
 .cardx .meta b{color:var(--ink);font-weight:600;}
 .badge{display:inline-block;font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:999px;margin-right:4px;}
@@ -64,7 +69,7 @@ button.ghost{box-shadow:none;background:transparent;}
 .badge.notcomped{background:var(--red-soft);color:var(--red);}
 .badge.otherdonor{background:var(--blue-soft);color:var(--blue);}
 .badge.rec{background:var(--blue-soft);color:var(--blue);}
-.cardx .row{display:flex;gap:6px;align-items:center;margin-top:8px;}
+.cardx .row{display:flex;gap:6px;align-items:center;margin-top:auto;padding-top:8px;}
 .iconbtn{border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:3px 8px;font-size:13px;cursor:pointer;line-height:1;}
 .iconbtn:hover{border-color:var(--brand);}
 .iconbtn[disabled]{opacity:.3;cursor:default;}
@@ -403,15 +408,16 @@ function cardEl(c){
   const items=Array.isArray(c.items)?c.items:[];
   const approx=approxAmount(c);
   const chip = approx>0 ? `<span class="moneychip" title="Approx total of dollar amounts in this commitment">${fmtApprox(approx)}</span>` : "";
+  const detail=`${c.commitment?`<div class="meta"><b>Promised:</b> ${esc(c.commitment)}</div>`:""}`+
+    `${items.length?`<div class="meta"><b>Items:</b><ul class="items">${items.map(i=>`<li>${esc(i.desc)}${i.qty?` ×${esc(i.qty)}`:""}</li>`).join("")}</ul></div>`:""}`+
+    `${rec?`<div class="meta">${rec}</div>`:""}`+
+    `${c.notes?`<div class="meta">${esc(c.notes)}</div>`:""}`;
   d.innerHTML=`
     ${chip}
     <div class="org">${esc(c.org)||"(no name)"}</div>
-    ${badges?`<div>${badges}</div>`:""}
-    ${c.commitment?`<div class="meta"><b>Promised:</b> ${esc(c.commitment)}</div>`:""}
-    ${items.length?`<div class="meta"><b>Items:</b><ul class="items">${items.map(i=>`<li>${esc(i.desc)}${i.qty?` ×${esc(i.qty)}`:""}</li>`).join("")}</ul></div>`:""}
-    ${rec?`<div class="meta">${rec}</div>`:""}
-    ${c.notes?`<div class="meta">${esc(c.notes)}</div>`:""}
+    <div class="badges">${badges}</div>
     ${cardDates(c)?`<div class="dates">📅 ${esc(cardDates(c))}</div>`:""}
+    ${detail?`<div class="detail">${detail}</div>`:""}
     <div class="row">
       <button class="iconbtn" title="Back a stage" onclick="move('${c.id}',-1)" ${c.stage===0?"disabled":""}>◀</button>
       <button class="iconbtn" title="Forward a stage" onclick="move('${c.id}',1)" ${c.stage===3?"disabled":""}>▶</button>
