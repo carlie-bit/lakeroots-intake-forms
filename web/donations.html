@@ -115,14 +115,14 @@ ul.items li{font-size:12px;color:var(--ink);}
 .perbar button.on{background:var(--brand);color:#fff;border-color:var(--brand);}
 .perbar .dt{border:1px solid var(--line);border-radius:8px;padding:5px 7px;font-family:var(--font-body);font-size:12px;color:var(--ink);background:#fff;}
 .perbar .sep{color:var(--muted);font-size:12px;}
-.rgrid{display:grid;grid-template-columns:max-content max-content 1fr 1fr;gap:26px;align-items:start;}
-@media(max-width:980px){.rgrid{grid-template-columns:1fr 1fr;}}
-@media(max-width:560px){.rgrid{grid-template-columns:1fr;}}
+.rgrid{display:flex;flex-wrap:wrap;align-items:center;gap:20px 44px;}
+.rstats{display:flex;flex-direction:column;gap:12px;}
+@media(max-width:560px){.rstats{flex-direction:row;flex-wrap:wrap;}.rgrid{gap:18px 22px;justify-content:center;}}
 .rkpi{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 16px;min-width:116px;}
 .rkpi .k{font-family:var(--font-num);text-transform:uppercase;letter-spacing:.05em;font-size:11px;color:var(--muted);}
 .rkpi .v{font-family:var(--font-num);font-size:30px;color:var(--ink);line-height:1.15;}
 .rkpi .s{font-size:11px;color:var(--muted);}
-.rchart{display:flex;flex-direction:column;align-items:center;text-align:center;gap:7px;}
+.rchart{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;text-align:center;gap:7px;min-width:172px;}
 .rchart .donutwrap{line-height:0;}
 .rchart .ct{font-family:var(--font-num);text-transform:uppercase;letter-spacing:.05em;font-size:12px;color:var(--muted);margin:0;}
 .rlegend{font-size:12.5px;line-height:1.7;max-height:0;opacity:0;overflow:hidden;transition:max-height .22s ease,opacity .2s ease;}
@@ -394,8 +394,10 @@ function renderReports(){
   F.forEach(c=>{const o=orgType(c);orgC[o]=(orgC[o]||0)+1;const e=eventType(c);evtC[e]=(evtC[e]||0)+1;});
   const g=document.getElementById("rgrid");if(!g)return;
   g.innerHTML=
+    `<div class="rstats">`+
     `<div class="rkpi"><div class="k">Completed</div><div class="v">${completed}</div><div class="s">picked up</div></div>`+
     `<div class="rkpi"><div class="k">Total giving</div><div class="v">~$${totalGiving.toLocaleString("en-US")}</div><div class="s">est. in range</div></div>`+
+    `</div>`+
     chartBlock("By organization",orgC)+
     chartBlock("By donation type",evtC);
 }
