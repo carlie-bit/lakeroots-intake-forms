@@ -115,9 +115,10 @@ ul.items li{font-size:12px;color:var(--ink);}
 .perbar button.on{background:var(--brand);color:#fff;border-color:var(--brand);}
 .perbar .dt{border:1px solid var(--line);border-radius:8px;padding:5px 7px;font-family:var(--font-body);font-size:12px;color:var(--ink);background:#fff;}
 .perbar .sep{color:var(--muted);font-size:12px;}
-.rgrid{display:flex;flex-wrap:wrap;align-items:center;gap:20px 44px;}
+.rgrid{display:grid;grid-template-columns:max-content 1fr;align-items:center;gap:20px 40px;}
 .rstats{display:flex;flex-direction:column;gap:12px;}
-@media(max-width:560px){.rstats{flex-direction:row;flex-wrap:wrap;}.rgrid{gap:18px 22px;justify-content:center;}}
+.rcharts{display:flex;justify-content:space-evenly;align-items:center;gap:32px;flex-wrap:wrap;}
+@media(max-width:560px){.rgrid{grid-template-columns:1fr;}.rstats{flex-direction:row;flex-wrap:wrap;justify-content:center;}.rcharts{gap:20px;}}
 .rkpi{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 16px;min-width:116px;}
 .rkpi .k{font-family:var(--font-num);text-transform:uppercase;letter-spacing:.05em;font-size:11px;color:var(--muted);}
 .rkpi .v{font-family:var(--font-num);font-size:30px;color:var(--ink);line-height:1.15;}
@@ -398,8 +399,10 @@ function renderReports(){
     `<div class="rkpi"><div class="k">Completed</div><div class="v">${completed}</div><div class="s">picked up</div></div>`+
     `<div class="rkpi"><div class="k">Total giving</div><div class="v">~$${totalGiving.toLocaleString("en-US")}</div><div class="s">est. in range</div></div>`+
     `</div>`+
+    `<div class="rcharts">`+
     chartBlock("By organization",orgC)+
-    chartBlock("By donation type",evtC);
+    chartBlock("By donation type",evtC)+
+    `</div>`;
 }
 
 function render(){
