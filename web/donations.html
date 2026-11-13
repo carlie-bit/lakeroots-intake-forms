@@ -122,11 +122,12 @@ ul.items li{font-size:12px;color:var(--ink);}
 .rkpi .k{font-family:var(--font-num);text-transform:uppercase;letter-spacing:.05em;font-size:11px;color:var(--muted);}
 .rkpi .v{font-family:var(--font-num);font-size:30px;color:var(--ink);line-height:1.15;}
 .rkpi .s{font-size:11px;color:var(--muted);}
-.rchart{display:flex;align-items:flex-start;gap:14px;}
-.rchart .ct{font-family:var(--font-num);text-transform:uppercase;letter-spacing:.05em;font-size:11px;color:var(--muted);margin:0 0 6px;}
+.rchart{display:flex;flex-direction:column;align-items:center;text-align:center;gap:7px;}
+.rchart .donutwrap{line-height:0;}
+.rchart .ct{font-family:var(--font-num);text-transform:uppercase;letter-spacing:.05em;font-size:12px;color:var(--muted);margin:0;}
 .rlegend{font-size:12.5px;line-height:1.7;max-height:0;opacity:0;overflow:hidden;transition:max-height .22s ease,opacity .2s ease;}
 .rchart:hover .rlegend,.rchart:focus-within .rlegend{max-height:420px;opacity:1;}
-.rlegend .li{display:flex;align-items:center;gap:6px;white-space:nowrap;}
+.rlegend .li{display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
 .rlegend i{width:9px;height:9px;border-radius:2px;display:inline-block;flex:0 0 auto;}
 .rlegend b{color:var(--ink);}
 .rlegend .li.on{font-weight:600;}
@@ -360,13 +361,13 @@ function donut(entries){
     const short=e[0].length>12?e[0].slice(0,11)+"…":e[0];
     if(e[1]>0)p+=`<path class="slice" data-i="${i}" data-val="${e[1]}" data-short="${esc(short)}" data-full="${esc(e[0])} · ${e[1]} · ${pct}%" d="M${x1} ${y1} A${R} ${R} 0 ${lg} 1 ${x2} ${y2} L${xx1} ${yy1} A${r} ${r} 0 ${lg} 0 ${xx2} ${yy2} Z" fill="${e[2]}" onmouseenter="sliceHover(event,this)" onmousemove="sliceHover(event,this)"></path>`;
     a=b;});
-  return `<svg viewBox="0 0 108 108" width="92" height="92" data-total="${tot}" onmouseleave="chartReset(this)">${p}<text class="cntN" x="54" y="50" text-anchor="middle" font-family="var(--font-num)" font-size="20" fill="var(--ink)">${tot}</text><text class="cntL" x="54" y="66" text-anchor="middle" font-family="var(--font-num)" font-size="9" fill="var(--muted)">DONATIONS</text></svg>`;
+  return `<svg viewBox="0 0 108 108" width="132" height="132" data-total="${tot}" onmouseleave="chartReset(this)">${p}<text class="cntN" x="54" y="50" text-anchor="middle" font-family="var(--font-num)" font-size="20" fill="var(--ink)">${tot}</text><text class="cntL" x="54" y="66" text-anchor="middle" font-family="var(--font-num)" font-size="9" fill="var(--muted)">DONATIONS</text></svg>`;
 }
 function chartBlock(title,counts){
   const entries=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]).map((k,i)=>[TYPE_LABEL[k]||k,counts[k],PIE[i%PIE.length]]);
   if(!entries.length)return `<div class="rchart"><div><div class="ct">${title}</div><div class="rempty">No donations in range.</div></div></div>`;
   const legend=entries.map((e,i)=>`<div class="li" data-i="${i}"><i style="background:${e[2]}"></i>${esc(e[0])} &middot; <b>${e[1]}</b></div>`).join("");
-  return `<div class="rchart" tabindex="0"><div>${donut(entries)}</div><div><div class="ct">${title}</div><div class="rhint">hover a slice for details</div><div class="rlegend">${legend}</div></div></div>`;
+  return `<div class="rchart" tabindex="0"><div class="ct">${title}</div><div class="donutwrap">${donut(entries)}</div><div class="rhint">hover a slice for details</div><div class="rlegend">${legend}</div></div>`;
 }
 function pietip(){let t=document.getElementById("pietip");if(!t){t=document.createElement("div");t.id="pietip";document.body.appendChild(t);}return t;}
 function sliceHover(ev,path){
