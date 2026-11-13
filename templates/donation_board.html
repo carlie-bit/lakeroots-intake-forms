@@ -124,10 +124,20 @@ ul.items li{font-size:12px;color:var(--ink);}
 .rkpi .s{font-size:11px;color:var(--muted);}
 .rchart{display:flex;align-items:flex-start;gap:14px;}
 .rchart .ct{font-family:var(--font-num);text-transform:uppercase;letter-spacing:.05em;font-size:11px;color:var(--muted);margin:0 0 6px;}
-.rlegend{font-size:12px;line-height:1.6;}
+.rlegend{font-size:12.5px;line-height:1.7;max-height:0;opacity:0;overflow:hidden;transition:max-height .22s ease,opacity .2s ease;}
+.rchart:hover .rlegend,.rchart:focus-within .rlegend{max-height:420px;opacity:1;}
 .rlegend .li{display:flex;align-items:center;gap:6px;white-space:nowrap;}
 .rlegend i{width:9px;height:9px;border-radius:2px;display:inline-block;flex:0 0 auto;}
 .rlegend b{color:var(--ink);}
+.rlegend .li.on{font-weight:600;}
+.rlegend .li.on b{color:var(--brand);}
+.rhint{font-size:11px;color:var(--muted);font-style:italic;margin-top:3px;transition:opacity .18s ease;}
+.rchart:hover .rhint{opacity:0;}
+.rchart .slice{transition:opacity .15s ease;cursor:pointer;}
+.rchart svg:hover .slice{opacity:.38;}
+.rchart svg .slice.on{opacity:1;}
+#pietip{position:fixed;display:none;pointer-events:none;z-index:9999;background:var(--ink);color:#fff;font-size:12px;padding:5px 9px;border-radius:7px;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.22);}
+@media (hover:none){.rchart .rlegend{max-height:420px;opacity:1;}.rhint{display:none;}}
 .rempty{color:var(--muted);font-size:12px;font-style:italic;}
 </style>
 </head>
@@ -343,19 +353,37 @@ function setCustom(){
 }
 function donut(entries){
   const tot=entries.reduce((s,e)=>s+e[1],0)||1;let a=-Math.PI/2;const R=46,r=27,cx=54,cy=54;let p="";
-  entries.forEach(e=>{const ang=e[1]/tot*2*Math.PI,b=a+ang;
+  entries.forEach((e,i)=>{const ang=e[1]/tot*2*Math.PI,b=a+ang;
     const x1=cx+R*Math.cos(a),y1=cy+R*Math.sin(a),x2=cx+R*Math.cos(b),y2=cy+R*Math.sin(b);
     const xx1=cx+r*Math.cos(b),yy1=cy+r*Math.sin(b),xx2=cx+r*Math.cos(a),yy2=cy+r*Math.sin(a);
-    const lg=ang>Math.PI?1:0;
-    if(e[1]>0)p+=`<path d="M${x1} ${y1} A${R} ${R} 0 ${lg} 1 ${x2} ${y2} L${xx1} ${yy1} A${r} ${r} 0 ${lg} 0 ${xx2} ${yy2} Z" fill="${e[2]}"></path>`;
+    const lg=ang>Math.PI?1:0;const pct=Math.round(e[1]/tot*100);
+    const short=e[0].length>12?e[0].slice(0,11)+"…":e[0];
+    if(e[1]>0)p+=`<path class="slice" data-i="${i}" data-val="${e[1]}" data-short="${esc(short)}" data-full="${esc(e[0])} · ${e[1]} · ${pct}%" d="M${x1} ${y1} A${R} ${R} 0 ${lg} 1 ${x2} ${y2} L${xx1} ${yy1} A${r} ${r} 0 ${lg} 0 ${xx2} ${yy2} Z" fill="${e[2]}" onmouseenter="sliceHover(event,this)" onmousemove="sliceHover(event,this)"></path>`;
     a=b;});
-  return `<svg viewBox="0 0 108 108" width="92" height="92">${p}<text x="54" y="50" text-anchor="middle" font-family="var(--font-num)" font-size="20" fill="var(--ink)">${tot}</text><text x="54" y="66" text-anchor="middle" font-family="var(--font-num)" font-size="9" fill="var(--muted)">DONATIONS</text></svg>`;
+  return `<svg viewBox="0 0 108 108" width="92" height="92" data-total="${tot}" onmouseleave="chartReset(this)">${p}<text class="cntN" x="54" y="50" text-anchor="middle" font-family="var(--font-num)" font-size="20" fill="var(--ink)">${tot}</text><text class="cntL" x="54" y="66" text-anchor="middle" font-family="var(--font-num)" font-size="9" fill="var(--muted)">DONATIONS</text></svg>`;
 }
 function chartBlock(title,counts){
   const entries=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]).map((k,i)=>[TYPE_LABEL[k]||k,counts[k],PIE[i%PIE.length]]);
   if(!entries.length)return `<div class="rchart"><div><div class="ct">${title}</div><div class="rempty">No donations in range.</div></div></div>`;
-  const legend=entries.map(e=>`<div class="li"><i style="background:${e[2]}"></i>${esc(e[0])} &middot; <b>${e[1]}</b></div>`).join("");
-  return `<div class="rchart"><div>${donut(entries)}</div><div><div class="ct">${title}</div><div class="rlegend">${legend}</div></div></div>`;
+  const legend=entries.map((e,i)=>`<div class="li" data-i="${i}"><i style="background:${e[2]}"></i>${esc(e[0])} &middot; <b>${e[1]}</b></div>`).join("");
+  return `<div class="rchart" tabindex="0"><div>${donut(entries)}</div><div><div class="ct">${title}</div><div class="rhint">hover a slice for details</div><div class="rlegend">${legend}</div></div></div>`;
+}
+function pietip(){let t=document.getElementById("pietip");if(!t){t=document.createElement("div");t.id="pietip";document.body.appendChild(t);}return t;}
+function sliceHover(ev,path){
+  const svg=path.closest("svg"),chart=path.closest(".rchart");
+  svg.querySelectorAll(".slice").forEach(s=>s.classList.toggle("on",s===path));
+  svg.querySelector(".cntN").textContent=path.dataset.val;
+  svg.querySelector(".cntL").textContent=(path.dataset.short||"").toUpperCase();
+  if(chart){const i=path.dataset.i;chart.querySelectorAll(".rlegend .li").forEach(li=>li.classList.toggle("on",li.dataset.i===i));}
+  const t=pietip();t.textContent=path.dataset.full;t.style.display="block";
+  t.style.left=(ev.clientX+12)+"px";t.style.top=(ev.clientY-10)+"px";
+}
+function chartReset(svg){
+  svg.querySelectorAll(".slice").forEach(s=>s.classList.remove("on"));
+  svg.querySelector(".cntN").textContent=svg.dataset.total;
+  svg.querySelector(".cntL").textContent="DONATIONS";
+  const chart=svg.closest(".rchart");if(chart)chart.querySelectorAll(".rlegend .li.on").forEach(li=>li.classList.remove("on"));
+  const t=document.getElementById("pietip");if(t)t.style.display="none";
 }
 function renderReports(){
   const F=state.filter(inPer);
