@@ -115,31 +115,28 @@ ul.items li{font-size:12px;color:var(--ink);}
 .perbar button.on{background:var(--brand);color:#fff;border-color:var(--brand);}
 .perbar .dt{border:1px solid var(--line);border-radius:8px;padding:5px 7px;font-family:var(--font-body);font-size:12px;color:var(--ink);background:#fff;}
 .perbar .sep{color:var(--muted);font-size:12px;}
-.rgrid{display:grid;grid-template-columns:max-content 1fr;align-items:center;gap:20px 40px;}
-.rstats{display:flex;flex-direction:column;gap:12px;}
-.rcharts{display:flex;justify-content:space-evenly;align-items:center;gap:32px;flex-wrap:wrap;}
-@media(max-width:560px){.rgrid{grid-template-columns:1fr;}.rstats{flex-direction:row;flex-wrap:wrap;justify-content:center;}.rcharts{gap:20px;}}
-.rkpi{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 16px;min-width:116px;}
-.rkpi .k{font-family:var(--font-num);text-transform:uppercase;letter-spacing:.05em;font-size:11px;color:var(--muted);}
-.rkpi .v{font-family:var(--font-num);font-size:30px;color:var(--ink);line-height:1.15;}
-.rkpi .s{font-size:11px;color:var(--muted);}
-.rchart{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;text-align:center;gap:7px;min-width:172px;}
+.rgrid{display:grid;grid-template-columns:max-content 1fr;align-items:center;gap:22px 40px;}
+.rstats{display:flex;flex-direction:column;gap:14px;}
+.rcharts{display:flex;justify-content:space-evenly;align-items:flex-start;gap:36px;flex-wrap:wrap;}
+@media(max-width:620px){.rgrid{grid-template-columns:1fr;}.rstats{flex-direction:row;flex-wrap:wrap;justify-content:center;}.rcharts{gap:24px;}}
+.rkpi{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:16px 22px;min-width:168px;}
+.rkpi .k{font-family:var(--font-num);text-transform:uppercase;letter-spacing:.06em;font-size:12px;color:var(--muted);}
+.rkpi .v{font-family:var(--font-num);font-size:34px;color:var(--ink);line-height:1.1;margin:2px 0 1px;}
+.rkpi .s{font-size:12px;color:var(--muted);}
+.rchart{flex:0 1 auto;display:flex;flex-direction:column;align-items:center;text-align:center;gap:11px;min-width:300px;max-width:440px;}
 .rchart .donutwrap{line-height:0;}
-.rchart .ct{font-family:var(--font-num);text-transform:uppercase;letter-spacing:.05em;font-size:12px;color:var(--muted);margin:0;}
-.rlegend{font-size:12.5px;line-height:1.7;max-height:0;opacity:0;overflow:hidden;transition:max-height .22s ease,opacity .2s ease;}
-.rchart:hover .rlegend,.rchart:focus-within .rlegend{max-height:420px;opacity:1;}
-.rlegend .li{display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
-.rlegend i{width:9px;height:9px;border-radius:2px;display:inline-block;flex:0 0 auto;}
-.rlegend b{color:var(--ink);}
-.rlegend .li.on{font-weight:600;}
+.rchart .ct{font-family:var(--font-num);text-transform:uppercase;letter-spacing:.06em;font-size:13px;color:var(--muted);margin:0;}
+.rlegend{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:7px 18px;max-width:420px;font-size:13.5px;line-height:1.45;font-family:"Calibri","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;}
+.rlegend .li{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;cursor:default;color:var(--ink);}
+.rlegend i{width:11px;height:11px;border-radius:3px;display:inline-block;flex:0 0 auto;}
+.rlegend b{color:var(--ink);font-weight:700;margin-left:3px;}
+.rlegend .li.on{color:var(--brand);}
 .rlegend .li.on b{color:var(--brand);}
-.rhint{font-size:11px;color:var(--muted);font-style:italic;margin-top:3px;transition:opacity .18s ease;}
-.rchart:hover .rhint{opacity:0;}
+.rhint{font-size:12px;color:var(--muted);font-style:italic;margin-top:2px;}
 .rchart .slice{transition:opacity .15s ease;cursor:pointer;}
-.rchart svg:hover .slice{opacity:.38;}
+.rchart svg:hover .slice,.rchart svg.dim .slice{opacity:.38;}
 .rchart svg .slice.on{opacity:1;}
 #pietip{position:fixed;display:none;pointer-events:none;z-index:9999;background:var(--ink);color:#fff;font-size:12px;padding:5px 9px;border-radius:7px;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.22);}
-@media (hover:none){.rchart .rlegend{max-height:420px;opacity:1;}.rhint{display:none;}}
 .rempty{color:var(--muted);font-size:12px;font-style:italic;}
 </style>
 </head>
@@ -334,12 +331,13 @@ function eventType(c){return classify((c.commitment||"")+" "+(c.org||"")+" "+(Ar
 const TYPE_LABEL={};[...ORG_TYPES,...EVENT_TYPES].forEach(r=>TYPE_LABEL[r[0]]=r[1]);TYPE_LABEL.other="Other";
 const PIE=["var(--green)","var(--amber)","var(--teal)","var(--blue)","var(--brand)","var(--red)","#8a7b5c","#9b8467","#5f7d49","#6e7468"];
 
-let perFrom=null, perTo=null;
+let perFrom=null, perTo=null, perName="all time";
+const PER_NAME={all:"all time",ytd:"this year","90":"last 90 days","30":"last 30 days"};
 function inPer(c){const d=c.created_at?new Date(c.created_at):null;if(!d||isNaN(d))return true;const t=d.getTime();if(perFrom!=null&&t<perFrom)return false;if(perTo!=null&&t>perTo)return false;return true;}
 function setPer(p){
   document.querySelectorAll("#perbar button").forEach(b=>b.classList.toggle("on",b.dataset.p===p));
   document.getElementById("perFrom").value="";document.getElementById("perTo").value="";
-  const now=new Date();
+  const now=new Date();perName=PER_NAME[p]||"range";
   if(p==="all"){perFrom=null;perTo=null;}
   else if(p==="ytd"){perFrom=new Date(now.getFullYear(),0,1).getTime();perTo=null;}
   else{const f=new Date();f.setHours(0,0,0,0);f.setDate(f.getDate()-(+p));perFrom=f.getTime();perTo=null;}
@@ -349,6 +347,7 @@ function setCustom(){
   const f=document.getElementById("perFrom").value,tv=document.getElementById("perTo").value;
   if(!f&&!tv)return;
   document.querySelectorAll("#perbar button").forEach(b=>b.classList.remove("on"));
+  perName="custom range";
   perFrom=f?new Date(f+"T00:00:00").getTime():null;
   perTo=tv?new Date(tv+"T23:59:59").getTime():null;
   renderReports();
@@ -362,17 +361,18 @@ function donut(entries){
     const short=e[0].length>12?e[0].slice(0,11)+"…":e[0];
     if(e[1]>0)p+=`<path class="slice" data-i="${i}" data-val="${e[1]}" data-short="${esc(short)}" data-full="${esc(e[0])} · ${e[1]} · ${pct}%" d="M${x1} ${y1} A${R} ${R} 0 ${lg} 1 ${x2} ${y2} L${xx1} ${yy1} A${r} ${r} 0 ${lg} 0 ${xx2} ${yy2} Z" fill="${e[2]}" onmouseenter="sliceHover(event,this)" onmousemove="sliceHover(event,this)"></path>`;
     a=b;});
-  return `<svg viewBox="0 0 108 108" width="132" height="132" data-total="${tot}" onmouseleave="chartReset(this)">${p}<text class="cntN" x="54" y="50" text-anchor="middle" font-family="var(--font-num)" font-size="20" fill="var(--ink)">${tot}</text><text class="cntL" x="54" y="66" text-anchor="middle" font-family="var(--font-num)" font-size="9" fill="var(--muted)">DONATIONS</text></svg>`;
+  return `<svg viewBox="0 0 108 108" width="150" height="150" data-total="${tot}" onmouseleave="chartReset(this)">${p}<text class="cntN" x="54" y="50" text-anchor="middle" font-family="var(--font-num)" font-size="22" fill="var(--ink)">${tot}</text><text class="cntL" x="54" y="66" text-anchor="middle" font-family="var(--font-num)" font-size="9" fill="var(--muted)">DONATIONS</text></svg>`;
 }
 function chartBlock(title,counts){
   const entries=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]).map((k,i)=>[TYPE_LABEL[k]||k,counts[k],PIE[i%PIE.length]]);
   if(!entries.length)return `<div class="rchart"><div><div class="ct">${title}</div><div class="rempty">No donations in range.</div></div></div>`;
-  const legend=entries.map((e,i)=>`<div class="li" data-i="${i}"><i style="background:${e[2]}"></i>${esc(e[0])} &middot; <b>${e[1]}</b></div>`).join("");
-  return `<div class="rchart" tabindex="0"><div class="ct">${title}</div><div class="donutwrap">${donut(entries)}</div><div class="rhint">hover a slice for details</div><div class="rlegend">${legend}</div></div>`;
+  const legend=entries.map((e,i)=>`<div class="li" data-i="${i}" onmouseenter="legendHover(event,this)" onmousemove="legendHover(event,this)" onmouseleave="legendLeave(this)"><i style="background:${e[2]}"></i>${esc(e[0])}<b>${e[1]}</b></div>`).join("");
+  return `<div class="rchart" tabindex="0"><div class="ct">${title}</div><div class="donutwrap">${donut(entries)}</div><div class="rlegend">${legend}</div><div class="rhint">Hover or tap a slice or legend item for details</div></div>`;
 }
 function pietip(){let t=document.getElementById("pietip");if(!t){t=document.createElement("div");t.id="pietip";document.body.appendChild(t);}return t;}
 function sliceHover(ev,path){
   const svg=path.closest("svg"),chart=path.closest(".rchart");
+  svg.classList.add("dim");
   svg.querySelectorAll(".slice").forEach(s=>s.classList.toggle("on",s===path));
   svg.querySelector(".cntN").textContent=path.dataset.val;
   svg.querySelector(".cntL").textContent=(path.dataset.short||"").toUpperCase();
@@ -381,23 +381,36 @@ function sliceHover(ev,path){
   t.style.left=(ev.clientX+12)+"px";t.style.top=(ev.clientY-10)+"px";
 }
 function chartReset(svg){
+  svg.classList.remove("dim");
   svg.querySelectorAll(".slice").forEach(s=>s.classList.remove("on"));
   svg.querySelector(".cntN").textContent=svg.dataset.total;
   svg.querySelector(".cntL").textContent="DONATIONS";
   const chart=svg.closest(".rchart");if(chart)chart.querySelectorAll(".rlegend .li.on").forEach(li=>li.classList.remove("on"));
   const t=document.getElementById("pietip");if(t)t.style.display="none";
 }
+function legendHover(ev,li){
+  const chart=li.closest(".rchart");if(!chart)return;
+  const path=chart.querySelector('.slice[data-i="'+li.dataset.i+'"]');
+  if(path)sliceHover(ev,path);
+}
+function legendLeave(li){
+  const chart=li.closest(".rchart"),svg=chart&&chart.querySelector("svg");
+  if(svg)chartReset(svg);
+}
 function renderReports(){
   const F=state.filter(inPer);
   const completed=F.filter(c=>c.stage===3).length;
   const totalGiving=Math.round(F.reduce((t,c)=>t+approxAmount(c),0));
+  const waiting=F.filter(c=>c.stage===2);
+  const waitVal=Math.round(waiting.reduce((t,c)=>t+approxAmount(c),0));
   const orgC={},evtC={};
   F.forEach(c=>{const o=orgType(c);orgC[o]=(orgC[o]||0)+1;const e=eventType(c);evtC[e]=(evtC[e]||0)+1;});
   const g=document.getElementById("rgrid");if(!g)return;
   g.innerHTML=
     `<div class="rstats">`+
     `<div class="rkpi"><div class="k">Completed</div><div class="v">${completed}</div><div class="s">picked up</div></div>`+
-    `<div class="rkpi"><div class="k">Total giving</div><div class="v">~$${totalGiving.toLocaleString("en-US")}</div><div class="s">est. in range</div></div>`+
+    `<div class="rkpi"><div class="k">Total giving</div><div class="v">~$${totalGiving.toLocaleString("en-US")}</div><div class="s">est. value, ${perName}</div></div>`+
+    `<div class="rkpi"><div class="k">Waiting now</div><div class="v">${waiting.length}</div><div class="s">${waitVal>0?"~$"+waitVal.toLocaleString("en-US")+" ":""}ready for pickup</div></div>`+
     `</div>`+
     `<div class="rcharts">`+
     chartBlock("By organization",orgC)+
