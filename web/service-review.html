@@ -270,7 +270,13 @@ function renderAllTable(F){
 
 function drillOne(id){drill('Service report',[ALL.find(e=>e.id===id)]);}
 function linkLine(e){if(!e.link)return '';
-  return /^https?:/i.test(e.link)?`<div><b>Report / photos:</b> <a href="${esc(e.link)}" target="_blank" rel="noopener" style="color:var(--forest)">Open ↗</a></div>`:`<div><b>Report / photos:</b> ${esc(e.link)}</div>`;}
+  const link=/^https?:/i.test(e.link)
+    ? `<a href="${esc(e.link)}" target="_blank" rel="noopener" style="color:var(--forest)">Open ↗</a>`
+    : `<a href="#" style="color:var(--forest)" onclick="openDoc('${jsId(e.link)}');return false">🔒 Open ↗</a>`;
+  return `<div><b>Report / photos:</b> ${link}</div>`;}
+async function openDoc(path){if(!sb){alert('Open the live dashboard to view documents.');return;}
+  const {data,error}=await sb.storage.from('service-docs').createSignedUrl(path,3600);
+  if(error||!data){alert('Could not open this file.');return;}window.open(data.signedUrl,'_blank','noopener');}
 function detailBlock(e){
   const rows=[['Area',e.area!=='—'?e.area:''],['Equipment',e.equipment!=='—'?e.equipment:''],['Type',e.type],
     ['Warranty',e.type==='Repair'?e.warranty:''],['Provider',e.provider!=='—'?e.provider:''],['Technician',e.technician],
